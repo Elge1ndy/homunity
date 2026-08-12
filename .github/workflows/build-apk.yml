@@ -47,13 +47,13 @@ jobs:
       - name: Init TWA project
         run: |
           yes | bubblewrap init \
-            --manifest=https://thermoscopical-ungenerous-agustin.ngrok-free.dev/manifest.webmanifest \
+            --manifest=https://raw.githubusercontent.com/Elge1ndy/homunity/main/frontend/public/manifest.webmanifest \
             --directory=android-project \
             --skipPwaValidation
 
       - name: Attach signing key
         run: |
-          node -e "const fs=require('fs');const p='android-project/twa-manifest.json';const m=JSON.parse(fs.readFileSync(p));m.signingKey={path:'../android.keystore',alias:'homunity'};fs.writeFileSync(p,JSON.stringify(m,null,2));"
+          node -e "const fs=require('fs');const p='android-project/twa-manifest.json';const m=JSON.parse(fs.readFileSync(p));m.signingKey={path:'../android.keystore',alias:'homunity'};m.startUrl='https://thermoscopical-ungenerous-agustin.ngrok-free.dev/';fs.writeFileSync(p,JSON.stringify(m,null,2));"
 
       - name: Build APK
         working-directory: android-project

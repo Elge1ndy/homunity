@@ -10,9 +10,16 @@ const FONT_DIR = path.join(__dirname, '..', '..', 'fonts');
 function ar(text) {
   const s = String(text ?? '');
   if (!/[\u0600-\u06FF]/.test(s)) return s;
-  const shaped = convertArabic(s);
+  const runs = [];
+  const masked = s.replace(/[A-Za-z0-9][A-Za-z0-9.\/\-\+\%():]*/g, (m) => {
+    runs.push(m);
+    return 'x'.repeat(m.length);
+  });
+  const shaped = convertArabic(masked);
   const levels = bidi.getEmbeddingLevels(shaped, { direction: 'rtl' });
-  return bidi.getReorderedString(shaped, levels);
+  const reo = bidi.getReorderedString(shaped, levels);
+  let i = 0;
+  return reo.replace(/x+/g, () => runs[i++]);
 }
 
 function isAr(text) {
@@ -84,6 +91,7 @@ function collect(doc) {
 }
 
 const STATUS_AR = { paid: 'مدفوع', partial: 'جزئي', unpaid: 'غير مدفوع', overdue: 'متأخر' };
+const MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 
 function invoicePdf(invoice, student, housing) {
   return new Promise(async (resolve, reject) => {
@@ -103,9 +111,9 @@ function invoicePdf(invoice, student, housing) {
       doc.text(ar(`الغرفة: ${student.roomNumber || ''}   السرير: ${student.bedNumber || ''}`), 48, 178);
       doc.y = 200;
 
-      const headers = ['الشهر', 'المبلغ', 'الحالة'];
-      const widths = [220, 120, 150];
-      const rows = (invoice.items || []).map((it) => [String(it.month), String(it.amount), STATUS_AR[it.status] || it.status]);
+      const headers = ['الحالة', 'المبلغ', 'الشهر'];
+      const widths = [150, 120, 220];
+      const rows = (invoice.items || []).map((it) => [STATUS_AR[it.status] || it.status, String(it.amount), String(it.month)]);
       const y = table(doc, headers, rows, widths, { y: doc.y });
 
       doc.font('TB').fontSize(10).fillColor('#0f172a');
@@ -125,7 +133,9 @@ function reportPdf(month, data, housing) {
       const doc = newDoc();
       const done = collect(doc);
 
-      header(doc, housing, `تقرير شهري — ${month}`);
+      const [yy, mm] = String(month || '').split('-');
+      const title = `تقرير شهري — ${MONTHS_AR[Number(mm) - 1] || mm} ${yy || ''}`;
+      header(doc, housing, title);
 
       doc.font('TB').fontSize(10).fillColor('#0f172a').text(ar('الملخص'), 48, 96);
       const lines = [
@@ -139,14 +149,14 @@ function reportPdf(month, data, housing) {
       lines.forEach((l) => doc.text(ar(l), 48, doc.y + 12));
       doc.moveDown(2);
 
-      const headers = ['الطالب', 'الرقم', 'المبلغ', 'الحالة', 'تاريخ الدفع'];
-      const widths = [190, 90, 80, 80, 110];
+      const headers = ['تاريخ الدفع', 'الحالة', 'المبلغ', 'الرقم', 'الطالب'];
+      const widths = [95, 75, 75, 70, 180];
       const rows = (data.rows || []).map((p) => [
-        (p.student && p.student.name) || '',
-        (p.student && p.student.studentId) || '',
-        String(p.amount),
-        STATUS_AR[p.status] || p.status,
         p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-GB') : '—',
+        STATUS_AR[p.status] || p.status,
+        String(p.amount),
+        (p.student && p.student.studentId) || '',
+        (p.student && p.student.name) || '',
       ]);
       table(doc, headers, rows, widths, { y: doc.y });
       footer(doc);

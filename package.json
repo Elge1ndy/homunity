@@ -1,0 +1,12 @@
+{
+  "name": "homunity",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "npm run setup && node backend/server.js",
+    "setup": "cd frontend && npm install && npm run build && cd ../backend && npm install --omit=dev"
+  }
+}

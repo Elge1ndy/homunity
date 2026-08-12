@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: homunity
+    runtime: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build && cd .. && npm install --omit=dev
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DB_DRIVER
+        value: json
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        sync: false

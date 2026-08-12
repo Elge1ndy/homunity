@@ -4,7 +4,6 @@ const cors = require('cors');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
-const { Server } = require('socket.io');
 
 const db = require('./src/db');
 const { seed } = require('./src/services/seed');
@@ -29,13 +28,6 @@ if (fs.existsSync(dist)) {
 app.use(errorHandler);
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] } });
-app.set('io', io);
-
-io.on('connection', (socket) => {
-  console.log('[socket] connected:', socket.id);
-  socket.on('disconnect', () => console.log('[socket] disconnected:', socket.id));
-});
 
 const PORT = process.env.PORT || 5000;
 
@@ -51,7 +43,7 @@ const PORT = process.env.PORT || 5000;
     try {
       const housing = await db.col('Housing').findOne({});
       const overdue = await paymentsService.refreshOverdue(housing ? housing.dueDay : 1);
-      if (overdue > 0) io.emit('payment:updated', {});
+      if (overdue > 0) console.log('[tasks] overdue updated:', overdue);
       await paymentsService.notifyExpiring();
     } catch (e) {
       console.error('[tasks]', e.message);

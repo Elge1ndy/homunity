@@ -1,0 +1,138 @@
+const db = require('../db');
+
+function toYMD(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function dateFromYMD(str) {
+  if (!str) return null;
+  const parts = String(str).split('-').map(Number);
+  if (!parts[0] || !parts[1]) return null;
+  return new Date(parts[0], (parts[1] || 1) - 1, parts[2] || 1);
+}
+
+function monthKey(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthsBetween(startDate, endDate, max = 60) {
+  const out = [];
+  const s = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  const e = new Date(endDate.getFullYear(), endDate.getMonth(), 1);
+  let d = new Date(s);
+  while (d <= e) {
+    out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
+    d.setMonth(d.getMonth() + 1);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+function dueDateFor(month, dueDay) {
+  const [y, m] = String(month).split('-');
+  const day = Math.min(Math.max(Number(dueDay) || 1, 1), 28);
+  return `${y}-${m}-${String(day).padStart(2, '0')}`;
+}
+
+async function generateForStudent(student, dueDay) {
+  const checkIn = dateFromYMD(student.checkInDate);
+  if (!checkIn) return [];
+  const checkOut = dateFromYMD(student.checkOutDate) || new Date(checkIn.getFullYear() + 1, checkIn.getMonth(), checkIn.getDate());
+  const months = monthsBetween(checkIn, checkOut);
+  const created = [];
+  for (const month of months) {
+    const existing = await db.col('Payment').findOne({ studentId: String(student._id), month });
+    if (existing) continue;
+    const p = await db.col('Payment').insert({
+      studentId: String(student._id),
+      month,
+      amount: Number(student.monthlyRent) || 0,
+      dueDate: dueDateFor(month, dueDay),
+      status: 'unpaid',
+      history: [],
+    });
+    created.push(p);
+  }
+  return created;
+}
+
+async function updateRentFor(student, newRent) {
+  const curMonth = monthKey(new Date());
+  const payments = await db.col('Payment').find({ studentId: String(student._id) });
+  for (const p of payments) {
+    if (p.status !== 'paid' && p.month >= curMonth && Number(p.amount) !== Number(newRent)) {
+      await db.col('Payment').findByIdAndUpdate(p._id, { $set: { amount: Number(newRent) } });
+    }
+  }
+}
+
+async function refreshOverdue(dueDay) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const unpaid = await db.col('Payment').find({ status: 'unpaid' });
+  const notifications = require('./notifications');
+  let count = 0;
+  for (const p of unpaid) {
+    const d = dateFromYMD(p.dueDate);
+    if (d && d < today && !p.overdueNotified) {
+      await db.col('Payment').findByIdAndUpdate(p._id, { $set: { status: 'overdue', overdueNotified: true } });
+      const student = await db.col('Student').findById(p.studentId);
+      if (student) {
+        await notifications.create({
+          type: 'payment_overdue',
+          title: 'دفعة متأخرة',
+          message: `دفعة شهر ${p.month} للطالب ${student.name} (${student.studentId}) أصبحت متأخرة.`,
+          data: { paymentId: String(p._id), studentId: String(student._id) },
+        });
+      }
+      count++;
+    }
+  }
+  return count;
+}
+
+async function scanExpiring(days = 30) {
+  const students = await db.col('Student').find({ status: 'active' });
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const soon = [];
+  for (const s of students) {
+    const out = dateFromYMD(s.checkOutDate);
+    if (!out) continue;
+    const diff = Math.ceil((out - today) / (1000 * 60 * 60 * 24));
+    if (diff >= 0 && diff <= days) soon.push({ ...s, daysLeft: diff });
+  }
+  return soon.sort((a, b) => a.daysLeft - b.daysLeft);
+}
+
+async function notifyExpiring() {
+  const soon = await scanExpiring(30);
+  const notifications = require('./notifications');
+  let count = 0;
+  for (const s of soon) {
+    if (!s.expiringNotified) {
+      await notifications.create({
+        type: 'student_expiring',
+        title: 'اقتراب انتهاء الإقامة',
+        message: `إقامة ${s.name} (${s.studentId}) تنتهي بعد ${s.daysLeft} يوم.`,
+        data: { studentId: String(s._id) },
+      });
+      await db.col('Student').findByIdAndUpdate(s._id, { $set: { expiringNotified: true } });
+      count++;
+    }
+  }
+  return count;
+}
+
+module.exports = {
+  toYMD,
+  dateFromYMD,
+  monthKey,
+  monthsBetween,
+  dueDateFor,
+  generateForStudent,
+  updateRentFor,
+  refreshOverdue,
+  scanExpiring,
+  notifyExpiring,
+};

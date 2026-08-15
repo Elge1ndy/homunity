@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import api from '../api'
 
 export function useApi(path, deps = []) {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const depsRef = useRef(deps)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -21,7 +22,7 @@ export function useApi(path, deps = []) {
 
   useEffect(() => {
     load()
-  }, [load, ...deps])
+  }, [load, JSON.stringify(deps)])
 
   return { data, loading, error, refetch: load }
 }

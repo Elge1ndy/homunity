@@ -10,4 +10,15 @@ export default defineConfig({
       '/uploads': 'http://localhost:5000',
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          socket: ['socket.io-client'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
 })

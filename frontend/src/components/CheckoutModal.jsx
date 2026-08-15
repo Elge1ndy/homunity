@@ -5,6 +5,7 @@ import Spinner from './Spinner.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { errMsg } from '../hooks/useApi.js'
 import Badge from './Badge.jsx'
+import { fmtMoney } from '../utils/format.js'
 
 const REASONS = ['إيجار غير مدفوع', 'تلف أثاث', 'تلف الغرفة', 'أدوات ناقصة', 'تكاليف إصلاح', 'تكاليف تنظيف', 'أخرى']
 
@@ -85,11 +86,11 @@ export default function CheckoutModal({ open, student, payments, financial, depo
             </div>
             <div className="p-3 rounded-xl bg-slate-50">
               <p className="text-[11px] font-bold text-slate-500">المتوقع</p>
-              <p className="font-extrabold text-slate-800">{fmtNum(financial?.totalExpected)}</p>
+              <p className="font-extrabold text-slate-800">{fmtMoney(financial?.totalExpected)}</p>
             </div>
             <div className="p-3 rounded-xl bg-red-50">
               <p className="text-[11px] font-bold text-red-500">إيجار متأخر</p>
-              <p className="font-extrabold text-red-700">{fmtNum(outstanding)}</p>
+              <p className="font-extrabold text-red-700">{fmtMoney(outstanding)}</p>
             </div>
           </div>
         </div>
@@ -102,19 +103,19 @@ export default function CheckoutModal({ open, student, payments, financial, depo
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 text-center">
             <div className="p-2 rounded-lg bg-white/60">
               <p className="text-[11px] font-bold text-teal-700">الأصل</p>
-              <p className="font-extrabold">{fmtNum(deposit?.originalAmount)}</p>
+              <p className="font-extrabold">{fmtMoney(deposit?.originalAmount)}</p>
             </div>
             <div className="p-2 rounded-lg bg-white/60">
               <p className="text-[11px] font-bold text-red-600">الخصومات</p>
-              <p className="font-extrabold text-red-700">{fmtNum(deposit?.totalDeductions)}</p>
+              <p className="font-extrabold text-red-700">{fmtMoney(deposit?.totalDeductions)}</p>
             </div>
             <div className="p-2 rounded-lg bg-white/60">
               <p className="text-[11px] font-bold text-emerald-600">المسترد</p>
-              <p className="font-extrabold text-emerald-700">{fmtNum(deposit?.refundedAmount)}</p>
+              <p className="font-extrabold text-emerald-700">{fmtMoney(deposit?.refundedAmount)}</p>
             </div>
             <div className="p-2 rounded-lg bg-white/60">
               <p className="text-[11px] font-bold text-teal-700">المتبقي</p>
-              <p className="font-extrabold">{fmtNum(remaining)}</p>
+              <p className="font-extrabold">{fmtMoney(remaining)}</p>
             </div>
           </div>
         </div>
@@ -154,8 +155,4 @@ export default function CheckoutModal({ open, student, payments, financial, depo
       </div>
     </Modal>
   )
-}
-
-function fmtNum(v) {
-  return v === null || v === undefined ? '—' : Number(v).toLocaleString('ar-EG')
 }

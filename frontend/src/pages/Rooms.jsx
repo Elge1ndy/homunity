@@ -85,7 +85,7 @@ export default function Rooms() {
                 </div>
 
                 <div className="flex items-center gap-1 mt-4 pt-4 border-t border-slate-100">
-                  <Link to={`/beds`} className="btn-ghost text-primary-700">
+                  <Link to={`/beds?roomId=${r._id}`} className="btn-ghost text-primary-700">
                     <BedDouble size={14} /> الأسرة
                   </Link>
                   <button

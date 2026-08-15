@@ -47,8 +47,8 @@ function deriveStatus(payment) {
 
   if (paid >= amount) return 'paid';
   if (paid > 0) return 'partial';
-  if (!isCurrentOrFuture) return 'upcoming';
   if (dueDatePassed) return 'overdue';
+  if (!isCurrentOrFuture) return 'overdue';
   return 'unpaid';
 }
 

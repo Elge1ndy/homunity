@@ -8,26 +8,33 @@ export default function PWAUpdate() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
 
-    navigator.serviceWorker.ready.then((reg) => {
-      setRegistration(reg)
+    let updateHandler = null
+    let stateHandler = null
+    let controllerHandler = null
+    let reg = null
 
-      reg.addEventListener('updatefound', () => {
+    navigator.serviceWorker.ready.then((registration) => {
+      reg = registration
+      updateHandler = () => {
         const newWorker = reg.installing
         if (!newWorker) return
-        newWorker.addEventListener('statechange', () => {
+        stateHandler = () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
             setUpdateAvailable(true)
           }
-        })
-      })
+        }
+        newWorker.addEventListener('statechange', stateHandler)
+      }
+      reg.addEventListener('updatefound', updateHandler)
     })
 
-    let refreshing = false
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshing) return
-      refreshing = true
-      window.location.reload()
-    })
+    controllerHandler = () => { window.location.reload() }
+    navigator.serviceWorker.addEventListener('controllerchange', controllerHandler)
+
+    return () => {
+      if (reg && updateHandler) reg.removeEventListener('updatefound', updateHandler)
+      if (controllerHandler) navigator.serviceWorker.removeEventListener('controllerchange', controllerHandler)
+    }
   }, [])
 
   const handleUpdate = () => {

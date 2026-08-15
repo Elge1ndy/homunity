@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 const { log } = require('../services/activity');
+const JWT_SECRET = require('../utils/jwt');
 
 function safeUser(u) {
   const { password, ...rest } = u;
@@ -16,7 +17,7 @@ exports.login = async (req, res, next) => {
     if (!user || user.active === false) return res.status(401).json({ message: 'بيانات الدخول غير صحيحة' });
     const ok = await bcrypt.compare(String(password), user.password);
     if (!ok) return res.status(401).json({ message: 'بيانات الدخول غير صحيحة' });
-    const token = jwt.sign({ id: String(user._id) }, process.env.JWT_SECRET || 'homunity_super_secret_change_me_2026', { expiresIn: '30d' });
+    const token = jwt.sign({ id: String(user._id) }, JWT_SECRET, { expiresIn: '30d' });
     await log(req, { action: `تسجيل دخول: ${user.name}`, category: 'auth' });
     res.json({ token, user: safeUser(user) });
   } catch (e) {

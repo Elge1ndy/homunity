@@ -104,18 +104,7 @@ function YearlySection() {
 
   const exportYear = async () => {
     try {
-      const rows = data.months.map((m) => ({
-        'الشهر': monthLabel(m.month),
-        'المتوقع': m.expected,
-        'المحصل': m.collected,
-        'المتبقي': m.remaining,
-        'دافعون': m.paidStudents,
-        'غير دافعين': m.unpaidStudents,
-      }))
-      const res = await fetch('/api/reports/export/payments', { headers: { Authorization: 'Bearer ' + localStorage.getItem('homunity_token') } })
-      if (!res.ok) throw new Error('خطأ')
-      const blob = await res.blob()
-      downloadBlob(`/api/reports/export/students?filter=all`, `yearly-${year}.xlsx`)
+      await downloadBlob(`/api/reports/export/payments?year=${year}`, `yearly-${year}.xlsx`)
     } catch (e) {
       toast(errMsg(e), 'error')
     }

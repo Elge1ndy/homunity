@@ -137,7 +137,7 @@ export default function Login() {
           <div className="h-card flex items-center justify-center gap-2 text-xs text-slate-500 mt-5" style={{ animationDelay: '.15s' }}>
             <ShieldCheck size={14} className="text-emerald-500" />
             <span>
-              الحساب الافتراضي: <span className="font-mono font-bold text-slate-300">admin</span> / <span className="font-mono font-bold text-slate-300">admin123</span>
+              احفظ بيانات الدخول في مكان آمن
             </span>
           </div>
         </div>

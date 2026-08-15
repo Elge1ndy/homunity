@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useRealtime } from '../socket.js'
 import { useToast } from '../context/ToastContext.jsx'
 import Spinner, { EmptyState } from '../components/Spinner.jsx'
@@ -238,6 +239,7 @@ export default function PropertyDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { user } = useAuth()
   const { data, loading, refetch } = useApi(`/properties/${id}`)
   const finData = useApi(`/properties/${id}/finance`)
   const [editOpen, setEditOpen] = useState(false)
@@ -259,7 +261,7 @@ export default function PropertyDetails() {
   if (loading || !data) return <Spinner full />
 
   const { property, stats, floors, apartments, unlinkedApartments, unlinkedRooms } = data
-  const canEdit = true
+  const canEdit = user?.permissions?.properties !== false
   const maintenanceOf = (apId) => (property.maintenance || []).filter((m) => String(m.apartmentId) === String(apId))
 
   const del = async (url, msg) => {

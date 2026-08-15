@@ -80,24 +80,50 @@ async function monthRevenue(month) {
 }
 
 async function yearRevenue(year) {
-  const months = [];
+  const payments = await db.col('Payment').find({});
+  const students = await db.col('Student').find({});
+  
+  const sMap = {};
+  students.forEach((s) => { sMap[String(s._id)] = s; });
+
+  const months = {};
+  for (let m = 1; m <= 12; m++) {
+    const key = `${year}-${String(m).padStart(2, '0')}`;
+    months[key] = { month: key, expected: 0, collected: 0, paidSet: new Set(), unpaidSet: new Set() };
+  }
+
+  payments.forEach((p) => {
+    const monthStr = String(p.month);
+    if (!months[monthStr]) return;
+    months[monthStr].expected += Number(p.amount) || 0;
+    if (p.status === 'paid') {
+      months[monthStr].collected += Number(p.amount) || 0;
+      months[monthStr].paidSet.add(String(p.studentId));
+    } else {
+      months[monthStr].unpaidSet.add(String(p.studentId));
+    }
+  });
+
+  const result = [];
   let totalExpected = 0;
   let totalCollected = 0;
   for (let m = 1; m <= 12; m++) {
     const key = `${year}-${String(m).padStart(2, '0')}`;
-    const r = await monthRevenue(key);
-    months.push({
+    const r = months[key];
+    const expected = r.expected;
+    const collected = r.collected;
+    result.push({
       month: key,
-      expected: r.expected,
-      collected: r.collected,
-      remaining: r.remaining,
-      paidStudents: r.paidStudents,
-      unpaidStudents: r.unpaidStudents,
+      expected,
+      collected,
+      remaining: expected - collected,
+      paidStudents: r.paidSet.size,
+      unpaidStudents: r.unpaidSet.size,
     });
-    totalExpected += r.expected;
-    totalCollected += r.collected;
+    totalExpected += expected;
+    totalCollected += collected;
   }
-  return { year, months, totalExpected, totalCollected, totalRemaining: totalExpected - totalCollected };
+  return { year, months: result, totalExpected, totalCollected, totalRemaining: totalExpected - totalCollected };
 }
 
 module.exports = { monthRevenue, yearRevenue };

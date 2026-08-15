@@ -10,6 +10,7 @@ const db = require('./src/db');
 const { seed } = require('./src/services/seed');
 const errorHandler = require('./src/middleware/error');
 const jwt = require('jsonwebtoken');
+const JWT_SECRET = require('./src/utils/jwt');
 const { Server } = require('socket.io');
 
 const app = express();
@@ -74,7 +75,7 @@ io.use((socket, next) => {
   const token = socket.handshake.auth && socket.handshake.auth.token;
   if (!token) return next(new Error('unauthorized'));
   try {
-    socket.user = jwt.verify(token, process.env.JWT_SECRET || 'homunity_super_secret_change_me_2026');
+    socket.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch {
     next(new Error('unauthorized'));

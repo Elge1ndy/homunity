@@ -116,7 +116,7 @@ exports.remove = async (req, res, next) => {
     }
     await db.col('Invoice').deleteById(req.params.id);
     await log(req, { action: `حذف فاتورة ${invoice.invoiceNumber}`, category: 'invoices', targetType: 'invoice', targetId: req.params.id });
-    emit(req, 'invoice:created', {});
+    emit(req, 'invoice:deleted', {});
     res.json({ ok: true });
   } catch (e) {
     next(e);

@@ -1,29 +1,31 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import Layout from './components/Layout.jsx'
-import Login from './pages/Login.jsx'
-import Dashboard from './pages/Dashboard.jsx'
-import Students from './pages/Students.jsx'
-import StudentDetails from './pages/StudentDetails.jsx'
-import Archived from './pages/Archived.jsx'
-import Rooms from './pages/Rooms.jsx'
-import Beds from './pages/Beds.jsx'
-import Properties from './pages/Properties.jsx'
-import PropertyDetails from './pages/PropertyDetails.jsx'
-import Payments from './pages/Payments.jsx'
-import FinanceDashboard from './pages/FinanceDashboard.jsx'
-import Calendar from './pages/Calendar.jsx'
-import SummerCourses from './pages/SummerCourses.jsx'
-import Bookings from './pages/Bookings.jsx'
-import Invoices from './pages/Invoices.jsx'
-import Reports from './pages/Reports.jsx'
-import Deposits from './pages/Deposits.jsx'
-import Housing from './pages/Housing.jsx'
-import Notifications from './pages/Notifications.jsx'
-import ActivityLog from './pages/ActivityLog.jsx'
-import Settings from './pages/Settings.jsx'
 import Spinner from './components/Spinner.jsx'
 import PWAUpdate from './components/PWAUpdate.jsx'
+
+const Login = lazy(() => import('./pages/Login.jsx'))
+const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
+const Students = lazy(() => import('./pages/Students.jsx'))
+const StudentDetails = lazy(() => import('./pages/StudentDetails.jsx'))
+const Archived = lazy(() => import('./pages/Archived.jsx'))
+const Rooms = lazy(() => import('./pages/Rooms.jsx'))
+const Beds = lazy(() => import('./pages/Beds.jsx'))
+const Properties = lazy(() => import('./pages/Properties.jsx'))
+const PropertyDetails = lazy(() => import('./pages/PropertyDetails.jsx'))
+const Payments = lazy(() => import('./pages/Payments.jsx'))
+const FinanceDashboard = lazy(() => import('./pages/FinanceDashboard.jsx'))
+const Calendar = lazy(() => import('./pages/Calendar.jsx'))
+const SummerCourses = lazy(() => import('./pages/SummerCourses.jsx'))
+const Bookings = lazy(() => import('./pages/Bookings.jsx'))
+const Invoices = lazy(() => import('./pages/Invoices.jsx'))
+const Reports = lazy(() => import('./pages/Reports.jsx'))
+const Deposits = lazy(() => import('./pages/Deposits.jsx'))
+const Housing = lazy(() => import('./pages/Housing.jsx'))
+const Notifications = lazy(() => import('./pages/Notifications.jsx'))
+const ActivityLog = lazy(() => import('./pages/ActivityLog.jsx'))
+const Settings = lazy(() => import('./pages/Settings.jsx'))
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -38,10 +40,19 @@ function Protected({ children }) {
   return children
 }
 
+function PageSpinner() {
+  return (
+    <div className="h-full flex items-center justify-center py-20">
+      <Spinner />
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <>
     <PWAUpdate />
+    <Suspense fallback={<PageSpinner />}>
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route
@@ -61,7 +72,7 @@ export default function App() {
         <Route path="properties" element={<Properties />} />
         <Route path="properties/:id" element={<PropertyDetails />} />
         <Route path="payments" element={<Payments />} />
-<Route path="finance" element={<FinanceDashboard />} />
+        <Route path="finance" element={<FinanceDashboard />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="summer-courses" element={<SummerCourses />} />
         <Route path="bookings" element={<Bookings />} />
@@ -75,6 +86,7 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
     </>
   )
 }

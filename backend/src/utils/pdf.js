@@ -358,7 +358,7 @@ function depositRefundPdf({ student, housing, deposit, record, receiptNo, adminN
   });
 }
 
-module.exports = { invoicePdf, reportPdf, depositReceiptPdf, depositRefundPdf, paymentReceiptPdf };
+
 
 function paymentReceiptPdf({ payment, student, housing, receiptNo, adminName }) {
   return new Promise(async (resolve, reject) => {
@@ -419,3 +419,5 @@ function paymentReceiptPdf({ payment, student, housing, receiptNo, adminName }) 
     }
   });
 }
+
+module.exports = { invoicePdf, reportPdf, depositReceiptPdf, depositRefundPdf, paymentReceiptPdf };

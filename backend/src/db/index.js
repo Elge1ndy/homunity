@@ -205,6 +205,11 @@ function jsonCol(name) {
       const out = arr.filter((d) => !matches(d, filter));
       if (out.length !== arr.length) save(name, out);
     },
+    async deleteMany(filter) {
+      const arr = load(name);
+      const out = arr.filter((d) => !matches(d, filter));
+      if (out.length !== arr.length) save(name, out);
+    },
     async deleteById(id) {
       await this.deleteOne({ _id: id });
     },
@@ -257,6 +262,10 @@ function mongoCol(name, Model) {
     },
     async deleteOne(filter) {
       await Model.deleteOne(filter);
+      notifyChange();
+    },
+    async deleteMany(filter) {
+      await Model.deleteMany(filter);
       notifyChange();
     },
     async deleteById(id) {
@@ -341,26 +350,51 @@ async function deleteIds(name, ids) {
   }
 }
 
+const supabaseCache = new Map();
+const CACHE_TTL = 2000;
+
+function getCachedAll(name) {
+  const cached = supabaseCache.get(name);
+  if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data;
+  return null;
+}
+
+function setCachedAll(name, data) {
+  supabaseCache.set(name, { data, ts: Date.now() });
+}
+
+function invalidateCache(name) {
+  supabaseCache.delete(name);
+}
+
 function supabaseCol(name) {
   return {
     async find(filter, sort) {
-      return sortDocs((await loadAll(name)).filter((d) => matches(d, filter)), sort);
+      let all = getCachedAll(name);
+      if (!all) { all = await loadAll(name); setCachedAll(name, all); }
+      return sortDocs(all.filter((d) => matches(d, filter)), sort);
     },
     async findOne(filter) {
-      return (await loadAll(name)).find((d) => matches(d, filter)) || null;
+      let all = getCachedAll(name);
+      if (!all) { all = await loadAll(name); setCachedAll(name, all); }
+      return all.find((d) => matches(d, filter)) || null;
     },
     async findById(id) {
-      return (await loadAll(name)).find((d) => String(d._id) === String(id)) || null;
+      let all = getCachedAll(name);
+      if (!all) { all = await loadAll(name); setCachedAll(name, all); }
+      return all.find((d) => String(d._id) === String(id)) || null;
     },
     async insert(doc) {
       const d = { _id: genId(), createdAt: now(), updatedAt: now(), ...doc };
       await upsertDocs(name, [d]);
+      invalidateCache(name);
       notifyChange();
       return d;
     },
     async insertMany(docs) {
       const created = docs.map((d) => ({ _id: genId(), createdAt: now(), updatedAt: now(), ...d }));
       await upsertDocs(name, created);
+      invalidateCache(name);
       notifyChange();
       return created;
     },
@@ -377,6 +411,7 @@ function supabaseCol(name) {
       }
       if (changed.length > 0) {
         await patchDocs(name, changed);
+        invalidateCache(name);
         notifyChange();
       }
       return updated;
@@ -392,6 +427,16 @@ function supabaseCol(name) {
       const ids = arr.filter((d) => matches(d, filter)).map((d) => String(d._id));
       if (ids.length > 0) {
         await deleteIds(name, ids);
+        invalidateCache(name);
+        notifyChange();
+      }
+    },
+    async deleteMany(filter) {
+      const arr = await loadAll(name);
+      const ids = arr.filter((d) => matches(d, filter)).map((d) => String(d._id));
+      if (ids.length > 0) {
+        await deleteIds(name, ids);
+        invalidateCache(name);
         notifyChange();
       }
     },
@@ -399,7 +444,9 @@ function supabaseCol(name) {
       await this.deleteOne({ _id: id });
     },
     async count(filter) {
-      return (await loadAll(name)).filter((d) => matches(d, filter)).length;
+      let all = getCachedAll(name);
+      if (!all) { all = await loadAll(name); setCachedAll(name, all); }
+      return all.filter((d) => matches(d, filter)).length;
     },
   };
 }

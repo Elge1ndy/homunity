@@ -1,7 +1,7 @@
 const db = require('../db');
 const structure = require('./structure');
 const paymentsService = require('./payments');
-const depositService = require('../controllers/deposit');
+const depositService = require('./deposit');
 
 const { money } = structure;
 

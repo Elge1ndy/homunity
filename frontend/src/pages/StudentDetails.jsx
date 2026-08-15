@@ -62,15 +62,20 @@ export default function StudentDetails() {
 
   const load = () => {
     setLoading(true)
+    const controller = new AbortController()
     api
       .get(`/students/${id}`)
       .then((r) => setData(r.data))
-      .catch((e) => toast(errMsg(e), 'error'))
+      .catch((e) => { if (e.name !== 'AbortError') toast(errMsg(e), 'error') })
       .finally(() => setLoading(false))
     api.get('/rooms').then((r) => setRooms(r.data.rooms)).catch(() => {})
+    return () => controller.abort()
   }
 
-  useEffect(load, [id])
+  useEffect(() => {
+    const cleanup = load()
+    return cleanup
+  }, [id])
 
   const doAction = async (url, okMsg) => {
     try {

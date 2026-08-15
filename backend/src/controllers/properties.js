@@ -96,7 +96,8 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const property = await findProperty(req.params.id, res);
+    const id = req.params.id;
+    const property = await findProperty(id, res);
     if (!property) return;
     const { name, code, type, gender, address, notes } = req.body;
     const ptype = structure.PROPERTY_TYPES.includes(type) ? type : property.type;
@@ -120,13 +121,14 @@ exports.update = async (req, res, next) => {
 
 exports.remove = async (req, res, next) => {
   try {
-    const property = await findProperty(req.params.id, res);
+    const id = req.params.id;
+    const property = await findProperty(id, res);
     if (!property) return;
     const rooms = await db.col('Room').find({ propertyId: String(property._id) });
     for (const r of rooms) {
       await db.col('Room').findByIdAndUpdate(r._id, { $set: { propertyId: '', apartmentId: '', floorId: '' } });
     }
-    await db.col('Property').findByIdAndRemove(id);
+    await db.col('Property').deleteById(id);
     await log(req, { action: `تم حذف العقار ${property.name}`, category: 'properties', targetType: 'property', targetId: id });
     emit(req, 'property:updated', {});
     res.json({ message: 'تم الحذف بنجاح' });

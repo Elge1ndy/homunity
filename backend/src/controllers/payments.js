@@ -21,10 +21,17 @@ async function attachStudent(rows) {
   }));
 }
 
+let lastRefresh = 0;
+const REFRESH_INTERVAL = 5 * 60 * 1000;
+
 exports.list = async (req, res, next) => {
   try {
-    const housing = await db.col('Housing').findOne({});
-    await paymentsService.refreshOverdue(housing ? housing.dueDay : 1);
+    const now = Date.now();
+    if (now - lastRefresh > REFRESH_INTERVAL) {
+      const housing = await db.col('Housing').findOne({});
+      await paymentsService.refreshOverdue(housing ? housing.dueDay : 1);
+      lastRefresh = now;
+    }
     const filter = {};
     if (req.query.month) filter.month = req.query.month;
     if (req.query.status && req.query.status !== 'all') filter.status = req.query.status;

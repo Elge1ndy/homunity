@@ -6,6 +6,7 @@ const emit = require('../utils/realtime');
 const paymentsService = require('../services/payments');
 const notifications = require('../services/notifications');
 const depositService = require('./deposit');
+const structure = require('../services/structure');
 
 async function nextStudentId() {
   const students = await db.col('Student').find({});
@@ -380,8 +381,8 @@ exports.remove = async (req, res, next) => {
     if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
     await freeBed(student.roomId, student.bedNumber);
     await db.col('Student').deleteById(id);
-    await db.col('Payment').deleteOne({ studentId: String(id) });
-    await db.col('Invoice').deleteOne({ studentId: String(id) });
+    await db.col('Payment').deleteMany({ studentId: String(id) });
+    await db.col('Invoice').deleteMany({ studentId: String(id) });
     await log(req, { action: `حذف الطالب ${student.name} (${student.studentId}) نهائيًا`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
     emit(req, 'room:updated', {});

@@ -50,8 +50,29 @@ const RoomSchema = new Schema(
     monthlyRent: { type: Number, default: 0 },
     floor: String,
     status: { type: String, default: 'active' },
-    beds: [{ bedNumber: Number, studentId: String }],
+    beds: [{ bedNumber: Number, studentId: String, status: { type: String, default: 'available' } }],
     notes: String,
+    propertyId: String,
+    apartmentId: String,
+    floorId: String,
+  },
+  { timestamps: true }
+);
+
+const PropertySchema = new Schema(
+  {
+    name: String,
+    code: String,
+    type: { type: String, enum: ['house', 'apartment'], default: 'house' },
+    gender: { type: String, enum: ['', 'male', 'female'], default: '' },
+    address: String,
+    notes: String,
+    status: { type: String, default: 'active' },
+    floors: [{ _id: String, name: String, code: String, status: { type: String, default: 'active' }, sort: Number }],
+    apartments: [{ _id: String, name: String, code: String, status: { type: String, default: 'active' }, monthlyRent: Number, floorId: String }],
+    roomLinks: [{ _id: String, roomId: String, apartmentId: String, floorId: String }],
+    maintenance: [{ _id: String, apartmentId: String, name: String, amount: Number, date: String, notes: String, by: String, createdAt: Date }],
+  expenses: [{ _id: String, apartmentId: String, name: String, amount: Number, date: String, notes: String, by: String, createdAt: Date }],
   },
   { timestamps: true }
 );
@@ -65,7 +86,10 @@ const StudentSchema = new Schema(
     email: String,
     roomId: String,
     bedNumber: Number,
+    propertyId: String,
     monthlyRent: { type: Number, default: 0 },
+    transfers: [Object],
+    rentHistory: [Object],
     checkInDate: String,
     checkOutDate: String,
     status: { type: String, default: 'active' },
@@ -83,12 +107,21 @@ const PaymentSchema = new Schema(
     amount: { type: Number, default: 0 },
     dueDate: String,
     status: { type: String, default: 'unpaid' },
-    paidAt: Date,
+    paidAmount: { type: Number, default: 0 },
     proof: String,
     recordedBy: String,
     recordedByName: String,
     history: [{ at: Date, by: String, action: String }],
     overdueNotified: { type: Boolean, default: false },
+    transactions: [
+      {
+        amount: { type: Number, default: 0 },
+        date: { type: Date, default: Date.now },
+        note: { type: String, default: '' },
+        method: { type: String, default: 'cash' },
+        by: { type: String, default: '' },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -133,13 +166,39 @@ const NotificationSchema = new Schema(
   { timestamps: true }
 );
 
+const SummerCourseSchema = new Schema(
+  {
+    studentId: String,
+    studentName: String,
+    studentCode: String,
+    roomId: String,
+    bedNumber: Number,
+    propertyId: String,
+    propertyName: String,
+    apartmentId: String,
+    apartmentName: String,
+    floorId: String,
+    floorName: String,
+    fromDate: String,
+    toDate: String,
+    rent: { type: Number, default: 0 },
+    deposit: { type: Number, default: 0 },
+    payments: [{ _id: String, amount: Number, date: String, method: String, note: String, by: String, createdAt: Date }],
+    status: { type: String, default: 'active' },
+    endedAt: Date,
+  },
+  { timestamps: true }
+);
+
 module.exports = {
   User: mongoose.model('User', UserSchema),
   Housing: mongoose.model('Housing', HousingSchema),
+  Property: mongoose.model('Property', PropertySchema),
   Room: mongoose.model('Room', RoomSchema),
   Student: mongoose.model('Student', StudentSchema),
   Payment: mongoose.model('Payment', PaymentSchema),
   Invoice: mongoose.model('Invoice', InvoiceSchema),
   ActivityLog: mongoose.model('ActivityLog', ActivityLogSchema),
   Notification: mongoose.model('Notification', NotificationSchema),
+  SummerCourse: mongoose.model('SummerCourse', SummerCourseSchema),
 };

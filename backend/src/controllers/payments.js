@@ -49,6 +49,53 @@ exports.byStudent = async (req, res, next) => {
   }
 };
 
+exports.pay = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const { amount: tranAmount, date: tranDate, method = 'cash', note = '', proof } = req.body || {};
+    if (tranAmount === undefined || Number(tranAmount) <= 0) return res.status(400).json({ message: 'مبلغ الدفعة يجب أن يكون أكبر من صفر' });
+    const payment = await db.col('Payment').findById(id);
+    if (!payment) return res.status(404).json({ message: 'الدفعة غير موجودة' });
+
+    const newData = paymentsService.applyTransaction(payment, { amount: tranAmount, date: tranDate, method, note });
+    const set = {
+      paidAmount: newData.paidAmount,
+      status: newData.status,
+      transactions: newData.transactions,
+    };
+    if (proof !== undefined) set.proof = proof || payment.proof || '';
+    const updated = await db.col('Payment').findByIdAndUpdate(id, { $set: set });
+    await log(req, {
+      action: `تم تسجيل دفع ${updated.month} للطالب ${updated.student?.name || ''} بقيمة ${tranAmount}`,
+      category: 'payments',
+      targetType: 'payment',
+      targetId: String(updated._id),
+    });
+    emit(req, 'payment:updated', {});
+    emit(req, 'student:updated', {});
+    res.json({ payment: updated });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.receipt = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const payment = await db.col('Payment').findById(id);
+    if (!payment) return res.status(404).json({ message: 'الدفعة غير موجودة' });
+    const student = await db.col('Student').findById(payment.studentId);
+    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    const housing = await db.col('Housing').findOne({}) || {};
+    const receiptNo = `RCP-${String(payment.month).replace('-', '')}-${String(payment._id).slice(-6).toUpperCase()}`;
+    const pdfService = require('../utils/pdf');
+    const pdfBuffer = await pdfService.paymentReceiptPdf({ payment, student, housing, receiptNo, adminName: req.user ? req.user.name : '' });
+    res.type('application/pdf').send(pdfBuffer);
+  } catch (e) {
+    next(e);
+  }
+};
+
 exports.markPaid = async (req, res, next) => {
   try {
     const id = req.params.id;
@@ -71,13 +118,13 @@ exports.markPaid = async (req, res, next) => {
       action: `تسجيل دفع ${payment.month} للطالب ${student ? student.name : ''} بقيمة ${payment.amount}`,
       category: 'payments',
       targetType: 'payment',
-      targetId: id,
+      targetId: String(updated._id),
     });
     await notifications.create({
       type: 'payment_recorded',
       title: 'دفعة مسجلة',
       message: `تم تسجيل دفع ${payment.month} للطالب ${student ? student.name : ''} بقيمة ${payment.amount}`,
-      data: { paymentId: String(id), studentId: payment.studentId },
+      data: { paymentId: String(updated._id), studentId: payment.studentId },
     });
     emit(req, 'payment:updated', {});
     emit(req, 'student:updated', {});
@@ -95,7 +142,7 @@ exports.markUnpaid = async (req, res, next) => {
     if (payment.status !== 'paid') return res.status(400).json({ message: 'الدفعة ليست مدفوعة' });
     const history = (payment.history || []).concat([{ at: new Date().toISOString(), by: req.user.name, action: 'تم التراجع عن الدفع' }]);
     const updated = await db.col('Payment').findByIdAndUpdate(id, { $set: { status: 'unpaid', paidAt: null, history } });
-    await log(req, { action: `التراجع عن دفع ${payment.month} للطالب`, category: 'payments', targetType: 'payment', targetId: id });
+    await log(req, { action: `التراجع عن دفع ${payment.month} للطالب`, category: 'payments', targetType: 'payment', targetId: String(updated._id) });
     emit(req, 'payment:updated', {});
     emit(req, 'student:updated', {});
     res.json({ payment: updated });
@@ -114,7 +161,7 @@ exports.update = async (req, res, next) => {
     const set = {};
     if (amount !== undefined) set.amount = Number(amount);
     const updated = await db.col('Payment').findByIdAndUpdate(id, { $set: set });
-    await log(req, { action: `تعديل مبلغ دفعة ${payment.month} إلى ${updated.amount}`, category: 'payments', targetType: 'payment', targetId: id });
+    await log(req, { action: `تعديل مبلغ دفعة ${payment.month} إلى ${updated.amount}`, category: 'payments', targetType: 'payment', targetId: String(updated._id) });
     emit(req, 'payment:updated', {});
     res.json({ payment: updated });
   } catch (e) {
@@ -147,6 +194,43 @@ exports.currentMonth = async (req, res, next) => {
     const month = paymentsService.monthKey(new Date());
     const data = await revenue.monthRevenue(month);
     res.json({ month, ...data });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.calendar = async (req, res, next) => {
+  try {
+    const month = req.query.month || paymentsService.monthKey(new Date());
+    const payments = await db.col('Payment').find({ month });
+    const students = await db.col('Student').find({});
+    const sMap = {};
+    students.forEach((s) => {
+      sMap[String(s._id)] = s;
+    });
+    const days = {};
+    for (const p of payments) {
+      const item = {
+        _id: String(p._id),
+        studentId: String(p.studentId),
+        student: sMap[String(p.studentId)]
+          ? { _id: String(sMap[String(p.studentId)]._id), name: sMap[String(p.studentId)].name, studentId: sMap[String(p.studentId)].studentId, phone: sMap[String(p.studentId)].phone }
+          : null,
+        amount: p.amount,
+        status: p.status,
+        dueDate: p.dueDate,
+        paidAt: p.paidAt,
+        proof: p.proof,
+      };
+      if (!days[p.dueDate]) days[p.dueDate] = [];
+      days[p.dueDate].push(item);
+      if (p.status === 'paid' && p.paidAt) {
+        const paidDay = new Date(p.paidAt).toISOString().slice(0, 10);
+        if (!days[paidDay]) days[paidDay] = [];
+        if (!days[paidDay].some((x) => x._id === item._id)) days[paidDay].push(item);
+      }
+    }
+    res.json({ month, days });
   } catch (e) {
     next(e);
   }

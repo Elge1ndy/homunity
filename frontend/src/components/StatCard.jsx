@@ -4,6 +4,7 @@ const ACCENTS = {
   amber: 'text-amber-700 bg-amber-50',
   red: 'text-red-700 bg-red-50',
   slate: 'text-slate-700 bg-slate-50',
+  emerald: 'text-emerald-700 bg-emerald-50',
 }
 
 export default function StatCard({ icon: Icon, label, value, sub, accent = 'teal' }) {

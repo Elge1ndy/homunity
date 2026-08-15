@@ -1,5 +1,6 @@
 const db = require('../db');
-const xlsx = require('xlsx');
+const xlsx = require('xlsx-js-style');
+const excel = require('../utils/excel');
 const { reportPdf } = require('../utils/pdf');
 const revenue = require('../services/revenue');
 const paymentsService = require('../services/payments');
@@ -67,22 +68,32 @@ exports.exportStudents = async (req, res, next) => {
     rooms.forEach((r) => {
       roomMap[String(r._id)] = r;
     });
-    const rows = students.map((s) => ({
-      'رقم الطالب': s.studentId,
-      'الاسم': s.name,
-      'الهاتف': s.phone,
-      'الجامعة': s.university,
-      'الغرفة': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
-      'السرير': s.bedNumber || '',
-      'الإيجار الشهري': s.monthlyRent,
-      'تاريخ الدخول': s.checkInDate,
-      'تاريخ الخروج': s.checkOutDate,
-      'الحالة': s.status,
-    }));
-    const ws = xlsx.utils.json_to_sheet(rows);
+    const statusAr = { active: 'نشط', ended: 'منتهي', archived: ' مؤرشف' };
+    const depositService = require('./deposit');
+    const rows = students.map((s) => {
+      const d = depositService.compute(s);
+      return {
+        'الاسم': s.name,
+        'رقم التليفون': s.phone,
+        'الجامعة': s.university || '',
+        'الغرفة': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
+        'السرير': s.bedNumber || '',
+        'الإيجار الشهري': s.monthlyRent,
+        'التأمين': d.originalAmount,
+        'حالة دفع التأمين': { unpaid: 'غير مدفوع', paid: 'مدفوع' }[d.paymentStatus] || d.paymentStatus,
+        'تاريخ دفع التأمين': d.paymentDate,
+        'إجمالي الخصومات': d.totalDeductions,
+        'المسترد': d.refundedAmount,
+        'المتبقي': d.remainingAmount,
+        'حالة الاسترداد': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
+        'تاريخ الدخول': s.checkInDate || '',
+        'الحالة': statusAr[s.status] || s.status || '',
+      };
+    });
+    const ws = excel.jsonToSheet(rows);
     const wb = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(wb, ws, 'Students');
-    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const buf = excel.writeBuffer(wb);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=students-${filter}.xlsx`);
     res.send(buf);
@@ -102,13 +113,13 @@ exports.exportPayments = async (req, res, next) => {
       'الشهر': p.month,
       'المبلغ': p.amount,
       'تاريخ الاستحقاق': p.dueDate,
-      'الحالة': p.status,
+      'الحالة': { paid: 'مدفوع', partial: 'جزئي', unpaid: 'غير مدفوع', overdue: 'متأخر' }[p.status] || p.status,
       'تاريخ الدفع': p.paidAt ? new Date(p.paidAt).toISOString().slice(0, 10) : '',
     }));
-    const ws = xlsx.utils.json_to_sheet(rows);
+    const ws = excel.jsonToSheet(rows);
     const wb = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(wb, ws, 'Payments');
-    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const buf = excel.writeBuffer(wb);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=payments-${month}.xlsx`);
     res.send(buf);
@@ -129,13 +140,13 @@ exports.exportRooms = async (req, res, next) => {
         'الإيجار الشهري': r.monthlyRent,
         'الطلاب الحاليون': occupied,
         'الأسرة المتاحة': r.capacity - occupied,
-        'الحالة': r.status,
+        'الحالة': { active: 'نشط', maintenance: 'صيانة' }[r.status] || r.status,
       };
     });
-    const ws = xlsx.utils.json_to_sheet(rows);
+    const ws = excel.jsonToSheet(rows);
     const wb = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(wb, ws, 'Rooms');
-    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const buf = excel.writeBuffer(wb);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=rooms.xlsx`);
     res.send(buf);

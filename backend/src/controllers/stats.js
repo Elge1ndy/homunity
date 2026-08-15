@@ -1,12 +1,14 @@
 const db = require('../db');
 const revenue = require('../services/revenue');
 const paymentsService = require('../services/payments');
+const depositService = require('./deposit');
 
 exports.stats = async (req, res, next) => {
   try {
-    const [students, rooms, notifications, activity] = await Promise.all([
+    const [students, rooms, housings, notifications, activity] = await Promise.all([
       db.col('Student').find({}),
       db.col('Room').find({}),
+      db.col('Housing').find({}),
       db.col('Notification').find({}, { createdAt: -1 }),
       db.col('ActivityLog').find({}, { createdAt: -1 }),
     ]);
@@ -44,6 +46,23 @@ exports.stats = async (req, res, next) => {
 
     const unreadNotifications = notifications.filter((n) => !(n.readBy || []).includes(String(req.user._id))).length;
 
+    const housingNameMap = {};
+    housings.forEach((h) => {
+      housingNameMap[String(h._id)] = h.name;
+    });
+
+    const depositTotals = depositService.makeTotals(students.map((s) => ({ deposit: depositService.compute(s) })));
+    const housingMap = {};
+    students.forEach((s) => {
+      const hid = String(s.housingId || '');
+      if (hid && !housingMap[hid]) housingMap[hid] = { housingId: hid, housingName: housingNameMap[hid] || 'سكن', required: 0, paid: 0, deductions: 0, refunded: 0, held: 0 };
+    });
+    Object.keys(housingMap).forEach((hid) => {
+      const subset = students.filter((s) => String(s.housingId || '') === hid);
+      const t = depositService.makeTotals(subset.map((s) => ({ deposit: depositService.compute(s) })));
+      housingMap[hid] = { ...housingMap[hid], ...t };
+    });
+
     res.json({
       students: {
         total: students.length,
@@ -55,6 +74,7 @@ exports.stats = async (req, res, next) => {
       occupancy: totalBeds ? Math.round((occupied / totalBeds) * 100) : 0,
       roomsCount: rooms.length,
       currentMonth: { month: curMonth, ...monthData },
+      deposits: { totals: depositTotals, perHousing: Object.values(housingMap) },
       unpaidList,
       expiring,
       unreadNotifications,

@@ -34,6 +34,50 @@ function dueDateFor(month, dueDay) {
   return `${y}-${m}-${String(day).padStart(2, '0')}`;
 }
 
+function deriveStatus(payment) {
+  const now = new Date();
+  const currentMonthKey = monthKey(now);
+  const amount = Number(payment.amount) || 0;
+  const paid = Number(payment.paidAmount) || 0;
+  const month = String(payment.month);
+  const due = String(payment.dueDate);
+
+  const isCurrentOrFuture = month >= currentMonthKey;
+  const dueDatePassed = due && due < currentMonthKey;
+
+  if (paid >= amount) return 'paid';
+  if (paid > 0) return 'partial';
+  if (!isCurrentOrFuture) return 'upcoming';
+  if (dueDatePassed) return 'overdue';
+  return 'unpaid';
+}
+
+function applyTransaction(payment, { amount: tranAmount, date: tranDate, method = 'cash', note = '' }) {
+  const paid = Number(payment.paidAmount) || 0;
+  const newPaid = Math.min(paid + Number(tranAmount), Number(payment.amount));
+  const transactions = [...(payment.transactions || []), {
+    amount: Number(tranAmount),
+    date: tranDate ? new Date(tranDate).toISOString() : new Date(),
+    method,
+    note,
+  }];
+  return {
+    ...payment,
+    paidAmount: newPaid,
+    transactions,
+    status: deriveStatus({ ...payment, paidAmount: newPaid }),
+  };
+}
+
+function resetPayment(payment) {
+  return {
+    ...payment,
+    paidAmount: 0,
+    transactions: [],
+    status: 'unpaid',
+  };
+}
+
 async function generateForStudent(student, dueDay) {
   const checkIn = dateFromYMD(student.checkInDate);
   if (!checkIn) return [];
@@ -49,7 +93,11 @@ async function generateForStudent(student, dueDay) {
       amount: Number(student.monthlyRent) || 0,
       dueDate: dueDateFor(month, dueDay),
       status: 'unpaid',
+      paidAt: null,
+      proof: '',
       history: [],
+      paidAmount: 0,
+      transactions: [],
     });
     created.push(p);
   }
@@ -60,7 +108,7 @@ async function updateRentFor(student, newRent) {
   const curMonth = monthKey(new Date());
   const payments = await db.col('Payment').find({ studentId: String(student._id) });
   for (const p of payments) {
-    if (p.status !== 'paid' && p.month >= curMonth && Number(p.amount) !== Number(newRent)) {
+    if (p.month >= curMonth && Number(p.amount) !== Number(newRent)) {
       await db.col('Payment').findByIdAndUpdate(p._id, { $set: { amount: Number(newRent) } });
     }
   }
@@ -69,26 +117,90 @@ async function updateRentFor(student, newRent) {
 async function refreshOverdue(dueDay) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const unpaid = await db.col('Payment').find({ status: 'unpaid' });
-  const notifications = require('./notifications');
-  let count = 0;
-  for (const p of unpaid) {
-    const d = dateFromYMD(p.dueDate);
-    if (d && d < today && !p.overdueNotified) {
-      await db.col('Payment').findByIdAndUpdate(p._id, { $set: { status: 'overdue', overdueNotified: true } });
-      const student = await db.col('Student').findById(p.studentId);
-      if (student) {
-        await notifications.create({
-          type: 'payment_overdue',
-          title: 'دفعة متأخرة',
-          message: `دفعة شهر ${p.month} للطالب ${student.name} (${student.studentId}) أصبحت متأخرة.`,
-          data: { paymentId: String(p._id), studentId: String(student._id) },
-        });
-      }
-      count++;
+  const students = await db.col('Student').find({ status: 'active' });
+  const sMap = {};
+  students.forEach((s) => { sMap[String(s._id)] = s; });
+  let changed = 0;
+  const payments = await db.col('Payment').find({});
+  for (const p of payments) {
+    const s = sMap[String(p.studentId)];
+    const status = deriveStatus(p);
+    if (p.status !== status) {
+      const history = (p.history || []).concat([{ at: new Date().toISOString(), by: s ? s.name || '' : '', action: `وضع الحالة: ${status}` }]);
+      await db.col('Payment').findByIdAndUpdate(p._id, { $set: { status, history } });
+      changed++;
     }
   }
-  return count;
+  return changed;
+}
+
+async function studentFinancial(student) {
+  const payments = await db.col('Payment').find({ studentId: String(student._id) });
+  const totalExpected = payments.reduce((s, p) => s + Number(p.amount) || 0, 0);
+  const totalPaid = payments.reduce((s, p) => s + Number(p.paidAmount) || 0, 0);
+  const totalRemaining = totalExpected - totalPaid;
+
+  // overdue = months past due with not fully paid, upcoming = future months
+  const now = new Date();
+  const currentMonthKey = monthKey(now);
+  let totalOverdue = 0;
+  let totalUpcoming = 0;
+  let monthsPaid = 0;
+  let monthsUnpaid = 0;
+  let monthsPartial = 0;
+  let monthsOverdue = 0;
+  let monthsUpcoming = 0;
+
+  for (const p of payments) {
+    const status = deriveStatus(p);
+    const mKey = String(p.month);
+    if (status === 'paid') monthsPaid++;
+    else if (status === 'partial') monthsPartial++;
+    else if (status === 'overdue') {
+      monthsOverdue++;
+      totalOverdue += Number(p.amount) - Number(p.paidAmount) || 0;
+    } else if (status === 'upcoming') {
+      monthsUpcoming++;
+      totalUpcoming += Number(p.amount) || 0;
+    } else {
+      monthsUnpaid++;
+    }
+  }
+
+  const totalDue = totalRemaining - totalUpcoming; // outstanding up to current month
+
+  return {
+    totalExpected,
+    totalPaid,
+    totalRemaining,
+    totalOverdue,
+    totalUpcoming,
+    totalDue,
+    monthsPaid,
+    monthsUnpaid,
+    monthsPartial,
+    monthsOverdue,
+    monthsUpcoming,
+  };
+}
+
+async function studentLedger(student) {
+  const payments = await db.col('Payment').find({ studentId: String(student._id) }, { month: 1 });
+  const result = [];
+  for (const p of payments) {
+    const status = deriveStatus(p);
+    result.push({
+      month: p.month,
+      amount: Number(p.amount) || 0,
+      dueDate: p.dueDate,
+      paidAmount: Number(p.paidAmount) || 0,
+      remaining: (Number(p.amount) || 0) - (Number(p.paidAmount) || 0),
+      status,
+      paidAt: p.paidAt,
+      transactions: (p.transactions || []).map((t) => ({ amount: Number(t.amount) || 0, date: t.date, method: t.method || 'cash', note: t.note || '', by: t.by || '' })),
+    });
+  }
+  return result;
 }
 
 async function scanExpiring(days = 30) {
@@ -133,6 +245,11 @@ module.exports = {
   generateForStudent,
   updateRentFor,
   refreshOverdue,
+  deriveStatus,
+  applyTransaction,
+  resetPayment,
+  studentFinancial,
+  studentLedger,
   scanExpiring,
   notifyExpiring,
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Bell, CheckCheck } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
@@ -58,7 +58,7 @@ export default function Notifications() {
         )}
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         {loading ? (
           <Spinner full />
         ) : !notifications.length ? (

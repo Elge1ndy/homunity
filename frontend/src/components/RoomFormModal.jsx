@@ -5,31 +5,67 @@ import Spinner from './Spinner.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { errMsg } from '../hooks/useApi.js'
 
-export default function RoomFormModal({ open, onClose, onSaved, room }) {
+export default function RoomFormModal({ open, onClose, onSaved, room, defaults }) {
   const { toast } = useToast()
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (open) {
+      const prices = {}
+      if (room) {
+        ;(room.beds || []).forEach((b) => {
+          if (b.monthlyRent) prices[b.bedNumber] = b.monthlyRent
+        })
+      }
+      setPrices(prices)
       setForm(
         room
-          ? { number: room.number, type: room.type, capacity: room.capacity, monthlyRent: room.monthlyRent, floor: room.floor || '', status: room.status, notes: room.notes || '' }
-          : { number: '', type: 'shared', capacity: 4, monthlyRent: '', floor: '', status: 'active', notes: '' }
+          ? {
+              number: room.number,
+              type: room.type,
+              capacity: room.capacity,
+              monthlyRent: room.monthlyRent,
+              floor: room.floor || '',
+              status: room.status,
+              notes: room.notes || '',
+              propertyId: room.propertyId || '',
+              apartmentId: room.apartmentId || '',
+              floorId: room.floorId || '',
+            }
+          : {
+              number: '',
+              type: 'shared',
+              capacity: 4,
+              monthlyRent: '',
+              floor: '',
+              status: 'active',
+              notes: '',
+              propertyId: defaults?.propertyId || '',
+              apartmentId: defaults?.apartmentId || '',
+              floorId: defaults?.floorId || '',
+            }
       )
     }
-  }, [open, room])
+  }, [open, room, defaults])
 
+  const [prices, setPrices] = useState({})
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
 
   const submit = async () => {
     setSaving(true)
     try {
+      const bedPrices = {}
+      for (let i = 1; i <= Number(form.capacity); i++) {
+        const v = prices[i]
+        bedPrices[i] = v !== undefined && v !== '' ? Number(v) : null
+      }
+      const payload = { ...form, bedPrices }
       if (room) {
-        await api.put(`/rooms/${room._id}`, form)
+        await api.put(`/rooms/${room._id}`, payload)
         toast('تم تحديث الغرفة')
       } else {
-        await api.post('/rooms', form)
+        await api.post('/rooms', payload)
         toast('تمت إضافة الغرفة')
       }
       onSaved()
@@ -65,10 +101,30 @@ export default function RoomFormModal({ open, onClose, onSaved, room }) {
         <div>
           <label className="label">الإيجار الشهري</label>
           <input className="input" type="number" dir="ltr" value={form.monthlyRent} onChange={set('monthlyRent')} />
+          <p className="text-[11px] text-slate-400 mt-1">السعر الافتراضي للأسرة التي لا سعر لها</p>
         </div>
         <div>
           <label className="label">الطابق</label>
           <input className="input" value={form.floor} onChange={set('floor')} />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="label">أسعار الأسرة (اختياري)</label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {Array.from({ length: Number(form.capacity) || 0 }, (_, i) => i + 1).map((n) => (
+              <div key={n}>
+                <label className="label !mb-1 text-[11px]">سرير {n}</label>
+                <input
+                  className="input"
+                  type="number"
+                  dir="ltr"
+                  placeholder={form.monthlyRent ? `يأخذ ${form.monthlyRent}` : 'من سعر الغرفة'}
+                  value={prices[n] ?? ''}
+                  onChange={(e) => setPrices((p) => ({ ...p, [n]: e.target.value }))}
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-slate-400 mt-1">اترك السرير فارغًا ليأخذ سعر الغرفة تلقائيًا — أو حدد له سعرًا خاصًا</p>
         </div>
         <div>
           <label className="label">الحالة</label>

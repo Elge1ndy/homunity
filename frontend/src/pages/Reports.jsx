@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { FileDown, FileText, Download, Wallet, BarChart3, FileSpreadsheet, DoorOpen } from 'lucide-react'
 import { useApi, errMsg } from '../hooks/useApi.js'
 import { useToast } from '../context/ToastContext.jsx'
@@ -32,7 +32,7 @@ function MonthlySection() {
         <Spinner />
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
+          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-5">
             <div className="p-4 rounded-xl bg-slate-50">
               <p className="text-xs font-bold text-slate-500">المتوقع</p>
               <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(data.expected)}</p>
@@ -52,6 +52,11 @@ function MonthlySection() {
             <div className="p-4 rounded-xl bg-red-50">
               <p className="text-xs font-bold text-red-600">غير دافعين</p>
               <p className="text-lg font-extrabold text-red-700 mt-1">{data.unpaidStudents}</p>
+            </div>
+            <div className="p-4 rounded-xl bg-teal-50">
+              <p className="text-xs font-bold text-teal-600">تأمين محصل</p>
+              <p className="text-lg font-extrabold text-teal-700 mt-1">{fmtMoney(data.depositsCollected?.sum)}</p>
+              <p className="text-[10px] text-teal-500">{data.depositsCollected?.count || 0} وصل — مسترد {fmtMoney(data.depositsRefunded?.sum)} — خصم {fmtMoney(data.depositsDeducted?.sum)}</p>
             </div>
           </div>
 
@@ -154,7 +159,7 @@ function YearlySection() {
           </div>
           <div className="mt-4 p-4 rounded-xl bg-primary-50 flex items-center justify-between">
             <span className="font-bold text-primary-800">إجمالي المحصل {year}</span>
-            <span className="font-extrabold text-lg text-primary-900">{fmtMoney(data.totalCollected)} EGP</span>
+            <span className="font-extrabold text-lg text-primary-900">{fmtMoney(data.totalCollected)} ج.م</span>
           </div>
         </>
       )}

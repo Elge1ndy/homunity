@@ -1,6 +1,6 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Pencil, Trash2, BedDouble, Eye } from 'lucide-react'
+import { Plus, Pencil, Trash2, BedDouble } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
 import { useRealtime } from '../socket.js'
@@ -62,7 +62,12 @@ export default function Rooms() {
                 <div className="flex items-start justify-between">
                   <div>
                     <h3 className="text-lg font-extrabold text-slate-800">غرفة {r.number}</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">{TYPE_LABEL[r.type] || r.type} {r.floor ? `• الطابق ${r.floor}` : ''}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {TYPE_LABEL[r.type] || r.type} {r.floor ? `• الطابق ${r.floor}` : ''}
+                      {r.floorName && ` • ${r.floorName}`}
+                      {r.apartmentName && ` • شقة ${r.apartmentName}`}
+                      {r.propertyName && ` • ${r.propertyName}`}
+                    </p>
                   </div>
                   <Badge label={r.status === 'active' ? 'نشطة' : 'متوقفة'} cls={r.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'} />
                 </div>
@@ -72,7 +77,7 @@ export default function Rooms() {
                     <span>
                       {occupied} / {r.capacity} مشغول
                     </span>
-                    <span>{fmtMoney(r.monthlyRent)} EGP</span>
+                    <span>{fmtMoney(r.monthlyRent)} ج.م</span>
                   </div>
                   <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full rounded-full ${pct >= 100 ? 'bg-red-500' : pct >= 50 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${pct}%` }} />

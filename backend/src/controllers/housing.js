@@ -1,6 +1,7 @@
 const db = require('../db');
 const { log } = require('../services/activity');
 const emit = require('../utils/realtime');
+const { saveUploaded } = require('../middleware/upload');
 
 exports.get = async (req, res, next) => {
   try {
@@ -11,9 +12,41 @@ exports.get = async (req, res, next) => {
   }
 };
 
+exports.public = async (req, res, next) => {
+  try {
+    const housing = await db.col('Housing').findOne({});
+    res.json({
+      housing: housing
+        ? { name: housing.name || '', watermark: housing.watermark || '', logo: housing.logo || '', images: housing.images || [] }
+        : null,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+exports.uploadLogo = async (req, res, next) => {
+  try {
+    const f = req.file;
+    if (!f) return res.status(400).json({ message: 'ارفع صورة الشعار أولًا' });
+    const logo = await saveUploaded(f, 'images', 'logo');
+    let housing = await db.col('Housing').findOne({});
+    if (housing) {
+      housing = await db.col('Housing').findByIdAndUpdate(housing._id, { $set: { logo } });
+    } else {
+      housing = await db.col('Housing').insert({ logo, images: [] });
+    }
+    await log(req, { action: 'تحديث شعار البرنامج', category: 'housing', targetType: 'housing', targetId: housing._id });
+    emit(req, 'housing:updated', { housing });
+    res.json({ housing });
+  } catch (e) {
+    next(e);
+  }
+};
+
 exports.update = async (req, res, next) => {
   try {
-    const { name, address, phone, description, services, rules, dueDay, currency } = req.body;
+    const { name, address, phone, description, services, rules, dueDay, currency, watermark, logo } = req.body;
     const set = {};
     if (name !== undefined) set.name = name;
     if (address !== undefined) set.address = address;
@@ -23,6 +56,8 @@ exports.update = async (req, res, next) => {
     if (rules !== undefined) set.rules = rules;
     if (dueDay !== undefined) set.dueDay = Math.min(Math.max(Number(dueDay) || 1, 1), 28);
     if (currency !== undefined) set.currency = currency;
+    if (watermark !== undefined) set.watermark = String(watermark).trim();
+    if (logo !== undefined) set.logo = logo === '' ? '' : String(logo);
     let housing = await db.col('Housing').findOne({});
     if (housing) {
       housing = await db.col('Housing').findByIdAndUpdate(housing._id, { $set: set });
@@ -40,7 +75,8 @@ exports.update = async (req, res, next) => {
 exports.uploadImages = async (req, res, next) => {
   try {
     const files = req.files || [];
-    const urls = files.map((f) => `/uploads/images/${f.filename}`);
+    const urls = [];
+    for (const f of files) urls.push(await saveUploaded(f, 'images', 'img'));
     let housing = await db.col('Housing').findOne({});
     if (housing) {
       const images = (housing.images || []).concat(urls);

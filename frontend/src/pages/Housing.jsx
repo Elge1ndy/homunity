@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
-import { Save, Upload, X, Building2 } from 'lucide-react'
+﻿import { useEffect, useState, useRef } from 'react'
+import { Save, Upload, UploadCloud, X, Building2, Trash2 } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
 import { useRealtime } from '../socket.js'
@@ -16,7 +16,9 @@ export default function Housing() {
   const [rulesText, setRulesText] = useState('')
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [logoUp, setLogoUp] = useState(false)
   const fileRef = useRef(null)
+  const logoRef = useRef(null)
 
   const canEdit = user?.permissions?.settings !== false
   const housing = data?.housing
@@ -29,7 +31,8 @@ export default function Housing() {
       phone: housing.phone || '',
       description: housing.description || '',
       dueDay: housing.dueDay || 1,
-      currency: housing.currency || 'EGP',
+      currency: housing.currency || 'ج.م',
+      watermark: housing.watermark || '',
     })
     setServicesText((housing.services || []).join('، '))
     setRulesText((housing.rules || []).join('، '))
@@ -84,6 +87,34 @@ export default function Housing() {
     }
   }
 
+  const uploadLogo = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setLogoUp(true)
+    try {
+      const fd = new FormData()
+      fd.append('logo', file)
+      await api.post('/housing/logo', fd)
+      toast('تم تحديث الشعار')
+      refetch()
+    } catch (err) {
+      toast(errMsg(err), 'error')
+    } finally {
+      setLogoUp(false)
+    }
+  }
+
+  const removeLogo = async () => {
+    try {
+      await api.put('/housing', { logo: '' })
+      toast('تمت إزالة الشعار')
+      refetch()
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    }
+  }
+
   if (loading) return <Spinner full />
 
   return (
@@ -119,6 +150,10 @@ export default function Housing() {
             <input className="input" dir="ltr" value={form.currency} onChange={set('currency')} disabled={!canEdit} />
           </div>
           <div className="md:col-span-2">
+            <label className="label">اسم العلامة المائية</label>
+            <input className="input" value={form.watermark} onChange={set('watermark')} placeholder="اكتب اسمك هنا ليظهر في صفحة الدخول والشريط الجانبي والفواتير" disabled={!canEdit} />
+          </div>
+          <div className="md:col-span-2">
             <label className="label">الخدمات (افصل بينها بفاصلة)</label>
             <input className="input" value={servicesText} onChange={(e) => setServicesText(e.target.value)} placeholder="Wi-Fi، كهرباء، مياه" disabled={!canEdit} />
           </div>
@@ -134,6 +169,38 @@ export default function Housing() {
             </button>
           </div>
         )}
+      </div>
+
+      <div className="card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <UploadCloud size={18} className="text-primary-700" />
+          <h2 className="font-extrabold text-slate-800">شعار البرنامج</h2>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          {housing?.logo ? (
+            <img src={housing.logo} alt="الشعار" className="h-20 w-20 rounded-2xl object-cover border border-slate-200" />
+          ) : (
+            <div className="h-20 w-20 rounded-2xl bg-slate-100 border border-dashed border-slate-300 flex items-center justify-center text-slate-400 text-xs font-bold">
+              بدون شعار
+            </div>
+          )}
+          <div className="space-y-1">
+            <p className="text-sm text-slate-500">يظهر في الشريط الجانبي، صفحة الدخول، وفي رأس الفواتير والتقارير PDF</p>
+            {canEdit && (
+              <div className="flex gap-2 mt-2">
+                <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={uploadLogo} />
+                <button className="btn-outline" onClick={() => logoRef.current?.click()} disabled={logoUp}>
+                  {logoUp ? <Spinner /> : <><Upload size={15} /> رفع شعار</>}
+                </button>
+                {housing?.logo && (
+                  <button className="btn-outline border-red-200 text-red-600 hover:bg-red-50" onClick={removeLogo}>
+                    <Trash2 size={15} /> إزالة
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="card p-6">

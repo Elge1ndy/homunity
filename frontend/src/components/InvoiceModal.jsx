@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import api from '../api'
 import Modal from './Modal.jsx'
 import Spinner from './Spinner.jsx'
@@ -88,7 +88,7 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
                     }`}
                   >
                     <span>{monthLabel(p.month)}</span>
-                    <span className="text-xs text-slate-400">{p.amount} EGP</span>
+                    <span className="text-xs text-slate-400">{p.amount} ج.م</span>
                   </button>
                 )
               })}
@@ -99,7 +99,7 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
         {total > 0 && (
           <div className="flex items-center justify-between p-4 rounded-xl bg-primary-50 border border-primary-100">
             <span className="font-bold text-primary-800">الإجمالي</span>
-            <span className="font-extrabold text-lg text-primary-900">{total} EGP</span>
+            <span className="font-extrabold text-lg text-primary-900">{total} ج.م</span>
           </div>
         )}
       </div>

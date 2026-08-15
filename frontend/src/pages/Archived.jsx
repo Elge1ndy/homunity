@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+﻿import { useNavigate } from 'react-router-dom'
 import { RotateCcw, Trash2, Eye, Archive } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
@@ -37,7 +37,7 @@ export default function Archived() {
 
   return (
     <div className="space-y-4">
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
           <Archive size={18} className="text-amber-500" />
           <h3 className="font-extrabold text-slate-800">الطلاب المؤرشفون</h3>

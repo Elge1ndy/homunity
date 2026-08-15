@@ -1,9 +1,11 @@
 const db = require('../db');
-const xlsx = require('xlsx');
+const xlsx = require('xlsx-js-style');
+const excel = require('../utils/excel');
 const { log } = require('../services/activity');
 const emit = require('../utils/realtime');
 const paymentsService = require('../services/payments');
 const notifications = require('../services/notifications');
+const depositService = require('./deposit');
 
 async function nextStudentId() {
   const students = await db.col('Student').find({});
@@ -88,32 +90,36 @@ exports.get = async (req, res, next) => {
     const payments = await db.col('Payment').find({ studentId: String(id) }, { month: 1 });
     const invoices = await db.col('Invoice').find({ studentId: String(id) }, { createdAt: -1 });
     const activity = await db.col('ActivityLog').find({ targetId: String(id) }, { createdAt: -1 });
-    let totalExpected = 0;
-    let totalPaid = 0;
-    const monthStatus = {};
-    payments.forEach((p) => {
-      monthStatus[p.month] = p.status;
-      totalExpected += Number(p.amount) || 0;
-      if (p.status === 'paid') totalPaid += Number(p.amount) || 0;
-    });
+    const fin = await paymentsService.studentFinancial(student);
+    const ledger = await paymentsService.studentLedger(student);
     const housing = await getHousing();
     res.json({
       student: {
         ...student,
         _id: String(student._id),
-        room: room ? { _id: String(room._id), number: room.number, type: room.type, capacity: room.capacity } : null,
+        room: room ? { _id: String(room._id), number: room.number, type: room.type, capacity: room.capacity, propertyId: room.propertyId } : null,
+        transfers: student.transfers || [],
+        rentHistory: student.rentHistory || [],
       },
       housing,
       payments,
       invoices,
       activity,
+      deposit: depositService.compute(student),
       financial: {
-        totalExpected,
-        totalPaid,
-        totalRemaining: totalExpected - totalPaid,
-        monthsPaid: payments.filter((p) => p.status === 'paid').length,
-        monthsUnpaid: payments.filter((p) => p.status !== 'paid').length,
+        totalExpected: fin.totalExpected,
+        totalPaid: fin.totalPaid,
+        totalRemaining: fin.totalRemaining,
+        totalOverdue: fin.totalOverdue,
+        totalUpcoming: fin.totalUpcoming,
+        totalDue: fin.totalDue,
+        monthsPaid: fin.monthsPaid,
+        monthsUnpaid: fin.monthsUnpaid,
+        monthsPartial: fin.monthsPartial,
+        monthsOverdue: fin.monthsOverdue,
+        monthsUpcoming: fin.monthsUpcoming,
       },
+      ledger,
     });
   } catch (e) {
     next(e);
@@ -122,7 +128,7 @@ exports.get = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { name, phone, university, email, roomId, bedNumber, monthlyRent, checkInDate, checkOutDate, notes } = req.body;
+    const { name, phone, university, email, roomId, bedNumber, monthlyRent, checkInDate, checkOutDate, notes, depositAmount } = req.body;
     if (!name || !phone) return res.status(400).json({ message: 'الاسم ورقم الهاتف مطلوبان' });
     const housing = await getHousing();
     const dueDay = housing ? housing.dueDay : 1;
@@ -141,11 +147,16 @@ exports.create = async (req, res, next) => {
         bed = Number(bedNumber);
       }
     }
+    const checkIn = checkInDate || new Date().toISOString().slice(0, 10);
+    if (room && bed) {
+      const av = await structure.checkBedAvailability(String(room._id), bed, checkIn, checkOutDate);
+      if (!av.ok) return res.status(400).json({ message: av.reason });
+    }
 
     const studentId = await nextStudentId();
-    const checkIn = checkInDate || new Date().toISOString().slice(0, 10);
-    const rent = Number(monthlyRent) || (room ? room.monthlyRent : 0);
-    const student = await db.col('Student').insert({
+    const bedRent = bed && room ? (room.beds || []).find((x) => x.bedNumber === bed) : null;
+    const rent = Number(monthlyRent) || (bedRent && Number(bedRent.monthlyRent) > 0 ? Number(bedRent.monthlyRent) : room ? room.monthlyRent : 0);
+const student = await db.col('Student').insert({
       studentId,
       name: String(name).trim(),
       phone: String(phone).trim(),
@@ -153,13 +164,32 @@ exports.create = async (req, res, next) => {
       email: email || '',
       roomId: room ? String(room._id) : '',
       bedNumber: bed,
+      propertyId: room && room.propertyId ? String(room.propertyId) : '',
       monthlyRent: rent,
       checkInDate: checkIn,
       checkOutDate: checkOutDate || '',
       status: 'active',
       privateNotes: [],
       notes: notes || '',
+      transfers: [],
+      rentHistory: [],
     });
+    const depAmount = Number(depositAmount) || 0;
+    if (depAmount > 0) {
+      await db.col('Student').findByIdAndUpdate(student._id, {
+        $set: {
+          deposit: {
+            ...depositService.normalize({}),
+            originalAmount: depAmount,
+            paymentStatus: 'unpaid',
+            notes: 'تأمين عند الدخول',
+          },
+          housingId: housing ? String(housing._id || '') : '',
+        },
+      });
+    } else {
+      await db.col('Student').findByIdAndUpdate(student._id, { $set: { housingId: housing ? String(housing._id || '') : '' } });
+    }
     if (room && bed) await setBed(room, bed, String(student._id));
     await paymentsService.generateForStudent(student, dueDay);
     await log(req, { action: `تمت إضافة طالب ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: student._id });
@@ -205,6 +235,7 @@ exports.update = async (req, res, next) => {
 
     if (newRoomId !== student.roomId || newBed !== student.bedNumber) {
       let room = null;
+      let bedEntry = null;
       if (newRoomId) {
         room = await db.col('Room').findById(newRoomId);
         if (!room) return res.status(400).json({ message: 'الغرفة غير موجودة' });
@@ -212,7 +243,14 @@ exports.update = async (req, res, next) => {
           const b = (room.beds || []).find((x) => x.bedNumber === newBed);
           if (!b) return res.status(400).json({ message: `السرير ${newBed} غير موجود` });
           if (b.studentId && String(b.studentId) !== String(id)) return res.status(400).json({ message: `السرير ${newBed} مشغول` });
+          bedEntry = b;
         }
+      }
+      if (room && newBed) {
+        const from = checkInDate !== undefined ? checkInDate : student.checkInDate;
+        const to = checkOutDate !== undefined ? checkOutDate : student.checkOutDate;
+        const av = await structure.checkBedAvailability(String(room._id), newBed, from, to, { excludeStudentId: id });
+        if (!av.ok) return res.status(400).json({ message: av.reason });
       }
       if (student.roomId) {
         const oldRoom = await db.col('Room').findById(student.roomId);
@@ -221,6 +259,11 @@ exports.update = async (req, res, next) => {
       if (room && newBed) await setBed(room, newBed, String(id));
       set.roomId = room ? String(room._id) : '';
       set.bedNumber = room && newBed ? newBed : null;
+      if (room && room.propertyId) set.propertyId = String(room.propertyId);
+      if (room && newBed && monthlyRent === undefined) {
+        const auto = bedEntry && Number(bedEntry.monthlyRent) > 0 ? Number(bedEntry.monthlyRent) : Number(room.monthlyRent) || 0;
+        if (Number(auto) !== Number(student.monthlyRent)) set.monthlyRent = Number(auto);
+      }
     }
 
     if (monthlyRent !== undefined && Number(monthlyRent) !== Number(student.monthlyRent)) {
@@ -246,12 +289,55 @@ exports.checkout = async (req, res, next) => {
     const student = await db.col('Student').findById(id);
     if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
     const checkOut = req.body.checkOutDate || new Date().toISOString().slice(0, 10);
+
+    const settle = await depositService.settle({
+      student,
+      byName: req.user.name,
+      byId: req.user._id,
+      actions: {
+        deductAmount: req.body.deductAmount,
+        deductReason: req.body.deductReason,
+        deductDescription: req.body.deductDescription,
+        deductDate: req.body.deductDate,
+        refundAmount: req.body.refundAmount,
+        refundMethod: req.body.refundMethod,
+        refundDate: req.body.refundDate,
+        refundNotes: req.body.refundNotes,
+      },
+    });
+
     const updated = await db.col('Student').findByIdAndUpdate(id, { $set: { status: 'ended', checkOutDate: checkOut } });
     await freeBed(student.roomId, student.bedNumber);
-    await log(req, { action: `إنهاء إقامة الطالب ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: id });
+    const notes = [];
+    settle.deductions.forEach((x) => notes.push(`خصم ${x.amount} ج.م (${x.reason})`));
+    settle.refunds.forEach((x) => notes.push(`استرداد ${x.amount} ج.م`));
+    const settleText = notes.length ? ' — تسوية التأمين: ' + notes.join('، ') : '';
+    const done = { ...updated, deposit: settle.deposit };
+    await log(req, {
+      action: `إنهاء إقامة الطالب ${student.name} (${student.studentId})${settleText}`,
+      category: 'students',
+      targetType: 'student',
+      targetId: id,
+      details: JSON.stringify({ housingId: student.housingId || '' }),
+    });
+    if (settle.refunds.length) {
+      await notifications.create({
+        type: 'deposit_refunded',
+        title: 'استرداد تأمين عند الخروج',
+        message: `استرداد ${settle.refunds[0].amount} ج.م من تأمين ${student.name}`,
+        data: { studentId: String(id) },
+      });
+    }
+    await notifications.create({
+      type: 'student_checkout',
+      title: 'إنهاء إقامة',
+      message: `تم إنهاء إقامة ${student.name} (${student.studentId}) بتاريخ ${checkOut}`,
+      data: { studentId: String(id) },
+    });
     emit(req, 'student:updated', {});
     emit(req, 'room:updated', {});
-    res.json({ student: updated });
+    emit(req, 'deposit:updated', {});
+    res.json({ student: done });
   } catch (e) {
     next(e);
   }
@@ -292,12 +378,13 @@ exports.remove = async (req, res, next) => {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
     if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
-    if (student.status !== 'archived') return res.status(400).json({ message: 'يمكن حذف الطلاب المؤرشفين فقط' });
+    await freeBed(student.roomId, student.bedNumber);
     await db.col('Student').deleteById(id);
     await db.col('Payment').deleteOne({ studentId: String(id) });
     await db.col('Invoice').deleteOne({ studentId: String(id) });
-    await log(req, { action: `حذف الطالب المؤرشف ${student.name} (${student.studentId}) نهائيًا`, category: 'students', targetType: 'student', targetId: id });
+    await log(req, { action: `حذف الطالب ${student.name} (${student.studentId}) نهائيًا`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
+    emit(req, 'room:updated', {});
     res.json({ ok: true });
   } catch (e) {
     next(e);
@@ -344,7 +431,7 @@ function pick(row, keys) {
 exports.import = async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'يرجى رفع ملف Excel' });
-    const wb = xlsx.readFile(req.file.path);
+    const wb = xlsx.read(req.file.buffer, { type: 'buffer' });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = xlsx.utils.sheet_to_json(ws, { defval: '' });
     const housing = await getHousing();
@@ -414,12 +501,15 @@ exports.import = async (req, res, next) => {
         email: '',
         roomId: room ? String(room._id) : '',
         bedNumber: bed,
+        propertyId: room && room.propertyId ? String(room.propertyId) : '',
         monthlyRent: rent,
         checkInDate: checkIn,
         checkOutDate: checkOut,
         status: 'active',
         privateNotes: [],
         notes: '',
+        transfers: [],
+        rentHistory: [],
       });
       if (room && bed) await setBed(room, bed, String(student._id));
       await paymentsService.generateForStudent(student, dueDay);
@@ -466,22 +556,32 @@ exports.exportExcel = async (req, res, next) => {
     rooms.forEach((r) => {
       roomMap[String(r._id)] = r;
     });
-    const rows = students.map((s) => ({
-      'رقم الطالب': s.studentId,
-      'الاسم': s.name,
-      'الهاتف': s.phone,
-      'الجامعة': s.university,
-      'الغرفة': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
-      'السرير': s.bedNumber || '',
-      'الإيجار الشهري': s.monthlyRent,
-      'تاريخ الدخول': s.checkInDate,
-      'تاريخ الخروج': s.checkOutDate,
-      'الحالة': s.status,
-    }));
-    const ws = xlsx.utils.json_to_sheet(rows);
+    const rows = students.map((s) => {
+      const d = depositService.compute(s);
+      return {
+        'رقم الطالب': s.studentId,
+        'الاسم': s.name,
+        'الهاتف': s.phone,
+        'الجامعة': s.university,
+        'الغرفة': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
+        'السرير': s.bedNumber || '',
+        'الإيجار الشهري': s.monthlyRent,
+        'التأمين': d.originalAmount,
+        'حالة دفع التأمين': { unpaid: 'غير مدفوع', paid: 'مدفوع' }[d.paymentStatus] || d.paymentStatus,
+        'تاريخ دفع التأمين': d.paymentDate,
+        'إجمالي الخصومات': d.totalDeductions,
+        'المسترد': d.refundedAmount,
+        'المتبقي': d.remainingAmount,
+        'حالة الاسترداد': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
+        'تاريخ الدخول': s.checkInDate,
+        'تاريخ الخروج': s.checkOutDate,
+        'الحالة': s.status,
+      };
+    });
+    const ws = excel.jsonToSheet(rows);
     const wb = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(wb, ws, 'Students');
-    const buf = xlsx.write(wb, { type: 'buffer', bookType: 'xlsx' });
+    const buf = excel.writeBuffer(wb);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=students-${filter}.xlsx`);
     res.send(buf);

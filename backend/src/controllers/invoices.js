@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const paths = require('../utils/paths');
 const db = require('../db');
 const { log } = require('../services/activity');
 const emit = require('../utils/realtime');
@@ -91,7 +92,7 @@ exports.create = async (req, res, next) => {
     const housing = await db.col('Housing').findOne({});
     const room = student.roomId ? await db.col('Room').findById(student.roomId) : null;
     const pdfBuf = await invoicePdf(invoice, { ...student, roomNumber: room ? room.number : '' }, housing);
-    const pdfDir = path.join(__dirname, '..', '..', 'uploads', 'invoices');
+    const pdfDir = paths.dir('uploads', 'invoices');
     if (!fs.existsSync(pdfDir)) fs.mkdirSync(pdfDir, { recursive: true });
     const pdfName = `${invoice.invoiceNumber}.pdf`;
     fs.writeFileSync(path.join(pdfDir, pdfName), pdfBuf);
@@ -110,7 +111,7 @@ exports.remove = async (req, res, next) => {
     const invoice = await db.col('Invoice').findById(req.params.id);
     if (!invoice) return res.status(404).json({ message: 'الفاتورة غير موجودة' });
     if (invoice.pdfPath) {
-      const p = path.join(__dirname, '..', '..', invoice.pdfPath.replace(/^\//, ''));
+      const p = paths.bundled(invoice.pdfPath.replace(/^\//, ''));
       if (fs.existsSync(p)) fs.unlinkSync(p);
     }
     await db.col('Invoice').deleteById(req.params.id);
@@ -127,7 +128,7 @@ exports.pdf = async (req, res, next) => {
     const invoice = await db.col('Invoice').findById(req.params.id);
     if (!invoice) return res.status(404).json({ message: 'الفاتورة غير موجودة' });
     if (invoice.pdfPath) {
-      const p = path.join(__dirname, '..', '..', invoice.pdfPath.replace(/^\//, ''));
+      const p = path.join(paths.container(), invoice.pdfPath.replace(/^\//, ''));
       if (fs.existsSync(p)) {
         return res.download(p);
       }

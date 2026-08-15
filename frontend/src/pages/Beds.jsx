@@ -13,7 +13,6 @@ export default function Beds() {
 
   useRealtime(refetch, ['room:updated', 'student:added', 'student:updated'])
 
-  const studentMap = {}
   const students = useApi('/students?status=active')
 
   return (
@@ -66,7 +65,7 @@ export default function Beds() {
                     )
                   })}
                 </div>
-                <Link to={`/students?q=`} className="text-xs text-primary-700 font-bold mt-3 inline-block">
+                <Link to="/students" className="text-xs text-primary-700 font-bold mt-3 inline-block">
                   إدارة الطلاب
                 </Link>
               </div>

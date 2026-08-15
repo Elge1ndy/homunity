@@ -1,0 +1,968 @@
+[
+  {
+    "_id": "1e227f0191e86f595ea801c5",
+    "createdAt": "2026-08-13T20:18:56.239Z",
+    "updatedAt": "2026-08-13T20:18:56.239Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "975c6d519c35986cce8edd00",
+    "createdAt": "2026-08-13T20:19:16.914Z",
+    "updatedAt": "2026-08-13T20:19:16.914Z",
+    "action": "تم تعديل بيانات السكن",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "adminName": "مدير السكن",
+    "targetType": "housing"
+  },
+  {
+    "_id": "ae95bd4e961bcba47e4b3a4b",
+    "createdAt": "2026-08-13T20:18:57.217Z",
+    "updatedAt": "2026-08-13T20:18:57.217Z",
+    "action": "تم تعديل بيانات السكن",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "adminName": "مدير السكن",
+    "targetType": "housing"
+  },
+  {
+    "_id": "ead54b302f4c10bbcee68ece",
+    "createdAt": "2026-08-13T20:19:15.959Z",
+    "updatedAt": "2026-08-13T20:19:15.959Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "1dcecd3f893fc7caf5c79aa8",
+    "createdAt": "2026-08-12T21:41:33.849Z",
+    "updatedAt": "2026-08-12T21:41:33.849Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "5487fae086063e5773d5a7bf",
+    "createdAt": "2026-08-12T21:41:33.873Z",
+    "updatedAt": "2026-08-12T21:41:33.873Z",
+    "action": "تمت إضافة غرفة B-101",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "rooms",
+    "targetId": "c04ad97153450a46cab07cd1",
+    "adminName": "مدير السكن",
+    "targetType": "room"
+  },
+  {
+    "_id": "32f8cef1d500187f1109cf65",
+    "createdAt": "2026-08-12T21:41:34.036Z",
+    "updatedAt": "2026-08-12T21:41:34.036Z",
+    "action": "تمت إضافة طالب أحمد سمير (ST-0001)",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "07f58dbffea68eccff0ba027",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "b026954e6b9bb2ac9f776543",
+    "createdAt": "2026-08-12T21:41:34.110Z",
+    "updatedAt": "2026-08-12T21:41:34.110Z",
+    "action": "تسجيل دفع 2026-08 للطالب أحمد سمير بقيمة 2500",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "payments",
+    "targetId": "1729414a96c8cd75facf2e0b",
+    "adminName": "مدير السكن",
+    "targetType": "payment"
+  },
+  {
+    "_id": "1bd3cc715c3b3267c4d0d1bd",
+    "createdAt": "2026-08-12T21:41:34.430Z",
+    "updatedAt": "2026-08-12T21:41:34.430Z",
+    "action": "إنشاء فاتورة INV-2026-00001 للطالب أحمد سمير",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "invoices",
+    "targetId": "c622b2174d9a0ce042aa6dd8",
+    "adminName": "مدير السكن",
+    "targetType": "invoice"
+  },
+  {
+    "_id": "b54b0926e15cf8c7a9e9a543",
+    "createdAt": "2026-08-12T21:41:43.857Z",
+    "updatedAt": "2026-08-12T21:41:43.857Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "25d2225f6c714d0ff24d55cc",
+    "createdAt": "2026-08-12T21:42:04.663Z",
+    "updatedAt": "2026-08-12T21:42:04.663Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "2d7778410aebb3f5b0d98f47",
+    "createdAt": "2026-08-12T21:42:04.707Z",
+    "updatedAt": "2026-08-12T21:42:04.707Z",
+    "action": "التراجع عن دفع 2026-08 للطالب",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "payments",
+    "targetId": "1729414a96c8cd75facf2e0b",
+    "adminName": "مدير السكن",
+    "targetType": "payment"
+  },
+  {
+    "_id": "57902a8a97cc7358001bd78f",
+    "createdAt": "2026-08-12T21:42:04.718Z",
+    "updatedAt": "2026-08-12T21:42:04.718Z",
+    "action": "تسجيل دفع 2026-08 للطالب أحمد سمير بقيمة 2500",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "payments",
+    "targetId": "1729414a96c8cd75facf2e0b",
+    "adminName": "مدير السكن",
+    "targetType": "payment"
+  },
+  {
+    "_id": "46b9acae20d062bd639e72c5",
+    "createdAt": "2026-08-12T21:42:04.873Z",
+    "updatedAt": "2026-08-12T21:42:04.873Z",
+    "action": "إنشاء فاتورة INV-2026-00002 للطالب أحمد سمير",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "invoices",
+    "targetId": "3c1931f40aae19ddc5a5a378",
+    "adminName": "مدير السكن",
+    "targetType": "invoice"
+  },
+  {
+    "_id": "41375d38836541892d304130",
+    "createdAt": "2026-08-12T21:42:04.914Z",
+    "updatedAt": "2026-08-12T21:42:04.914Z",
+    "action": "إنهاء إقامة الطالب أحمد سمير (ST-0001)",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "07f58dbffea68eccff0ba027",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "bc918e7188443bc53d0f39cf",
+    "createdAt": "2026-08-12T21:42:04.933Z",
+    "updatedAt": "2026-08-12T21:42:04.933Z",
+    "action": "أرشفة الطالب أحمد سمير (ST-0001)",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "07f58dbffea68eccff0ba027",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "9018bcbf1065392bc6f078e5",
+    "createdAt": "2026-08-12T21:42:04.944Z",
+    "updatedAt": "2026-08-12T21:42:04.944Z",
+    "action": "استعادة الطالب أحمد سمير (ST-0001)",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "07f58dbffea68eccff0ba027",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "18464b303646a64c9e880978",
+    "createdAt": "2026-08-12T21:43:07.847Z",
+    "updatedAt": "2026-08-12T21:43:07.847Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "2ea8a82ab621deec3637cbe5",
+    "createdAt": "2026-08-12T21:45:32.663Z",
+    "updatedAt": "2026-08-12T21:45:32.663Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "0661a3fff02466dbf5825454",
+    "createdAt": "2026-08-12T22:07:26.537Z",
+    "updatedAt": "2026-08-12T22:07:26.537Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "f8e33a08c6e8ced506a930e4",
+    "createdAt": "2026-08-12T22:08:03.359Z",
+    "updatedAt": "2026-08-12T22:08:03.359Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "e63d91f35f607ca9857d72c9",
+    "createdAt": "2026-08-12T22:21:02.124Z",
+    "updatedAt": "2026-08-12T22:21:02.124Z",
+    "action": "تمت إضافة طالب علي الجندي (ST-0002)",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "68b58bf98d8e1ab6e84a0cbf",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "03289a9023f66f95fa032f43",
+    "createdAt": "2026-08-12T22:21:33.278Z",
+    "updatedAt": "2026-08-12T22:21:33.278Z",
+    "action": "إنشاء فاتورة INV-2026-00003 للطالب علي الجندي",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "invoices",
+    "targetId": "03aa4503c14ebcb660d40f9d",
+    "adminName": "مدير السكن",
+    "targetType": "invoice"
+  },
+  {
+    "_id": "83b15fba7f575dd7868c5ac1",
+    "createdAt": "2026-08-12T22:22:25.030Z",
+    "updatedAt": "2026-08-12T22:22:25.030Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "61ff57da192b13a0910e6df2",
+    "createdAt": "2026-08-12T22:22:25.178Z",
+    "updatedAt": "2026-08-12T22:22:25.178Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "272666de76a1e6e5bfffce82",
+    "createdAt": "2026-08-13T10:57:21.060Z",
+    "updatedAt": "2026-08-13T10:57:21.060Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "26dd45326a24438ea2415d69",
+    "createdAt": "2026-08-13T11:06:51.296Z",
+    "updatedAt": "2026-08-13T11:06:51.296Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "5990a7a4365744897deaa591",
+    "createdAt": "2026-08-13T11:07:00.573Z",
+    "updatedAt": "2026-08-13T11:07:00.573Z",
+    "action": "تمت إضافة غرفة B-102",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "rooms",
+    "targetId": "9ea5392d3918d8f0cf07112a",
+    "adminName": "مدير السكن",
+    "targetType": "room"
+  },
+  {
+    "_id": "69aa3e3b3b012d7ec189f721",
+    "createdAt": "2026-08-13T11:07:11.413Z",
+    "updatedAt": "2026-08-13T11:07:11.413Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "c7d946df56ab48370da954ea",
+    "createdAt": "2026-08-13T11:07:24.664Z",
+    "updatedAt": "2026-08-13T11:07:24.664Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "02999235c2e2c6685d0e5946",
+    "createdAt": "2026-08-13T11:07:26.479Z",
+    "updatedAt": "2026-08-13T11:07:26.479Z",
+    "action": "تم حذف غرفة B-102",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "rooms",
+    "targetId": "9ea5392d3918d8f0cf07112a",
+    "adminName": "مدير السكن",
+    "targetType": "room"
+  },
+  {
+    "_id": "7751718ab391a0eafdfdc245",
+    "createdAt": "2026-08-13T11:07:59.411Z",
+    "updatedAt": "2026-08-13T11:07:59.411Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "c5b3f490f3c274653a6a9297",
+    "createdAt": "2026-08-13T11:08:01.226Z",
+    "updatedAt": "2026-08-13T11:08:01.226Z",
+    "action": "إضافة ملاحظة خاصة للطالب أحمد سمير",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "07f58dbffea68eccff0ba027",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "55e6c89409c8f0be7de79585",
+    "createdAt": "2026-08-13T11:08:35.528Z",
+    "updatedAt": "2026-08-13T11:08:35.528Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "af2e6ca80cc7b9cde659fe55",
+    "createdAt": "2026-08-13T11:08:37.547Z",
+    "updatedAt": "2026-08-13T11:08:37.547Z",
+    "action": "إضافة ملاحظة خاصة للطالب أحمد سمير",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "students",
+    "targetId": "07f58dbffea68eccff0ba027",
+    "adminName": "مدير السكن",
+    "targetType": "student"
+  },
+  {
+    "_id": "51dcd56b5aa0b1804c365af1",
+    "createdAt": "2026-08-13T15:25:26.267Z",
+    "updatedAt": "2026-08-13T15:25:26.267Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "40d1f9536fc5845e14f9177b",
+    "createdAt": "2026-08-13T15:25:53.281Z",
+    "updatedAt": "2026-08-13T15:25:53.281Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "a47b9be55517c407045715b9",
+    "createdAt": "2026-08-13T15:25:53.857Z",
+    "updatedAt": "2026-08-13T15:25:53.857Z",
+    "action": "تمت إضافة غرفة MD_TEST",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "rooms",
+    "targetId": "46abb09993ed8fe0f5c788b0",
+    "adminName": "مدير السكن",
+    "targetType": "room"
+  },
+  {
+    "_id": "fc57216f999e256e922a4794",
+    "createdAt": "2026-08-13T15:31:44.584Z",
+    "updatedAt": "2026-08-13T15:31:44.584Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "33510d6fe077404e7e02ec38",
+    "createdAt": "2026-08-13T15:25:54.891Z",
+    "updatedAt": "2026-08-13T15:25:54.891Z",
+    "action": "تم تعديل غرفة MD_TEST",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "rooms",
+    "targetId": "46abb09993ed8fe0f5c788b0",
+    "adminName": "مدير السكن",
+    "targetType": "room"
+  },
+  {
+    "_id": "d04b045839599524de1f515b",
+    "createdAt": "2026-08-13T15:25:55.648Z",
+    "updatedAt": "2026-08-13T15:25:55.648Z",
+    "action": "تم حذف غرفة MD_TEST",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "category": "rooms",
+    "targetId": "46abb09993ed8fe0f5c788b0",
+    "adminName": "مدير السكن",
+    "targetType": "room"
+  },
+  {
+    "_id": "da82594e2dc4517b6bfd4175",
+    "createdAt": "2026-08-13T15:31:54.838Z",
+    "updatedAt": "2026-08-13T15:31:54.838Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "a3eef220438ece89233383bf",
+    "createdAt": "2026-08-13T15:33:04.283Z",
+    "updatedAt": "2026-08-13T15:33:04.283Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "363e39cb073095853cd93bc1",
+    "createdAt": "2026-08-13T15:33:18.373Z",
+    "updatedAt": "2026-08-13T15:33:18.373Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "627ad9ddd1f58ced93c38160",
+    "createdAt": "2026-08-13T15:33:27.577Z",
+    "updatedAt": "2026-08-13T15:33:27.577Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "b3f5b4d64a692080aeb498ee",
+    "createdAt": "2026-08-13T15:36:49.697Z",
+    "updatedAt": "2026-08-13T15:36:49.697Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "5f5bde12b17da749f53cdb8e",
+    "createdAt": "2026-08-13T15:44:25.854Z",
+    "updatedAt": "2026-08-13T15:44:25.854Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "7605cdcc540fc0cb8b01331c",
+    "createdAt": "2026-08-13T15:51:47.229Z",
+    "updatedAt": "2026-08-13T15:51:47.229Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "aa2c2fb0a59978d0a22786ba",
+    "createdAt": "2026-08-13T15:51:52.754Z",
+    "updatedAt": "2026-08-13T15:51:52.754Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "d0365ddcb7df0634b475d121",
+    "createdAt": "2026-08-13T15:51:57.471Z",
+    "updatedAt": "2026-08-13T15:51:57.471Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "f7c3819d692c010b033df823",
+    "createdAt": "2026-08-13T15:52:16.785Z",
+    "updatedAt": "2026-08-13T15:52:16.785Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "c9112b870dead82d568a53a8",
+    "createdAt": "2026-08-13T15:55:34.217Z",
+    "updatedAt": "2026-08-13T15:55:34.217Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "b7655a4d05dbb34aebd30c7d",
+    "createdAt": "2026-08-13T20:17:07.441Z",
+    "updatedAt": "2026-08-13T20:17:07.441Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "73b6b330a5410e32decc82b3",
+    "createdAt": "2026-08-13T20:17:31.703Z",
+    "updatedAt": "2026-08-13T20:17:31.703Z",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth"
+  },
+  {
+    "_id": "3d7d1bb8bec173a08fef7612",
+    "createdAt": "2026-08-13T20:19:47.890Z",
+    "updatedAt": "2026-08-13T20:19:47.890Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "e7427cad50095424c208e474",
+    "createdAt": "2026-08-13T20:20:02.732Z",
+    "updatedAt": "2026-08-13T20:20:02.732Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "b8404d16e238ab9db5ec878b",
+    "createdAt": "2026-08-13T20:20:03.618Z",
+    "updatedAt": "2026-08-13T20:20:03.618Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "تم تعديل بيانات السكن",
+    "category": "housing",
+    "targetType": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "details": ""
+  },
+  {
+    "_id": "3dd802210093c1e88121f02a",
+    "createdAt": "2026-08-13T20:20:35.877Z",
+    "updatedAt": "2026-08-13T20:20:35.877Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "تم تعديل بيانات السكن",
+    "category": "housing",
+    "targetType": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "details": ""
+  },
+  {
+    "_id": "90c237c37ee8de4a20da2a69",
+    "createdAt": "2026-08-13T20:20:54.707Z",
+    "updatedAt": "2026-08-13T20:20:54.707Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "تم تعديل بيانات الطالب علي الجندي (ST-0002)",
+    "category": "students",
+    "targetType": "student",
+    "targetId": "68b58bf98d8e1ab6e84a0cbf",
+    "details": ""
+  },
+  {
+    "_id": "216cc07b94bbac3c70d65c07",
+    "createdAt": "2026-08-13T20:24:22.341Z",
+    "updatedAt": "2026-08-13T20:24:22.341Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: مدير السكن",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "b6cd805a1a30415c39282183",
+    "createdAt": "2026-08-13T20:24:23.347Z",
+    "updatedAt": "2026-08-13T20:24:23.347Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "تحديث شعار البرنامج",
+    "category": "housing",
+    "targetType": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "details": ""
+  },
+  {
+    "_id": "7aef8427ca0f75520b97dab6",
+    "createdAt": "2026-08-13T20:24:26.361Z",
+    "updatedAt": "2026-08-13T20:24:26.361Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "إنشاء فاتورة INV-2026-00006 للطالب أحمد سمير",
+    "category": "invoices",
+    "targetType": "invoice",
+    "targetId": "7258f841c09aaaa0d4cf67d0",
+    "details": ""
+  },
+  {
+    "_id": "f755a1f4d674c5d3778c7a5c",
+    "createdAt": "2026-08-13T20:24:27.232Z",
+    "updatedAt": "2026-08-13T20:24:27.232Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "حذف فاتورة INV-2026-00006",
+    "category": "invoices",
+    "targetType": "invoice",
+    "targetId": "7258f841c09aaaa0d4cf67d0",
+    "details": ""
+  },
+  {
+    "_id": "3cca56503e681efa65273cf6",
+    "createdAt": "2026-08-13T20:24:47.563Z",
+    "updatedAt": "2026-08-13T20:24:47.563Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "مدير السكن",
+    "action": "تم تعديل مدير: Said elgendy",
+    "category": "admins",
+    "targetType": "admin",
+    "targetId": "22e7d4fff25bb8821634c7c4",
+    "details": ""
+  },
+  {
+    "_id": "6036895ae3f7dedac1c2bce5",
+    "createdAt": "2026-08-13T20:25:55.131Z",
+    "updatedAt": "2026-08-13T20:25:55.131Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "تحديث شعار البرنامج",
+    "category": "housing",
+    "targetType": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "details": ""
+  },
+  {
+    "_id": "0c234b68964f2f485f151e79",
+    "createdAt": "2026-08-13T20:28:08.187Z",
+    "updatedAt": "2026-08-13T20:28:08.187Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "037c0a4086a3f74de179c719",
+    "createdAt": "2026-08-13T20:28:55.830Z",
+    "updatedAt": "2026-08-13T20:28:55.830Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "bb7e9f9469f01e393b0a0c3e",
+    "createdAt": "2026-08-13T20:29:51.562Z",
+    "updatedAt": "2026-08-13T20:29:51.562Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "11e0a139d754ed111bd02244",
+    "createdAt": "2026-08-13T20:30:04.043Z",
+    "updatedAt": "2026-08-13T20:30:04.043Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "1b2f220d8e4bcf5f934b45ef",
+    "createdAt": "2026-08-13T20:30:11.479Z",
+    "updatedAt": "2026-08-13T20:30:11.479Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "b531fe7b9bb49c8151a156cb",
+    "createdAt": "2026-08-13T20:32:11.977Z",
+    "updatedAt": "2026-08-13T20:32:11.977Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "تم تعديل بيانات السكن",
+    "category": "housing",
+    "targetType": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "details": ""
+  },
+  {
+    "_id": "37627abb3122b2d1e76cf35e",
+    "createdAt": "2026-08-13T20:32:24.487Z",
+    "updatedAt": "2026-08-13T20:32:24.487Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "تحديث شعار البرنامج",
+    "category": "housing",
+    "targetType": "housing",
+    "targetId": "5bf14185ea118ec261fe863d",
+    "details": ""
+  },
+  {
+    "_id": "288f60743e89f2d77d3f7715",
+    "createdAt": "2026-08-13T20:33:59.358Z",
+    "updatedAt": "2026-08-13T20:33:59.358Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "5756d6e2164d3f48d4e1e341",
+    "createdAt": "2026-08-13T20:34:19.744Z",
+    "updatedAt": "2026-08-13T20:34:19.744Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "62c7cb50a63180f895339533",
+    "createdAt": "2026-08-13T20:34:30.000Z",
+    "updatedAt": "2026-08-13T20:34:30.000Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "74bd97372cd3552f8da1cb81",
+    "createdAt": "2026-08-13T20:35:01.212Z",
+    "updatedAt": "2026-08-13T20:35:01.212Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "09305247c62420b77f1344e3",
+    "createdAt": "2026-08-13T20:35:14.747Z",
+    "updatedAt": "2026-08-13T20:35:14.747Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "b87b2e289427d0626c71134d",
+    "createdAt": "2026-08-13T20:35:29.549Z",
+    "updatedAt": "2026-08-13T20:35:29.549Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "9d0c85d420ec8c49ad893c0e",
+    "createdAt": "2026-08-13T20:35:53.478Z",
+    "updatedAt": "2026-08-13T20:35:53.478Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "24f22e4da93ea5b3e807d485",
+    "createdAt": "2026-08-13T20:35:54.973Z",
+    "updatedAt": "2026-08-13T20:35:54.973Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "تسجيل دفع 2026-08 للطالب أحمد سمير بقيمة 2500",
+    "category": "payments",
+    "targetType": "payment",
+    "targetId": "1729414a96c8cd75facf2e0b",
+    "details": ""
+  },
+  {
+    "_id": "121649c1f342de857cf7aa16",
+    "createdAt": "2026-08-13T20:35:57.358Z",
+    "updatedAt": "2026-08-13T20:35:57.358Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "التراجع عن دفع 2026-08 للطالب",
+    "category": "payments",
+    "targetType": "payment",
+    "targetId": "1729414a96c8cd75facf2e0b",
+    "details": ""
+  },
+  {
+    "_id": "f554e8795d196d4efc2fa1d2",
+    "createdAt": "2026-08-13T20:42:59.556Z",
+    "updatedAt": "2026-08-13T20:42:59.556Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "f35fe7bfabbd62be772b23ea",
+    "createdAt": "2026-08-13T20:43:46.829Z",
+    "updatedAt": "2026-08-13T20:43:46.829Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "0f529186d816c3db1c48d9c0",
+    "createdAt": "2026-08-13T20:44:07.661Z",
+    "updatedAt": "2026-08-13T20:44:07.661Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "427b401796db40f94028ba56",
+    "createdAt": "2026-08-13T20:44:10.395Z",
+    "updatedAt": "2026-08-13T20:44:10.395Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "إنشاء فاتورة INV-2026-00006 للطالب أحمد سمير",
+    "category": "invoices",
+    "targetType": "invoice",
+    "targetId": "5f3d31cac254f66ce5fa1d34",
+    "details": ""
+  },
+  {
+    "_id": "ae936b1ec78314309636b3ab",
+    "createdAt": "2026-08-13T20:44:11.288Z",
+    "updatedAt": "2026-08-13T20:44:11.288Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "حذف فاتورة INV-2026-00006",
+    "category": "invoices",
+    "targetType": "invoice",
+    "targetId": "5f3d31cac254f66ce5fa1d34",
+    "details": ""
+  },
+  {
+    "_id": "45fa5056d0a1d92a78747747",
+    "createdAt": "2026-08-13T21:00:37.695Z",
+    "updatedAt": "2026-08-13T21:00:37.695Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "56c22cf83120df0dc0cc7412",
+    "createdAt": "2026-08-13T21:00:44.615Z",
+    "updatedAt": "2026-08-13T21:00:44.615Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "4fcc3bf2a30cae6b5cca8bb5",
+    "createdAt": "2026-08-13T21:01:23.735Z",
+    "updatedAt": "2026-08-13T21:01:23.735Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "71a13af41c6527ca1b6cbec0",
+    "createdAt": "2026-08-13T21:02:11.325Z",
+    "updatedAt": "2026-08-13T21:02:11.325Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "8a725fbc8b723611867e13ac",
+    "createdAt": "2026-08-13T21:13:39.031Z",
+    "updatedAt": "2026-08-13T21:13:39.031Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "c4fb2999e93435967b300bcd",
+    "createdAt": "2026-08-13T21:57:51.925Z",
+    "updatedAt": "2026-08-13T21:57:51.925Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "6587b61c9df0c2f3eda81f3c",
+    "createdAt": "2026-08-14T12:39:04.191Z",
+    "updatedAt": "2026-08-14T12:39:04.191Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "cd1e5684796636c77f26804d",
+    "createdAt": "2026-08-14T12:39:22.040Z",
+    "updatedAt": "2026-08-14T12:39:22.040Z",
+    "adminId": "22e7d4fff25bb8821634c7c4",
+    "adminName": "Said elgendy",
+    "action": "تم تعديل بيانات الطالب سعيد الجندي (ST-0002)",
+    "category": "students",
+    "targetType": "student",
+    "targetId": "68b58bf98d8e1ab6e84a0cbf",
+    "details": ""
+  },
+  {
+    "_id": "c5fe6a63e78743955314e2c4",
+    "createdAt": "2026-08-14T12:40:45.229Z",
+    "updatedAt": "2026-08-14T12:40:45.229Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  },
+  {
+    "_id": "e0a2bdb49e5cb4e3c63e3a66",
+    "createdAt": "2026-08-14T12:43:01.795Z",
+    "updatedAt": "2026-08-14T12:43:01.795Z",
+    "adminId": "",
+    "adminName": "",
+    "action": "تسجيل دخول: Said elgendy",
+    "category": "auth",
+    "targetType": "",
+    "targetId": "",
+    "details": ""
+  }
+]

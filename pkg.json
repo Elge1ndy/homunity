@@ -1,0 +1,12 @@
+{
+  "pkg": {
+    "scripts": ["exe/main.js"],
+    "assets": [
+      "backend/fonts/**",
+      "backend/node_modules/es-get-iterator/**",
+      "backend/node_modules/pdfkit/js/data/**",
+      "frontend/dist/**/*"
+    ],
+    "targets": ["node20-win-x64"]
+  }
+}

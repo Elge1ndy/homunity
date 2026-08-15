@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import {
   Users,
   BedDouble,
@@ -12,6 +12,7 @@ import {
   FileText,
   BarChart3,
   Archive,
+  ShieldCheck,
 } from 'lucide-react'
 import { useApi } from '../hooks/useApi.js'
 import { useRealtime } from '../socket.js'
@@ -29,6 +30,8 @@ export default function Dashboard() {
   const s = data.students
   const b = data.beds
   const cm = data.currentMonth
+  const dep = data.deposits?.totals || {}
+  const perHousing = data.deposits?.perHousing || []
 
   return (
     <div className="space-y-6">
@@ -37,6 +40,37 @@ export default function Dashboard() {
         <StatCard icon={BedDouble} label="الأسرة المشغولة" value={`${b.occupied} / ${b.total}`} sub={`نسبة الإشغال ${data.occupancy}%`} accent="blue" />
         <StatCard icon={CircleCheck} label="الأسرة المتاحة" value={b.free} sub={`${data.roomsCount} غرفة`} accent="amber" />
         <StatCard icon={Wallet} label="إجمالي الأسرة" value={b.total} sub="بكل الغرف" accent="red" />
+      </div>
+
+      <div className="card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={20} className="text-primary-700" />
+            <h3 className="font-extrabold text-slate-800">التأمين</h3>
+          </div>
+          <Link to="/deposits" className="text-xs font-bold text-primary-700">
+            تقرير التأمين الكامل ←
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+          <StatCard icon={ShieldCheck} label="الإجمالي المطلوب" value={fmtMoney(dep.required)} accent="slate" sub="كل الطلاب" />
+          <StatCard icon={CircleCheck} label="المدفوع" value={fmtMoney(dep.paid)} accent="teal" sub="تأمينات مسجلة" />
+          <StatCard icon={AlertTriangle} label="غير المدفوع" value={fmtMoney(dep.unpaid)} accent="red" sub="متأخر" />
+          <StatCard icon={ShieldCheck} label="الخصومات" value={fmtMoney(dep.deductions)} accent="amber" sub="إجمالي الخصومات" />
+          <StatCard icon={Archive} label="المسترد" value={fmtMoney(dep.refunded)} accent="emerald" sub="استردادات" />
+          <StatCard icon={Wallet} label="المحجوز حاليًا" value={fmtMoney(dep.held)} accent="blue" sub="صافي التأمينات" />
+        </div>
+        {perHousing.length > 1 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {perHousing.map((h) => (
+              <div key={h.housingId} className="px-3 py-2 rounded-xl bg-slate-100 text-sm">
+                <span className="font-bold text-slate-600">{h.housingName || 'السكن'}:</span>
+                <span className="font-extrabold text-teal-700 ms-1">{fmtMoney(h.paid)}</span>
+                <span className="text-[10px] text-slate-400">مطلوب {fmtMoney(h.required)}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -48,15 +82,15 @@ export default function Dashboard() {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">المتوقع</span>
-              <span className="font-bold text-slate-800">{fmtMoney(cm.expected)} EGP</span>
+              <span className="font-bold text-slate-800">{fmtMoney(cm.expected)} ج.م</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">المحصل</span>
-              <span className="font-bold text-emerald-600">{fmtMoney(cm.collected)} EGP</span>
+              <span className="font-bold text-emerald-600">{fmtMoney(cm.collected)} ج.م</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">المتبقي</span>
-              <span className="font-bold text-red-600">{fmtMoney(cm.remaining)} EGP</span>
+              <span className="font-bold text-red-600">{fmtMoney(cm.remaining)} ج.م</span>
             </div>
             <div className="flex justify-between text-sm pt-2 border-t border-slate-100">
               <span className="text-slate-500">الطلاب الدافعون</span>

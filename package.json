@@ -1,12 +1,16 @@
 {
-  "name": "homunity",
+  "name": "homeunity-exe",
   "version": "1.0.0",
+  "main": "electron/main.js",
   "private": true,
-  "engines": {
-    "node": ">=18"
-  },
+  "description": "Homeunity - حزمة نسخة EXE للتطبيق",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build && cd ../backend && npm install --omit=dev",
-    "start": "node backend/server.js"
+    "build:exe": "pkg exe/main.js --targets node20-win-x64 --output dist/Homeunity.exe --config pkg.json --icon exe/icon.ico",
+    "build:desktop": "electron-builder --config electron-builder.yml"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^5.16.0",
+    "electron": "^43.4.0",
+    "electron-builder": "^24.13.3"
   }
 }

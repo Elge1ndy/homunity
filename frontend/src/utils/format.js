@@ -41,8 +41,10 @@ export function timeAgo(str) {
 
 export const paymentStatus = {
   paid: { label: 'مدفوع', cls: 'bg-emerald-100 text-emerald-700' },
+  partial: { label: 'جزئي', cls: 'bg-amber-100 text-amber-700' },
   unpaid: { label: 'غير مدفوع', cls: 'bg-slate-100 text-slate-600' },
   overdue: { label: 'متأخر', cls: 'bg-red-100 text-red-700' },
+  upcoming: { label: 'قادم', cls: 'bg-indigo-100 text-indigo-700' },
 }
 
 export const studentStatus = {

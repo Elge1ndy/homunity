@@ -1,27 +1,28 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const paths = require('../utils/paths');
+const { cloudMode, uploadToStorage } = require('../services/storage');
 
-const uploadDir = path.join(__dirname, '..', '..', process.env.UPLOAD_DIR || 'uploads');
+const uploadDir = paths.dir(process.env.UPLOAD_DIR || 'uploads');
 
-function ensureDir(sub) {
-  const d = path.join(uploadDir, sub);
-  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
-  return d;
-}
-
-function storage(sub, prefix) {
-  return multer.diskStorage({
-    destination: (req, file, cb) => cb(null, ensureDir(sub)),
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      cb(null, `${prefix}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
-    },
-  });
+async function saveUploaded(file, folder, prefix) {
+  const ext = path.extname(file.originalname);
+  const filename = `${prefix}-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+  const dir = path.join(uploadDir, folder);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, filename), file.buffer);
+  if (cloudMode()) {
+    const url = await uploadToStorage(folder, filename, file.buffer, file.mimetype);
+    console.log('[uploads] local + cloud: ' + folder + '/' + filename);
+    return url;
+  }
+  return `/uploads/${folder}/${filename}`;
 }
 
 module.exports = {
-  uploadProof: multer({ storage: storage('proofs', 'proof'), limits: { fileSize: 5 * 1024 * 1024 } }),
-  uploadImage: multer({ storage: storage('images', 'img'), limits: { fileSize: 8 * 1024 * 1024 } }),
-  uploadExcel: multer({ storage: storage('imports', 'import'), limits: { fileSize: 10 * 1024 * 1024 } }),
+  saveUploaded,
+  uploadProof: multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }),
+  uploadImage: multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } }),
+  uploadExcel: multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }),
 };

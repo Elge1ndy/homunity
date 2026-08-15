@@ -1,0 +1,43 @@
+appId: com.homeunity.desktop
+productName: Homeunity
+directories:
+  output: C:/Users/saide/AppData/Local/Temp/opencode/ebuild
+files:
+  - backend/**/*
+  - backend/node_modules/**/*
+  - frontend/dist/**/*
+  - electron/**/*
+  - package.json
+  - '!backend/data/**'
+  - '!backend/data-backups/**'
+  - '!backend/uploads/**'
+  - '!backend/.env'
+  - '!backend/scripts/**'
+  - '!backend/test-pdf.cjs'
+  - '!**/*.map'
+asar: true
+includeSubNodeModules: true
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: portable
+      arch:
+        - x64
+  icon: exe/icon.ico
+portable:
+  artifactName: Homeunity-Portable-${version}.exe
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Homeunity
+  uninstallDisplayName: Homeunity - إدارة السكن الطلابي
+  deleteAppDataOnUninstall: false
+  installerIcon: exe/icon.ico
+  uninstallerIcon: exe/icon.ico
+  artifactName: Homeunity-Setup-${version}.exe
+npmRebuild: false

@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "c04ad97153450a46cab07cd1",
+    "createdAt": "2026-08-12T21:41:33.872Z",
+    "updatedAt": "2026-08-13T20:20:54.337Z",
+    "beds": [
+      {
+        "bedNumber": 1,
+        "studentId": "68b58bf98d8e1ab6e84a0cbf"
+      },
+      {
+        "bedNumber": 2,
+        "studentId": "68b58bf98d8e1ab6e84a0cbf"
+      },
+      {
+        "bedNumber": 3,
+        "studentId": null
+      },
+      {
+        "bedNumber": 4,
+        "studentId": null
+      }
+    ],
+    "type": "shared",
+    "number": "B-101",
+    "status": "active",
+    "capacity": 4,
+    "monthlyRent": 2500
+  }
+]

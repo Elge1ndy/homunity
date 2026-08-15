@@ -1,0 +1,25 @@
+[
+  {
+    "_id": "5bf14185ea118ec261fe863d",
+    "createdAt": "2026-08-12T21:41:23.120Z",
+    "updatedAt": "2026-08-13T20:32:24.486Z",
+    "name": "سكن MTI",
+    "rules": [
+      "الالتزام بالهدوء بعد الساعة 11 مساءً",
+      "منع الزيارات غير المسجلة"
+    ],
+    "dueDay": 1,
+    "images": [],
+    "currency": "EGP",
+    "services": [
+      "Wi-Fi",
+      "كهرباء",
+      "مياه"
+    ],
+    "watermark": "Said Elgendy",
+    "address": "",
+    "phone": "",
+    "description": "",
+    "logo": "https://ojjtwnqwmrzwhiwjubgw.supabase.co/storage/v1/object/public/homunity/images/logo-1786653143686-318086895.jpg"
+  }
+]

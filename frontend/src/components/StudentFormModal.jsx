@@ -4,41 +4,47 @@ import Modal from './Modal.jsx'
 import Spinner from './Spinner.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { errMsg } from '../hooks/useApi.js'
+import { getAutoFill, setAutoFill, clearAutoFill } from '../utils/autoFill.js'
 
 export default function StudentFormModal({ open, onClose, onSaved, student, rooms }) {
   const { toast } = useToast()
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [autoFilled, setAutoFilled] = useState(false)
 
   useEffect(() => {
     if (open) {
-      setForm(
-        student
-          ? {
-              name: student.name || '',
-              phone: student.phone || '',
-              university: student.university || '',
-              email: student.email || '',
-              roomId: student.roomId || student.room?._id || '',
-              bedNumber: student.bedNumber || '',
-              monthlyRent: student.monthlyRent || '',
-              checkInDate: student.checkInDate || '',
-              checkOutDate: student.checkOutDate || '',
-              notes: student.notes || '',
-            }
-          : {
-              name: '',
-              phone: '',
-              university: '',
-              email: '',
-              roomId: '',
-              bedNumber: '',
-              monthlyRent: '',
-              checkInDate: new Date().toISOString().slice(0, 10),
-              checkOutDate: '',
-              notes: '',
-            }
-      )
+      if (student) {
+        setForm({
+          name: student.name || '',
+          phone: student.phone || '',
+          university: student.university || '',
+          email: student.email || '',
+          roomId: student.roomId || student.room?._id || '',
+          bedNumber: student.bedNumber || '',
+          monthlyRent: student.monthlyRent || '',
+          checkInDate: student.checkInDate || '',
+          checkOutDate: student.checkOutDate || '',
+          notes: student.notes || '',
+        })
+      } else {
+        const saved = getAutoFill('student') || {}
+        const hasAuto = !!(saved.roomId || saved.monthlyRent)
+        setAutoFilled(hasAuto)
+        setForm({
+          name: '',
+          phone: '',
+          university: saved.university || '',
+          email: '',
+          roomId: saved.roomId || '',
+          bedNumber: '',
+          monthlyRent: saved.monthlyRent || '',
+          depositAmount: saved.depositAmount || '',
+          checkInDate: new Date().toISOString().slice(0, 10),
+          checkOutDate: '',
+          notes: '',
+        })
+      }
     }
   }, [open, student])
 
@@ -57,7 +63,13 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
         toast('تم تحديث بيانات الطالب')
       } else {
         await api.post('/students', body)
-        toast('تمت إضافة الطالب')
+        setAutoFill('student', {
+          roomId: body.roomId,
+          monthlyRent: body.monthlyRent,
+          depositAmount: body.depositAmount,
+          university: body.university,
+        })
+        toast('تمت إضافة الطالب ✓')
       }
       onSaved()
       onClose()
@@ -70,6 +82,12 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
 
   return (
     <Modal open={open} onClose={onClose} title={student ? 'تعديل بيانات الطالب' : 'إضافة طالب جديد'} wide>
+      {!student && autoFilled && (
+        <div className="flex items-center justify-between gap-2 bg-primary-50 border border-primary-200 text-primary-800 text-xs font-semibold rounded-xl px-4 py-2.5 mb-4">
+          <span>✨ تمملأ تلقائيًا من آخر طالب أضفته</span>
+          <button onClick={() => { clearAutoFill('student'); setAutoFilled(false); setForm((f) => ({ ...f, roomId: '', monthlyRent: '', depositAmount: '', university: '' })) }} className="text-primary-600 hover:text-primary-800 underline">مسح</button>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="label">الاسم *</label>
@@ -113,6 +131,12 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
           <label className="label">الإيجار الشهري</label>
           <input className="input" type="number" dir="ltr" value={form.monthlyRent} onChange={set('monthlyRent')} placeholder={room ? `افتراضي ${room.monthlyRent}` : ''} />
         </div>
+        {!student && (
+          <div>
+            <label className="label">التأمين المدفوع</label>
+            <input className="input" type="number" dir="ltr" value={form.depositAmount} onChange={set('depositAmount')} placeholder="0" />
+          </div>
+        )}
         <div>
           <label className="label">تاريخ الدخول</label>
           <input className="input" type="date" dir="ltr" value={form.checkInDate} onChange={set('checkInDate')} />

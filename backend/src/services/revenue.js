@@ -1,11 +1,39 @@
 const db = require('../db');
 
+function inMonth(datestr, month) {
+  if (!datestr) return false;
+  const d = new Date(datestr);
+  if (isNaN(d)) return false;
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  return key === month;
+}
+
 async function monthRevenue(month) {
   const payments = await db.col('Payment').find({ month });
   const students = await db.col('Student').find({});
   const sMap = {};
+  const depositsCollected = { sum: 0, count: 0 };
+  const depositsRefunded = { sum: 0, count: 0 };
+  const depositsDeducted = { sum: 0, count: 0 };
   students.forEach((s) => {
     sMap[String(s._id)] = s;
+    const d = (s.deposit && typeof s.deposit === 'object' ? s.deposit : null) || {};
+    if (d.paymentStatus === 'paid' && inMonth(d.paymentDate, month)) {
+      depositsCollected.sum += Number(d.originalAmount) || 0;
+      depositsCollected.count++;
+    }
+    (d.refunds || []).forEach((t) => {
+      if (inMonth(t.date, month)) {
+        depositsRefunded.sum += Number(t.amount) || 0;
+        depositsRefunded.count++;
+      }
+    });
+    (d.deductions || []).forEach((t) => {
+      if (inMonth(t.date, month)) {
+        depositsDeducted.sum += Number(t.amount) || 0;
+        depositsDeducted.count++;
+      }
+    });
   });
   let expected = 0;
   let collected = 0;
@@ -44,6 +72,9 @@ async function monthRevenue(month) {
     paidStudents: paidSet.size,
     unpaidStudents: unpaidSet.size,
     totalStudents: paidSet.size + unpaidSet.size,
+    depositsCollected,
+    depositsRefunded,
+    depositsDeducted,
     rows,
   };
 }

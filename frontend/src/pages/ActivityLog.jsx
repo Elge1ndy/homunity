@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { ListOrdered } from 'lucide-react'
 import { useApi } from '../hooks/useApi.js'
 import { useRealtime } from '../socket.js'
@@ -45,7 +45,7 @@ export default function ActivityLog() {
         ))}
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         {loading ? (
           <Spinner full />
         ) : !activity.length ? (

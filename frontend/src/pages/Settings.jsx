@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Plus, Pencil, Trash2, ShieldCheck } from 'lucide-react'
+﻿import { useState, useRef } from 'react'
+import { Plus, Pencil, Trash2, ShieldCheck, Database, Upload } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
 import { useRealtime } from '../socket.js'
@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import Spinner, { EmptyState } from '../components/Spinner.jsx'
 import Badge from '../components/Badge.jsx'
 import AdminModal from '../components/AdminModal.jsx'
+import { downloadBlob } from '../utils/format.js'
 
 export default function Settings() {
   const { toast } = useToast()
@@ -15,6 +16,31 @@ export default function Settings() {
   const { data, loading, refetch } = useApi('/admins')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const restoreRef = useRef(null)
+
+  const restore = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (
+      !window.confirm(
+        'تحذير: الاستعادة ستحذف كل البيانات الحالية (الطلاب، الغرف، المدفوعات...) وتستبدلها بالكامل ببيانات الملف.\n\nيتم حفظ نسخة أمان تلقائية قبل الاستعادة.\nمضبوط تكمّل؟'
+      )
+    )
+      return
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const r = await api.post('/restore', fd)
+      const parts = Object.values(r.counts || {})
+        .map((c) => c)
+        .join(' / ')
+      toast(`تمت الاستعادة بنجاح (${parts})`)
+      refetch()
+    } catch (err) {
+      toast(errMsg(err), 'error')
+    }
+  }
 
   useRealtime(refetch, ['admin:updated'])
 
@@ -39,10 +65,43 @@ export default function Settings() {
     }
   }
 
+  const backup = async () => {
+    try {
+      const d = new Date().toISOString().slice(0, 10)
+      await downloadBlob('/api/backup', `sakni-backup-${d}.xlsx`)
+      toast('تم تحميل النسخة الاحتياطية')
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    }
+  }
+
   const admins = data?.admins || []
 
   return (
     <div className="space-y-4">
+      <div className="card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+              <Database size={20} />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-slate-800">النسخ الاحتياطي</h3>
+              <p className="text-xs text-slate-500 mt-0.5">نزّل نسخة كاملة من كل البيانات في ملف Excel، أو أعدها من ملف سبق حفظته.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input ref={restoreRef} type="file" accept=".xlsx" className="hidden" onChange={restore} />
+            <button className="btn-outline border-red-200 text-red-600 hover:bg-red-50" onClick={() => restoreRef.current?.click()}>
+              <Upload size={15} /> استعادة من ملف
+            </button>
+            <button className="btn-primary" onClick={backup}>
+              تحميل نسخة احتياطية
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">{admins.length} مدير</p>
         <button
@@ -56,7 +115,7 @@ export default function Settings() {
         </button>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         {loading ? (
           <Spinner full />
         ) : !admins.length ? (

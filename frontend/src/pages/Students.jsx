@@ -1,6 +1,6 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Plus, Search, Upload, Download, Eye, Pencil, ChevronDown } from 'lucide-react'
+import { Plus, Search, Upload, Download, Eye, Pencil, ChevronDown, Trash2 } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
 import { useRealtime } from '../socket.js'
@@ -40,6 +40,17 @@ export default function Students() {
     setExportOpen(false)
     try {
       await downloadBlob(`/api/students/export?filter=${f}`, `students-${f}.xlsx`)
+    } catch (e) {
+      toast(errMsg(e), 'error')
+    }
+  }
+
+  const remove = async (s) => {
+    if (!window.confirm(`هل أنت متأكد من حذف "${s.name}" نهائيًا؟ سيتم حذف كل بياناته ومدفوعاته ولا يمكن التراجع.`)) return
+    try {
+      await api.delete(`/students/${s._id}`)
+      toast('تم حذف الطالب نهائيًا')
+      refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
     }
@@ -101,7 +112,7 @@ export default function Students() {
         ))}
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         {loading ? (
           <Spinner full />
         ) : !data?.students?.length ? (
@@ -150,6 +161,9 @@ export default function Students() {
                           }}
                         >
                           <Pencil size={15} />
+                        </button>
+                        <button className="p-2 rounded-lg hover:bg-red-50 text-red-600" onClick={() => remove(s)}>
+                          <Trash2 size={15} />
                         </button>
                       </div>
                     </td>

@@ -6,9 +6,14 @@ import {
   DoorOpen,
   BedSingle,
   Wallet,
+  CalendarDays,
+  Sun,
+  CalendarRange,
   FileText,
   BarChart3,
+  ShieldCheck,
   Building2,
+  Home,
   Archive,
   Bell,
   ListOrdered,
@@ -16,20 +21,26 @@ import {
   LogOut,
   Menu,
   X,
-  Home,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import api from '../api'
-import { getSocket } from '../socket'
+import { useRealtime } from '../socket'
+import Logo from './Logo.jsx'
 
 const NAV = [
   { to: '/', label: 'لوحة التحكم', icon: LayoutDashboard, perm: null },
   { to: '/students', label: 'الطلاب', icon: Users, perm: 'students' },
   { to: '/rooms', label: 'الغرف', icon: DoorOpen, perm: 'rooms' },
   { to: '/beds', label: 'الأسرة', icon: BedSingle, perm: 'beds' },
+  { to: '/properties', label: 'العقارات', icon: Home, perm: 'rooms' },
   { to: '/payments', label: 'المدفوعات', icon: Wallet, perm: 'payments' },
+  { to: '/finance', label: 'اللوحة المالية', icon: ListOrdered, perm: 'payments' },
+  { to: '/calendar', label: 'تقويم الدفعات', icon: CalendarDays, perm: 'payments' },
+  { to: '/summer-courses', label: 'الكورسات الصيفية', icon: Sun, perm: 'students' },
+  { to: '/bookings', label: 'الحجوزات', icon: CalendarRange, perm: 'students' },
   { to: '/invoices', label: 'الفواتير', icon: FileText, perm: 'invoices' },
   { to: '/reports', label: 'التقارير', icon: BarChart3, perm: 'reports' },
+  { to: '/deposits', label: 'التأمين', icon: ShieldCheck, perm: 'reports' },
   { to: '/housing', label: 'السكن', icon: Building2, perm: 'settings' },
   { to: '/archived', label: 'الأرشيف', icon: Archive, perm: 'students' },
   { to: '/notifications', label: 'الإشعارات', icon: Bell, perm: null },
@@ -51,20 +62,9 @@ function NotificationBell() {
 
   useEffect(() => {
     load()
-    const socket = getSocket()
-    if (socket) {
-      socket.on('data:refresh', load)
-      socket.on('payment:updated', load)
-      socket.on('student:added', load)
-    }
-    return () => {
-      if (socket) {
-        socket.off('data:refresh', load)
-        socket.off('payment:updated', load)
-        socket.off('student:added', load)
-      }
-    }
   }, [])
+
+  useRealtime(load, ['data:refresh', 'payment:updated', 'student:added', 'notification:read'])
 
   return (
     <div className="relative">
@@ -107,23 +107,36 @@ export default function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [watermark, setWatermark] = useState('')
+  const [logo, setLogo] = useState('')
 
-  const pageTitle = NAV.find((n) => (n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to)))?.label || 'Homunity'
+  useEffect(() => {
+    api.get('/housing').then((r) => {
+      setWatermark(r.data.housing?.watermark || '')
+      setLogo(r.data.housing?.logo || '')
+    }).catch(() => {})
+  }, [])
+
+  const pageTitle = NAV.find((n) => (n.to === '/' ? location.pathname === '/' : location.pathname.startsWith(n.to)))?.label || 'Homeunity'
   const perms = user?.permissions || {}
 
   return (
     <div className="min-h-screen flex">
       <aside
-        className={`fixed inset-y-0 start-0 z-40 w-64 bg-primary-900 text-white flex flex-col transform transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'}`}
+        className={`fixed inset-y-0 start-0 z-40 w-64 bg-slate-950 text-white flex flex-col transform transition-transform lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'}`}
       >
         <div className="flex items-center gap-3 px-5 h-16 border-b border-white/10">
-          <div className="p-2 rounded-lg bg-white/10">
-            <Home size={20} />
-          </div>
-          <div>
-            <p className="font-extrabold leading-none">HOMUNITY</p>
-            <p className="text-[11px] text-primary-200">إدارة السكن الطلابي</p>
-          </div>
+          {logo ? (
+            <>
+              <img src={logo} alt="الشعار" className="h-11 w-11 rounded-xl object-cover shrink-0 border border-white/10" />
+              <div>
+                <p className="font-extrabold leading-none text-white text-lg" dir="ltr">Homeunity</p>
+                <p className="text-[10px] text-slate-400 mt-1 font-semibold">إدارة السكن الطلابي</p>
+              </div>
+            </>
+          ) : (
+            <Logo />
+          )}
           <button className="lg:hidden ms-auto text-white/70" onClick={() => setOpen(false)}>
             <X size={20} />
           </button>
@@ -138,7 +151,7 @@ export default function Layout() {
                 to={item.to}
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
-                  active ? 'bg-white/15 text-white' : 'text-primary-100 hover:bg-white/10'
+                  active ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10'
                 }`}
               >
                 <item.icon size={18} />
@@ -153,9 +166,14 @@ export default function Layout() {
             <div className="p-2 rounded-full bg-white/10 text-sm font-bold">{user?.name?.slice(0, 1)}</div>
             <div className="min-w-0">
               <p className="text-sm font-bold truncate">{user?.name}</p>
-              <p className="text-[11px] text-primary-200">{user?.username}</p>
+              <p className="text-[11px] text-slate-400">{user?.username}</p>
             </div>
           </div>
+          {watermark && (
+            <p className="mt-3 text-center text-[10px] text-slate-500 tracking-wider select-none" style={{ opacity: 0.7 }}>
+              {watermark}
+            </p>
+          )}
         </div>
       </aside>
 
@@ -183,7 +201,9 @@ export default function Layout() {
         </header>
 
         <main className="flex-1 p-4 lg:p-8">
-          <Outlet />
+          <div className="mx-auto w-full max-w-[1200px]">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

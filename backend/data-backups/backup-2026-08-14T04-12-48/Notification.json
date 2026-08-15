@@ -1,0 +1,162 @@
+[
+  {
+    "_id": "337e6aeba16e94b224987f36",
+    "data": {
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "student_added",
+    "title": "طالب جديد",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "تمت إضافة أحمد سمير (ST-0001)",
+    "createdAt": "2026-08-12T21:41:34.038Z",
+    "updatedAt": "2026-08-13T20:19:30.342Z"
+  },
+  {
+    "_id": "6fcdaa0028c1119caf88e41a",
+    "data": {
+      "paymentId": "a2f49ab59fe41fa6c961d823",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "payment_overdue",
+    "title": "دفعة متأخرة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "دفعة شهر 2026-05 للطالب أحمد سمير (ST-0001) أصبحت متأخرة.",
+    "createdAt": "2026-08-12T21:41:34.049Z",
+    "updatedAt": "2026-08-13T20:19:30.589Z"
+  },
+  {
+    "_id": "79a4021bdbf69c5199deb3fd",
+    "data": {
+      "paymentId": "834d51fa9cfef5b77eee200c",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "payment_overdue",
+    "title": "دفعة متأخرة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "دفعة شهر 2026-06 للطالب أحمد سمير (ST-0001) أصبحت متأخرة.",
+    "createdAt": "2026-08-12T21:41:34.059Z",
+    "updatedAt": "2026-08-13T20:19:30.852Z"
+  },
+  {
+    "_id": "2e422b8a9e334b535a16fc76",
+    "data": {
+      "paymentId": "470aae877f4ce37b17f0a3bf",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "payment_overdue",
+    "title": "دفعة متأخرة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "دفعة شهر 2026-07 للطالب أحمد سمير (ST-0001) أصبحت متأخرة.",
+    "createdAt": "2026-08-12T21:41:34.075Z",
+    "updatedAt": "2026-08-13T20:19:31.097Z"
+  },
+  {
+    "_id": "22834d3db11a0f9970e3c0a8",
+    "data": {
+      "paymentId": "1729414a96c8cd75facf2e0b",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "payment_overdue",
+    "title": "دفعة متأخرة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "دفعة شهر 2026-08 للطالب أحمد سمير (ST-0001) أصبحت متأخرة.",
+    "createdAt": "2026-08-12T21:41:34.088Z",
+    "updatedAt": "2026-08-13T20:19:31.408Z"
+  },
+  {
+    "_id": "db9248a0f9280b8d79324d3f",
+    "data": {
+      "paymentId": "1729414a96c8cd75facf2e0b",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "payment_recorded",
+    "title": "دفعة مسجلة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "تم تسجيل دفع 2026-08 للطالب أحمد سمير بقيمة 2500",
+    "createdAt": "2026-08-12T21:41:34.112Z",
+    "updatedAt": "2026-08-13T20:19:31.654Z"
+  },
+  {
+    "_id": "d1750a0f6ce26e9a8f6410f7",
+    "data": {
+      "paymentId": "1729414a96c8cd75facf2e0b",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "type": "payment_recorded",
+    "title": "دفعة مسجلة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "تم تسجيل دفع 2026-08 للطالب أحمد سمير بقيمة 2500",
+    "createdAt": "2026-08-12T21:42:04.720Z",
+    "updatedAt": "2026-08-13T20:19:31.952Z"
+  },
+  {
+    "_id": "7fadbe23e18ba098c5e02083",
+    "data": {
+      "studentId": "68b58bf98d8e1ab6e84a0cbf"
+    },
+    "type": "student_added",
+    "title": "طالب جديد",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "تمت إضافة علي الجندي (ST-0002)",
+    "createdAt": "2026-08-12T22:21:02.126Z",
+    "updatedAt": "2026-08-13T20:19:32.195Z"
+  },
+  {
+    "_id": "b1e0ecdeacfe0502856d9d85",
+    "data": {
+      "paymentId": "d144d27f964b767bd7b1f985",
+      "studentId": "68b58bf98d8e1ab6e84a0cbf"
+    },
+    "type": "payment_overdue",
+    "title": "دفعة متأخرة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "دفعة شهر 2026-08 للطالب علي الجندي (ST-0002) أصبحت متأخرة.",
+    "createdAt": "2026-08-12T22:23:37.064Z",
+    "updatedAt": "2026-08-13T20:19:32.462Z"
+  },
+  {
+    "_id": "d01179330dd089e8e02fc4ab",
+    "data": {
+      "studentId": "68b58bf98d8e1ab6e84a0cbf"
+    },
+    "type": "student_expiring",
+    "title": "اقتراب انتهاء الإقامة",
+    "readBy": [
+      "22e7d4fff25bb8821634c7c4"
+    ],
+    "message": "إقامة علي الجندي (ST-0002) تنتهي بعد 18 يوم.",
+    "createdAt": "2026-08-12T22:41:23.219Z",
+    "updatedAt": "2026-08-13T20:19:32.744Z"
+  },
+  {
+    "_id": "bed6d6043194c8a626fc0af5",
+    "createdAt": "2026-08-13T20:35:55.187Z",
+    "updatedAt": "2026-08-13T20:35:55.187Z",
+    "type": "payment_recorded",
+    "title": "دفعة مسجلة",
+    "message": "تم تسجيل دفع 2026-08 للطالب أحمد سمير بقيمة 2500",
+    "data": {
+      "paymentId": "1729414a96c8cd75facf2e0b",
+      "studentId": "07f58dbffea68eccff0ba027"
+    },
+    "readBy": []
+  }
+]

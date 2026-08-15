@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Plus, FileText, Trash2, Eye } from 'lucide-react'
 import api from '../api'
 import { useApi, errMsg } from '../hooks/useApi.js'
@@ -38,7 +38,7 @@ export default function Invoices() {
         </button>
       </div>
 
-      <div className="card overflow-hidden">
+      <div className="card overflow-x-auto">
         {loading ? (
           <Spinner full />
         ) : !data?.invoices?.length ? (
@@ -66,7 +66,7 @@ export default function Invoices() {
                       <p className="text-xs text-slate-400 font-mono" dir="ltr">{inv.student?.studentId || ''}</p>
                     </td>
                     <td className="td text-xs">{inv.months.map(monthLabel).join('، ')}</td>
-                    <td className="td font-bold">{fmtMoney(inv.total)} EGP</td>
+                    <td className="td font-bold">{fmtMoney(inv.total)} ج.م</td>
                     <td className="td">
                       <Badge {...invoiceStatus[inv.status]} />
                     </td>
@@ -125,7 +125,7 @@ export default function Invoices() {
               </table>
               <div className="flex justify-between mt-4 p-4 rounded-xl bg-primary-50">
                 <span className="font-bold text-primary-800">الإجمالي</span>
-                <span className="font-extrabold text-primary-900">{fmtMoney(view.total)} EGP</span>
+                <span className="font-extrabold text-primary-900">{fmtMoney(view.total)} ج.م</span>
               </div>
               <button className="btn-primary w-full mt-4" onClick={() => downloadBlob(`/api/invoices/${view._id}/pdf`, `${view.invoiceNumber}.pdf`)}>
                 <FileText size={16} /> تحميل PDF

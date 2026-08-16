@@ -1,0 +1,1 @@
+import{j as s}from"./index-DLpvFOrK.js";function l({label:e,cls:t}){return s.jsx("span",{className:`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${t||"bg-slate-100 text-slate-600"}`,children:e})}export{l as B};

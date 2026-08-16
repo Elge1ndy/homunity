@@ -1,11 +1,18 @@
 node_modules/
-dist/
 dist-electron/
 logs/
 *.log
 
 # Environment
 .env
+
+# Root dist (EXE build output with user data)
+/dist/
+
+# Frontend source (only built dist is shared)
+frontend/src/
+frontend/node_modules/
+frontend/.vite/
 
 # User data
 backend/data/

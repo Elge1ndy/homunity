@@ -24,7 +24,7 @@ export default function Settings() {
     if (!file) return
     if (
       !window.confirm(
-        'تحذير: الاستعادة ستحذف كل البيانات الحالية (الطلاب، الغرف، المدفوعات...) وتستبدلها بالكامل ببيانات الملف.\n\nيتم حفظ نسخة أمان تلقائية قبل الاستعادة.\nمضبوط تكمّل؟'
+        'Warning: Restore will delete all current data (students, rooms, payments...) and replace it entirely with the file data.\n\nAn automatic safety backup will be saved before restoring.\nAre you sure you want to proceed?'
       )
     )
       return
@@ -35,7 +35,7 @@ export default function Settings() {
       const parts = Object.values(r.counts || {})
         .map((c) => c)
         .join(' / ')
-      toast(`تمت الاستعادة بنجاح (${parts})`)
+      toast(`Restore completed successfully (${parts})`)
       refetch()
     } catch (err) {
       toast(errMsg(err), 'error')
@@ -45,10 +45,10 @@ export default function Settings() {
   useRealtime(refetch, ['admin:updated'])
 
   const remove = async (a) => {
-    if (!window.confirm(`حذف المدير ${a.name}؟`)) return
+    if (!window.confirm(`Delete admin ${a.name}?`)) return
     try {
       await api.delete(`/admins/${a._id}`)
-      toast('تم حذف المدير')
+      toast('Admin deleted')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -58,7 +58,7 @@ export default function Settings() {
   const toggleActive = async (a) => {
     try {
       await api.put(`/admins/${a._id}`, { active: !a.active })
-      toast(a.active ? 'تم تعطيل الحساب' : 'تم تفعيل الحساب')
+      toast(a.active ? 'Account deactivated' : 'Account activated')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -69,7 +69,7 @@ export default function Settings() {
     try {
       const d = new Date().toISOString().slice(0, 10)
       await downloadBlob('/api/backup', `sakni-backup-${d}.xlsx`)
-      toast('تم تحميل النسخة الاحتياطية')
+      toast('Backup downloaded')
     } catch (e) {
       toast(errMsg(e), 'error')
     }
@@ -86,24 +86,24 @@ export default function Settings() {
               <Database size={20} />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-800">النسخ الاحتياطي</h3>
-              <p className="text-xs text-slate-500 mt-0.5">نزّل نسخة كاملة من كل البيانات في ملف Excel، أو أعدها من ملف سبق حفظته.</p>
+              <h3 className="font-extrabold text-slate-800">Backup</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Download a complete copy of all data as an Excel file, or restore from a previously saved file.</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <input ref={restoreRef} type="file" accept=".xlsx" className="hidden" onChange={restore} />
             <button className="btn-outline border-red-200 text-red-600 hover:bg-red-50" onClick={() => restoreRef.current?.click()}>
-              <Upload size={15} /> استعادة من ملف
+              <Upload size={15} /> Restore from file
             </button>
             <button className="btn-primary" onClick={backup}>
-              تحميل نسخة احتياطية
+              Download backup
             </button>
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">{admins.length} مدير</p>
+        <p className="text-sm text-slate-500">{admins.length} admins</p>
         <button
           className="btn-primary"
           onClick={() => {
@@ -111,7 +111,7 @@ export default function Settings() {
             setFormOpen(true)
           }}
         >
-          <Plus size={16} /> إضافة مدير
+          <Plus size={16} /> Add Admin
         </button>
       </div>
 
@@ -119,17 +119,17 @@ export default function Settings() {
         {loading ? (
           <Spinner full />
         ) : !admins.length ? (
-          <EmptyState message="لا يوجد مديرون" />
+          <EmptyState message="No admins found" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">الاسم</th>
-                  <th className="th">اسم المستخدم</th>
-                  <th className="th">الهاتف</th>
-                  <th className="th">الحالة</th>
-                  <th className="th">الصلاحيات</th>
+                  <th className="th">Name</th>
+                  <th className="th">Username</th>
+                  <th className="th">Phone</th>
+                  <th className="th">Status</th>
+                  <th className="th">Permissions</th>
                   <th className="th"></th>
                 </tr>
               </thead>
@@ -141,7 +141,7 @@ export default function Settings() {
                         <div className="p-2 rounded-full bg-primary-100 text-primary-700 text-xs font-extrabold">{a.name?.slice(0, 1)}</div>
                         <span className="font-bold text-slate-800">
                           {a.name}
-                          {String(a._id) === String(user?._id) && <span className="ms-1 text-xs text-primary-700">(أنت)</span>}
+                          {String(a._id) === String(user?._id) && <span className="ms-1 text-xs text-primary-700">(You)</span>}
                         </span>
                       </div>
                     </td>
@@ -149,7 +149,7 @@ export default function Settings() {
                     <td className="td" dir="ltr">{a.phone || '—'}</td>
                     <td className="td">
                       <button onClick={() => toggleActive(a)} disabled={String(a._id) === String(user?._id)}>
-                        <Badge label={a.active ? 'نشط' : 'معطل'} cls={a.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'} />
+                        <Badge label={a.active ? 'Active' : 'Disabled'} cls={a.active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'} />
                       </button>
                     </td>
                     <td className="td">

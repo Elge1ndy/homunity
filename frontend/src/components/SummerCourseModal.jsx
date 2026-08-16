@@ -83,12 +83,12 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
   const remaining = Math.max(0, total - (Number(paidAmount) || 0))
 
   const bedHint = (b) => {
-    if (b.studentId) return { busy: true, text: 'مشغول بطالب حاليًا' }
+    if (b.studentId) return { busy: true, text: 'Occupied by current student' }
     const c = (courses || []).find((x) => x.roomId === roomId && x.bedNumber === b.bedNumber && overlap(fromDate, toDate, x.fromDate, x.toDate))
-    if (c) return { busy: true, text: `محجوز في كورس (${c.studentName}) ${c.fromDate} → ${c.toDate}` }
+    if (c) return { busy: true, text: `Booked in course (${c.studentName}) ${c.fromDate} → ${c.toDate}` }
     const s = (students || []).find((x) => x.roomId === roomId && x.bedNumber === b.bedNumber && overlap(fromDate, toDate, x.checkInDate, x.checkOutDate))
-    if (s) return { busy: true, text: `مشغول بطالب (${s.name})` }
-    return { busy: false, text: `متاح • ${fmtMoney(b.monthlyRent || room.monthlyRent || 0)} ج.م` }
+    if (s) return { busy: true, text: `Occupied by student (${s.name})` }
+    return { busy: false, text: `Available • ${fmtMoney(b.monthlyRent || room.monthlyRent || 0)} EGP` }
   }
 
   const pickBed = (bn) => {
@@ -98,10 +98,10 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
   }
 
   const submit = async () => {
-    if (!studentId) return toast('اختر الطالب', 'warn')
-    if (!fromDate || !toDate) return toast('حدد تاريخ البداية والنهاية', 'warn')
-    if (toDate < fromDate) return toast('تاريخ النهاية قبل تاريخ البداية', 'warn')
-    if (!roomId || !bedNumber) return toast('اختر الغرفة والسرير', 'warn')
+    if (!studentId) return toast('Select the student', 'warn')
+    if (!fromDate || !toDate) return toast('Select start and end dates', 'warn')
+    if (toDate < fromDate) return toast('End date is before start date', 'warn')
+    if (!roomId || !bedNumber) return toast('Select room and bed', 'warn')
     setSaving(true)
     try {
       await api.post('/summer-courses', {
@@ -116,7 +116,7 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
         paidDate,
         paidMethod,
       })
-      toast('تمت إضافة الكورس الصيفي')
+      toast('Summer course added')
       onSaved()
       onClose()
     } catch (e) {
@@ -127,13 +127,13 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="إضافة كورس صيفي" wide>
+    <Modal open={open} onClose={onClose} title="Add Summer Course" wide>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">الطالب</label>
+            <label className="label">Student</label>
             <select className="input" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
-              <option value="">اختر الطالب</option>
+              <option value="">Select student</option>
               {students.map((s) => (
                 <option key={s._id} value={s._id}>
                   {s.name} ({s.studentId})
@@ -142,12 +142,12 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
             </select>
           </div>
           <div>
-            <label className="label">العقار</label>
+            <label className="label">Property</label>
             <select className="input" value={propertyId} onChange={(e) => { setPropertyId(e.target.value); setFloorId(''); setApartmentId(''); setRoomId(''); setBedNumber(''); }}>
-              <option value="">اختر العقار</option>
+              <option value="">Select property</option>
               {properties.map((p) => (
                 <option key={p._id} value={p._id}>
-                  {p.name} {p.type === 'house' ? '(بيت)' : '(شقة مستقلة)'}
+                  {p.name} {p.type === 'house' ? '(House)' : '(Independent Apartment)'}
                 </option>
               ))}
             </select>
@@ -158,21 +158,21 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {isHouse && (
               <div>
-                <label className="label">الدور</label>
+                <label className="label">Floor</label>
                 <select className="input" value={floorId} onChange={(e) => { setFloorId(e.target.value); setApartmentId(''); setRoomId(''); setBedNumber(''); }}>
-                  <option value="">كل الأدوار</option>
+                  <option value="">All floors</option>
                   {(property?.floors || []).map((f) => (
                     <option key={f._id} value={f._id}>
-                      {f.name || 'دور بدون اسم'}
+                      {f.name || 'Unnamed floor'}
                     </option>
                   ))}
                 </select>
               </div>
             )}
             <div>
-              <label className="label">الشقة</label>
+              <label className="label">Apartment</label>
               <select className="input" value={apartmentId} onChange={(e) => { setApartmentId(e.target.value); setRoomId(''); setBedNumber(''); }}>
-                <option value="">اختر الشقة</option>
+                <option value="">Select apartment</option>
                 {apartments.map((a) => (
                   <option key={a._id} value={a._id}>
                     {a.name}
@@ -185,25 +185,25 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">الغرفة</label>
+            <label className="label">Room</label>
             <select className="input" value={roomId} onChange={(e) => { setRoomId(e.target.value); setBedNumber(''); }}>
-              <option value="">اختر الغرفة</option>
+              <option value="">Select room</option>
               {roomsIn.map((r) => (
                 <option key={r._id} value={r._id}>
-                  {r.number} ({r.beds?.length || 0} سرير — {fmtMoney(r.monthlyRent)} ج.م)
+                  {r.number} ({r.beds?.length || 0} beds — {fmtMoney(r.monthlyRent)} EGP)
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="label">السرير</label>
+            <label className="label">Bed</label>
             <select className="input" value={bedNumber} onChange={(e) => pickBed(e.target.value)}>
-              <option value="">اختر السرير</option>
+              <option value="">Select bed</option>
               {(room?.beds || []).map((b) => {
                 const h = bedHint(b)
                 return (
                   <option key={b.bedNumber} value={b.bedNumber}>
-                    سرير {b.bedNumber} — {h.text}
+                    Bed {b.bedNumber} — {h.text}
                   </option>
                 )
               })}
@@ -214,26 +214,26 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">من تاريخ</label>
+            <label className="label">From Date</label>
             <input type="date" className="input" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
           </div>
           <div>
-            <label className="label">إلى تاريخ</label>
+            <label className="label">To Date</label>
             <input type="date" className="input" value={toDate} onChange={(e) => setToDate(e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="label">الإيجار الشهري (مستقل)</label>
-            <input type="number" className="input" value={rent} onChange={(e) => setRent(e.target.value)} placeholder={bedPrice ? `افتراضي ${bedPrice}` : ''} />
+            <label className="label">Monthly Rent (Independent)</label>
+            <input type="number" className="input" value={rent} onChange={(e) => setRent(e.target.value)} placeholder={bedPrice ? `Default ${bedPrice}` : ''} />
           </div>
           <div>
-            <label className="label">التأمين</label>
+            <label className="label">Deposit</label>
             <input type="number" className="input" value={deposit} onChange={(e) => setDeposit(e.target.value)} placeholder="0" />
           </div>
           <div>
-            <label className="label">دفعة أولى عند التسجيل</label>
+            <label className="label">First Payment at Registration</label>
             <input type="number" className="input" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0" />
           </div>
         </div>
@@ -241,15 +241,15 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
         {Number(paidAmount) > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">تاريخ الدفعة</label>
+              <label className="label">Payment Date</label>
               <input type="date" className="input" value={paidDate} onChange={(e) => setPaidDate(e.target.value)} />
             </div>
             <div>
-              <label className="label">طريقة الدفع</label>
+              <label className="label">Payment Method</label>
               <select className="input" value={paidMethod} onChange={(e) => setPaidMethod(e.target.value)}>
-                <option value="cash">نقدًا</option>
-                <option value="transfer">تحويل بنكي</option>
-                <option value="other">أخرى</option>
+                <option value="cash">Cash</option>
+                <option value="transfer">Bank Transfer</option>
+                <option value="other">Other</option>
               </select>
             </div>
           </div>
@@ -258,34 +258,34 @@ export default function SummerCourseModal({ open, onClose, onSaved, students, pr
         {toDate && fromDate && (
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
             <div>
-              <p className="text-[10px] font-bold text-slate-400">المدة</p>
-              <p className="text-sm font-extrabold text-slate-700 mt-0.5">{months} شهر</p>
+              <p className="text-[10px] font-bold text-slate-400">Duration</p>
+              <p className="text-sm font-extrabold text-slate-700 mt-0.5">{months} months</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400">إيجار الفترة</p>
-              <p className="text-sm font-extrabold text-slate-700 mt-0.5">{fmtMoney(totalRent)} ج.م</p>
+              <p className="text-[10px] font-bold text-slate-400">Period Rent</p>
+              <p className="text-sm font-extrabold text-slate-700 mt-0.5">{fmtMoney(totalRent)} EGP</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400">الإجمالي</p>
-              <p className="text-sm font-extrabold text-primary-700 mt-0.5">{fmtMoney(total)} ج.م</p>
+              <p className="text-[10px] font-bold text-slate-400">Total</p>
+              <p className="text-sm font-extrabold text-primary-700 mt-0.5">{fmtMoney(total)} EGP</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400">المدفوع</p>
-              <p className="text-sm font-extrabold text-emerald-600 mt-0.5">{fmtMoney(paidAmount || 0)} ج.م</p>
+              <p className="text-[10px] font-bold text-slate-400">Paid</p>
+              <p className="text-sm font-extrabold text-emerald-600 mt-0.5">{fmtMoney(paidAmount || 0)} EGP</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400">المتبقي</p>
-              <p className="text-sm font-extrabold text-red-600 mt-0.5">{fmtMoney(remaining)} ج.م</p>
+              <p className="text-[10px] font-bold text-slate-400">Remaining</p>
+              <p className="text-sm font-extrabold text-red-600 mt-0.5">{fmtMoney(remaining)} EGP</p>
             </div>
           </div>
         )}
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'إضافة الكورس'}
+          {saving ? <Spinner /> : 'Add Course'}
         </button>
       </div>
     </Modal>

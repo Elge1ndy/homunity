@@ -42,7 +42,7 @@ exports.list = async (req, res, next) => {
 exports.get = async (req, res, next) => {
   try {
     const invoice = await db.col('Invoice').findById(req.params.id);
-    if (!invoice) return res.status(404).json({ message: 'الفاتورة غير موجودة' });
+    if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
     const student = await db.col('Student').findById(invoice.studentId);
     const room = student && student.roomId ? await db.col('Room').findById(student.roomId) : null;
     const housing = await db.col('Housing').findOne({});
@@ -59,9 +59,9 @@ exports.get = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { studentId, months } = req.body;
-    if (!studentId || !months || !months.length) return res.status(400).json({ message: 'اختر الطالب والشهور' });
+    if (!studentId || !months || !months.length) return res.status(400).json({ message: 'Select student and months' });
     const student = await db.col('Student').findById(studentId);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const payments = await db.col('Payment').find({ studentId: String(studentId) });
     const pMap = {};
     payments.forEach((p) => {
@@ -70,7 +70,7 @@ exports.create = async (req, res, next) => {
     const items = [];
     for (const month of months) {
       const p = pMap[month];
-      if (!p) return res.status(400).json({ message: `لا توجد دفعة لشهر ${month}` });
+      if (!p) return res.status(400).json({ message: `No payment found for month ${month}` });
       items.push({ month, amount: Number(p.amount) || 0, status: p.status });
     }
     const total = items.reduce((a, it) => a + it.amount, 0);
@@ -98,7 +98,7 @@ exports.create = async (req, res, next) => {
     fs.writeFileSync(path.join(pdfDir, pdfName), pdfBuf);
     const updated = await db.col('Invoice').findByIdAndUpdate(invoice._id, { $set: { pdfPath: `/uploads/invoices/${pdfName}` } });
 
-    await log(req, { action: `إنشاء فاتورة ${invoiceNumber} للطالب ${student.name}`, category: 'invoices', targetType: 'invoice', targetId: invoice._id });
+    await log(req, { action: `Created invoice ${invoiceNumber} for student ${student.name}`, category: 'invoices', targetType: 'invoice', targetId: invoice._id });
     emit(req, 'invoice:created', {});
     res.json({ invoice: updated });
   } catch (e) {
@@ -109,13 +109,13 @@ exports.create = async (req, res, next) => {
 exports.remove = async (req, res, next) => {
   try {
     const invoice = await db.col('Invoice').findById(req.params.id);
-    if (!invoice) return res.status(404).json({ message: 'الفاتورة غير موجودة' });
+    if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
     if (invoice.pdfPath) {
       const p = paths.bundled(invoice.pdfPath.replace(/^\//, ''));
       if (fs.existsSync(p)) fs.unlinkSync(p);
     }
     await db.col('Invoice').deleteById(req.params.id);
-    await log(req, { action: `حذف فاتورة ${invoice.invoiceNumber}`, category: 'invoices', targetType: 'invoice', targetId: req.params.id });
+    await log(req, { action: `Deleted invoice ${invoice.invoiceNumber}`, category: 'invoices', targetType: 'invoice', targetId: req.params.id });
     emit(req, 'invoice:deleted', {});
     res.json({ ok: true });
   } catch (e) {
@@ -126,7 +126,7 @@ exports.remove = async (req, res, next) => {
 exports.pdf = async (req, res, next) => {
   try {
     const invoice = await db.col('Invoice').findById(req.params.id);
-    if (!invoice) return res.status(404).json({ message: 'الفاتورة غير موجودة' });
+    if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
     if (invoice.pdfPath) {
       const p = path.join(paths.container(), invoice.pdfPath.replace(/^\//, ''));
       if (fs.existsSync(p)) {

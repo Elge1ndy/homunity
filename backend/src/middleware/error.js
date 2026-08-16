@@ -12,22 +12,22 @@ module.exports = function errorHandler(err, req, res, next) {
     fs.appendFileSync(path.join(logDir, 'errors.log'), line);
   } catch {}
   if (err && err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({ message: 'حجم الملف أكبر من المسموح' });
+    return res.status(400).json({ message: 'File too large' });
   }
   if (err && err.name === 'MulterError') {
     return res.status(400).json({ message: err.message });
   }
   if (err && err.name === 'EntityTooLarge') {
-    return res.status(400).json({ message: 'البيانات أكبر من المسموح' });
+    return res.status(400).json({ message: 'Data too large' });
   }
   if (err && err.code === 11000) {
-    return res.status(400).json({ message: 'بيانات مكررة (الرقم مستخدم بالفعل)' });
+    return res.status(400).json({ message: 'Duplicate data' });
   }
   if (err && err.status === 400 && err.type === 'entity.parse.failed') {
-    return res.status(400).json({ message: 'البيانات المرسلة غير صالحة' });
+    return res.status(400).json({ message: 'Invalid data' });
   }
   if (err && err.status && typeof err.status === 'number') {
-    return res.status(err.status).json({ message: err.message || 'خطأ' });
+    return res.status(err.status).json({ message: err.message || 'Error' });
   }
-  res.status(500).json({ message: 'حدث خطأ في الخادم' });
+  res.status(500).json({ message: 'Internal server error' });
 };

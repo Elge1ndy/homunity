@@ -28,24 +28,24 @@ import { useRealtime } from '../socket'
 import Logo from './Logo.jsx'
 
 const NAV = [
-  { to: '/', label: 'لوحة التحكم', icon: LayoutDashboard, perm: null },
-  { to: '/students', label: 'الطلاب', icon: Users, perm: 'students' },
-  { to: '/rooms', label: 'الغرف', icon: DoorOpen, perm: 'rooms' },
-  { to: '/beds', label: 'الأسرة', icon: BedSingle, perm: 'beds' },
-  { to: '/properties', label: 'العقارات', icon: Home, perm: 'rooms' },
-  { to: '/payments', label: 'المدفوعات', icon: Wallet, perm: 'payments' },
-  { to: '/finance', label: 'اللوحة المالية', icon: ListOrdered, perm: 'payments' },
-  { to: '/calendar', label: 'تقويم الدفعات', icon: CalendarDays, perm: 'payments' },
-  { to: '/summer-courses', label: 'الكورسات الصيفية', icon: Sun, perm: 'students' },
-  { to: '/bookings', label: 'الحجوزات', icon: CalendarRange, perm: 'students' },
-  { to: '/invoices', label: 'الفواتير', icon: FileText, perm: 'invoices' },
-  { to: '/reports', label: 'التقارير', icon: BarChart3, perm: 'reports' },
-  { to: '/deposits', label: 'التأمين', icon: ShieldCheck, perm: 'reports' },
-  { to: '/housing', label: 'السكن', icon: Building2, perm: 'settings' },
-  { to: '/archived', label: 'الأرشيف', icon: Archive, perm: 'students' },
-  { to: '/notifications', label: 'الإشعارات', icon: Bell, perm: null },
-  { to: '/activity', label: 'سجل النشاط', icon: ListOrdered, perm: null },
-  { to: '/settings', label: 'الإعدادات', icon: SettingsIcon, perm: 'settings' },
+  { to: '/', label: 'Dashboard', icon: LayoutDashboard, perm: null },
+  { to: '/students', label: 'Students', icon: Users, perm: 'students' },
+  { to: '/rooms', label: 'Rooms', icon: DoorOpen, perm: 'rooms' },
+  { to: '/beds', label: 'Beds', icon: BedSingle, perm: 'beds' },
+  { to: '/properties', label: 'Properties', icon: Home, perm: 'rooms' },
+  { to: '/payments', label: 'Payments', icon: Wallet, perm: 'payments' },
+  { to: '/finance', label: 'Finance', icon: ListOrdered, perm: 'payments' },
+  { to: '/calendar', label: 'Calendar', icon: CalendarDays, perm: 'payments' },
+  { to: '/summer-courses', label: 'Summer Courses', icon: Sun, perm: 'students' },
+  { to: '/bookings', label: 'Bookings', icon: CalendarRange, perm: 'students' },
+  { to: '/invoices', label: 'Invoices', icon: FileText, perm: 'invoices' },
+  { to: '/reports', label: 'Reports', icon: BarChart3, perm: 'reports' },
+  { to: '/deposits', label: 'Deposits', icon: ShieldCheck, perm: 'reports' },
+  { to: '/housing', label: 'Housing', icon: Building2, perm: 'settings' },
+  { to: '/archived', label: 'Archived', icon: Archive, perm: 'students' },
+  { to: '/notifications', label: 'Notifications', icon: Bell, perm: null },
+  { to: '/activity', label: 'Activity Log', icon: ListOrdered, perm: null },
+  { to: '/settings', label: 'Settings', icon: SettingsIcon, perm: 'settings' },
 ]
 
 function NotificationBell() {
@@ -81,13 +81,13 @@ function NotificationBell() {
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
           <div className="absolute end-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-30 overflow-hidden">
             <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-              <span className="font-bold text-sm text-slate-700">الإشعارات</span>
+              <span className="font-bold text-sm text-slate-700">Notifications</span>
               <NavLink to="/notifications" className="text-xs text-primary-700 font-semibold" onClick={() => setOpen(false)}>
-                عرض الكل
+                View All
               </NavLink>
             </div>
             <div className="max-h-80 overflow-y-auto">
-              {items.length === 0 && <p className="p-4 text-sm text-slate-400 text-center">لا توجد إشعارات</p>}
+              {items.length === 0 && <p className="p-4 text-sm text-slate-400 text-center">No notifications</p>}
               {items.map((n) => (
                 <div key={n._id} className={`px-4 py-3 border-b border-slate-50 ${n.read ? '' : 'bg-primary-50/50'}`}>
                   <p className="text-sm font-bold text-slate-700">{n.title}</p>
@@ -128,10 +128,10 @@ export default function Layout() {
         <div className="flex items-center gap-3 px-5 h-16 border-b border-white/10">
           {logo ? (
             <>
-              <img src={logo} alt="الشعار" className="h-11 w-11 rounded-xl object-cover shrink-0 border border-white/10" />
+              <img src={logo} alt="Logo" className="h-11 w-11 rounded-xl object-cover shrink-0 border border-white/10" />
               <div>
                 <p className="font-extrabold leading-none text-white text-lg" dir="ltr">Homeunity</p>
-                <p className="text-[10px] text-slate-400 mt-1 font-semibold">إدارة السكن الطلابي</p>
+                <p className="text-[10px] text-slate-400 mt-1 font-semibold">Student Housing</p>
               </div>
             </>
           ) : (
@@ -195,7 +195,7 @@ export default function Layout() {
               className="p-2 rounded-lg hover:bg-red-50 text-red-600 flex items-center gap-1.5 text-sm font-semibold"
             >
               <LogOut size={18} />
-              <span className="hidden sm:inline">خروج</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </header>

@@ -28,7 +28,7 @@ exports.public = async (req, res, next) => {
 exports.uploadLogo = async (req, res, next) => {
   try {
     const f = req.file;
-    if (!f) return res.status(400).json({ message: 'ارفع صورة الشعار أولًا' });
+    if (!f) return res.status(400).json({ message: 'Upload logo image first' });
     const logo = await saveUploaded(f, 'images', 'logo');
     let housing = await db.col('Housing').findOne({});
     if (housing) {
@@ -36,7 +36,7 @@ exports.uploadLogo = async (req, res, next) => {
     } else {
       housing = await db.col('Housing').insert({ logo, images: [] });
     }
-    await log(req, { action: 'تحديث شعار البرنامج', category: 'housing', targetType: 'housing', targetId: housing._id });
+    await log(req, { action: 'Updated program logo', category: 'housing', targetType: 'housing', targetId: housing._id });
     emit(req, 'housing:updated', { housing });
     res.json({ housing });
   } catch (e) {
@@ -64,7 +64,7 @@ exports.update = async (req, res, next) => {
     } else {
       housing = await db.col('Housing').insert({ ...set, images: [] });
     }
-    await log(req, { action: 'تم تعديل بيانات السكن', category: 'housing', targetType: 'housing', targetId: housing._id });
+    await log(req, { action: 'Updated housing information', category: 'housing', targetType: 'housing', targetId: housing._id });
     emit(req, 'housing:updated', { housing });
     res.json({ housing });
   } catch (e) {

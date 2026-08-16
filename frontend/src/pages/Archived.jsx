@@ -17,7 +17,7 @@ export default function Archived() {
   const restore = async (s) => {
     try {
       await api.post(`/students/${s._id}/restore`)
-      toast('تمت استعادة الطالب')
+      toast('Student restored')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -25,10 +25,10 @@ export default function Archived() {
   }
 
   const purge = async (s) => {
-    if (!window.confirm(`حذف ${s.name} نهائيًا؟ لا يمكن التراجع.`)) return
+    if (!window.confirm(`Permanently delete ${s.name}? This cannot be undone.`)) return
     try {
       await api.delete(`/students/${s._id}`)
-      toast('تم الحذف')
+      toast('Deleted')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -40,24 +40,24 @@ export default function Archived() {
       <div className="card overflow-x-auto">
         <div className="flex items-center gap-2 px-6 py-4 border-b border-slate-100">
           <Archive size={18} className="text-amber-500" />
-          <h3 className="font-extrabold text-slate-800">الطلاب المؤرشفون</h3>
-          <span className="ms-auto text-sm text-slate-400">{data?.students?.length || 0} طالب</span>
+          <h3 className="font-extrabold text-slate-800">Archived Students</h3>
+          <span className="ms-auto text-sm text-slate-400">{data?.students?.length || 0} students</span>
         </div>
         {loading ? (
           <Spinner full />
         ) : !data?.students?.length ? (
-          <EmptyState message="لا يوجد طلاب مؤرشفون" />
+          <EmptyState message="No archived students" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">رقم الطالب</th>
-                  <th className="th">الاسم</th>
-                  <th className="th">الهاتف</th>
-                  <th className="th">الإيجار</th>
-                  <th className="th">تاريخ الخروج</th>
-                  <th className="th">تاريخ الأرشفة</th>
+                  <th className="th">Student ID</th>
+                  <th className="th">Name</th>
+                  <th className="th">Phone</th>
+                  <th className="th">Rent</th>
+                  <th className="th">Check-out Date</th>
+                  <th className="th">Archive Date</th>
                   <th className="th"></th>
                 </tr>
               </thead>

@@ -1,9 +1,9 @@
-export const MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر']
+export const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 export function monthLabel(month) {
   if (!month) return ''
   const [y, m] = String(month).split('-')
-  return `${MONTHS_AR[Number(m) - 1] || m} ${y}`
+  return `${MONTHS_EN[Number(m) - 1] || m} ${y}`
 }
 
 export function currentMonthKey() {
@@ -32,10 +32,10 @@ export function fmtDateTime(str) {
 export function timeAgo(str) {
   if (!str) return ''
   const sec = Math.floor((Date.now() - new Date(str).getTime()) / 1000)
-  if (sec < 60) return 'الآن'
-  if (sec < 3600) return `منذ ${Math.floor(sec / 60)} دقيقة`
-  if (sec < 86400) return `منذ ${Math.floor(sec / 3600)} ساعة`
-  if (sec < 2592000) return `منذ ${Math.floor(sec / 86400)} يوم`
+  if (sec < 60) return 'Just now'
+  if (sec < 3600) return `${Math.floor(sec / 60)} min ago`
+  if (sec < 86400) return `${Math.floor(sec / 3600)} hr ago`
+  if (sec < 2592000) return `${Math.floor(sec / 86400)} days ago`
   return fmtDate(str)
 }
 

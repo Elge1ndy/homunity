@@ -21,7 +21,7 @@ export default function Beds() {
         <Spinner full />
       ) : !data?.rooms?.length ? (
         <div className="card">
-          <EmptyState message="لا توجد غرف — أضف غرفًا أولًا" />
+          <EmptyState message="No rooms — add rooms first" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -32,7 +32,7 @@ export default function Beds() {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <DoorOpen size={18} className="text-primary-700" />
-                    <h3 className="font-extrabold text-slate-800">غرفة {r.number}</h3>
+                    <h3 className="font-extrabold text-slate-800">Room {r.number}</h3>
                   </div>
                   <span className="text-xs font-bold text-slate-400">{occupied}/{r.capacity}</span>
                 </div>
@@ -48,15 +48,15 @@ export default function Beds() {
                           free ? 'bg-emerald-50 border border-emerald-200 hover:bg-emerald-100' : 'bg-primary-50 border border-primary-200'
                         }`}
                       >
-                        <p className="text-[11px] font-bold text-slate-400 mb-1">سرير {b.bedNumber}</p>
+                        <p className="text-[11px] font-bold text-slate-400 mb-1">Bed {b.bedNumber}</p>
                         {free ? (
                           <p className="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500" /> متاح
+                            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Available
                           </p>
                         ) : (
                           <div>
                             <p className="text-xs font-bold text-primary-800 flex items-center gap-1 truncate">
-                              <User size={12} /> {stu?.name || 'طالب'}
+                              <User size={12} /> {stu?.name || 'Student'}
                             </p>
                             <p className="text-[10px] text-primary-500 font-mono" dir="ltr">{stu?.studentId || ''}</p>
                           </div>
@@ -66,7 +66,7 @@ export default function Beds() {
                   })}
                 </div>
                 <Link to="/students" className="text-xs text-primary-700 font-bold mt-3 inline-block">
-                  إدارة الطلاب
+                  Manage Students
                 </Link>
               </div>
             )

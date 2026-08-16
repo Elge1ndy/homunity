@@ -7,7 +7,7 @@ const { buildWorkbook } = require('../utils/workbook');
 let timer = null;
 let ready = false;
 
-const FILE_NAME = 'البيانات.xlsx';
+const FILE_NAME = 'Data.xlsx';
 const BACKUP_KEEP = 7;
 
 function exportsDir() {

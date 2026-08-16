@@ -23,7 +23,7 @@ function MonthlySection() {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
           <Wallet size={18} className="text-primary-700" />
-          <h3 className="font-extrabold text-slate-800">تقرير شهري</h3>
+          <h3 className="font-extrabold text-slate-800">Monthly Report</h3>
         </div>
         <input type="month" className="input !w-auto ms-auto" dir="ltr" value={month} onChange={(e) => setMonth(e.target.value)} />
       </div>
@@ -34,29 +34,29 @@ function MonthlySection() {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-5">
             <div className="p-4 rounded-xl bg-slate-50">
-              <p className="text-xs font-bold text-slate-500">المتوقع</p>
+              <p className="text-xs font-bold text-slate-500">Expected</p>
               <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(data.expected)}</p>
             </div>
             <div className="p-4 rounded-xl bg-emerald-50">
-              <p className="text-xs font-bold text-emerald-600">المحصل</p>
+              <p className="text-xs font-bold text-emerald-600">Collected</p>
               <p className="text-lg font-extrabold text-emerald-700 mt-1">{fmtMoney(data.collected)}</p>
             </div>
             <div className="p-4 rounded-xl bg-red-50">
-              <p className="text-xs font-bold text-red-600">المتبقي</p>
+              <p className="text-xs font-bold text-red-600">Remaining</p>
               <p className="text-lg font-extrabold text-red-700 mt-1">{fmtMoney(data.remaining)}</p>
             </div>
             <div className="p-4 rounded-xl bg-emerald-50">
-              <p className="text-xs font-bold text-emerald-600">دافعون</p>
+              <p className="text-xs font-bold text-emerald-600">Paid</p>
               <p className="text-lg font-extrabold text-emerald-700 mt-1">{data.paidStudents}</p>
             </div>
             <div className="p-4 rounded-xl bg-red-50">
-              <p className="text-xs font-bold text-red-600">غير دافعين</p>
+              <p className="text-xs font-bold text-red-600">Unpaid</p>
               <p className="text-lg font-extrabold text-red-700 mt-1">{data.unpaidStudents}</p>
             </div>
             <div className="p-4 rounded-xl bg-teal-50">
-              <p className="text-xs font-bold text-teal-600">تأمين محصل</p>
+              <p className="text-xs font-bold text-teal-600">Deposits Collected</p>
               <p className="text-lg font-extrabold text-teal-700 mt-1">{fmtMoney(data.depositsCollected?.sum)}</p>
-              <p className="text-[10px] text-teal-500">{data.depositsCollected?.count || 0} وصل — مسترد {fmtMoney(data.depositsRefunded?.sum)} — خصم {fmtMoney(data.depositsDeducted?.sum)}</p>
+              <p className="text-[10px] text-teal-500">{data.depositsCollected?.count || 0} received — Refunded {fmtMoney(data.depositsRefunded?.sum)} — Deducted {fmtMoney(data.depositsDeducted?.sum)}</p>
             </div>
           </div>
 
@@ -64,10 +64,10 @@ function MonthlySection() {
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">الطالب</th>
-                  <th className="th">المبلغ</th>
-                  <th className="th">الحالة</th>
-                  <th className="th">تاريخ الدفع</th>
+                  <th className="th">Student</th>
+                   <th className="th">Amount</th>
+                   <th className="th">Status</th>
+                   <th className="th">Payment Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -75,7 +75,7 @@ function MonthlySection() {
                   <tr key={p._id} className="border-t border-slate-100">
                     <td className="td font-semibold">{p.student.name}</td>
                     <td className="td">{fmtMoney(p.amount)}</td>
-                    <td className="td">{p.status === 'paid' ? 'مدفوع' : p.status === 'overdue' ? 'متأخر' : 'غير مدفوع'}</td>
+                    <td className="td">{p.status === 'paid' ? 'Paid' : p.status === 'overdue' ? 'Overdue' : 'Unpaid'}</td>
                     <td className="td">{p.paidAt ? new Date(p.paidAt).toISOString().slice(0, 10) : '—'}</td>
                   </tr>
                 ))}
@@ -85,10 +85,10 @@ function MonthlySection() {
 
           <div className="flex gap-2 mt-4">
             <button className="btn-primary" onClick={() => dl(`reports/monthly/pdf?month=${month}`, `report-${month}.pdf`)}>
-              <FileDown size={16} /> تحميل التقرير PDF
+              <FileDown size={16} /> Download PDF Report
             </button>
             <button className="btn-outline" onClick={() => dl(`reports/export/payments?month=${month}`, `payments-${month}.xlsx`)}>
-              <FileSpreadsheet size={16} /> تصدير Excel
+              <FileSpreadsheet size={16} /> Export Excel
             </button>
           </div>
         </>
@@ -115,7 +115,7 @@ function YearlySection() {
       <div className="flex flex-wrap items-center gap-3 mb-4">
         <div className="flex items-center gap-2">
           <BarChart3 size={18} className="text-primary-700" />
-          <h3 className="font-extrabold text-slate-800">إيرادات السنة</h3>
+          <h3 className="font-extrabold text-slate-800">Yearly Revenue</h3>
         </div>
         <input type="number" className="input !w-28 ms-auto" dir="ltr" value={year} onChange={(e) => setYear(Number(e.target.value))} />
       </div>
@@ -128,10 +128,10 @@ function YearlySection() {
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">الشهر</th>
-                  <th className="th">المتوقع</th>
-                  <th className="th">المحصل</th>
-                  <th className="th">المتبقي</th>
+                  <th className="th">Month</th>
+                   <th className="th">Expected</th>
+                   <th className="th">Collected</th>
+                   <th className="th">Remaining</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,8 +147,8 @@ function YearlySection() {
             </table>
           </div>
           <div className="mt-4 p-4 rounded-xl bg-primary-50 flex items-center justify-between">
-            <span className="font-bold text-primary-800">إجمالي المحصل {year}</span>
-            <span className="font-extrabold text-lg text-primary-900">{fmtMoney(data.totalCollected)} ج.م</span>
+            <span className="font-bold text-primary-800">Total Collected {year}</span>
+             <span className="font-extrabold text-lg text-primary-900">{fmtMoney(data.totalCollected)} EGP</span>
           </div>
         </>
       )}
@@ -169,13 +169,13 @@ function ExportsSection() {
     <div className="card p-6">
       <div className="flex items-center gap-2 mb-4">
         <Download size={18} className="text-primary-700" />
-        <h3 className="font-extrabold text-slate-800">تصدير البيانات</h3>
+        <h3 className="font-extrabold text-slate-800">Export Data</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {[
-          ['/reports/export/students?filter=active', 'الطلاب النشطون', FileText],
-          ['/reports/export/students?filter=all', 'جميع الطلاب', FileText],
-          ['/reports/export/rooms', 'الغرف', DoorOpen],
+          ['/reports/export/students?filter=active', 'Active Students', FileText],
+           ['/reports/export/students?filter=all', 'All Students', FileText],
+           ['/reports/export/rooms', 'Rooms', DoorOpen],
         ].map(([url, label, Icon]) => (
           <button key={url} className="btn-outline justify-start" onClick={() => dl(url, label + '.xlsx')}>
             <Icon size={16} /> {label}

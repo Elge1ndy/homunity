@@ -6,16 +6,16 @@ import { useToast } from '../context/ToastContext.jsx'
 import { errMsg } from '../hooks/useApi.js'
 
 const PERM_LABELS = [
-  ['students', 'إدارة الطلاب'],
-  ['rooms', 'إدارة الغرف'],
-  ['beds', 'إدارة الأسرة'],
-  ['payments', 'إدارة المدفوعات'],
-  ['invoices', 'إدارة الفواتير'],
-  ['reports', 'التقارير'],
-  ['notifications', 'الإشعارات'],
-  ['activity', 'سجل النشاط'],
-  ['settings', 'الإعدادات'],
-  ['export', 'استيراد / تصدير'],
+  ['students', 'Student Management'],
+  ['rooms', 'Room Management'],
+  ['beds', 'Bed Management'],
+  ['payments', 'Payment Management'],
+  ['invoices', 'Invoice Management'],
+  ['reports', 'Reports'],
+  ['notifications', 'Notifications'],
+  ['activity', 'Activity Log'],
+  ['settings', 'Settings'],
+  ['export', 'Import / Export'],
 ]
 
 export default function AdminModal({ open, onClose, onSaved, admin }) {
@@ -46,10 +46,10 @@ export default function AdminModal({ open, onClose, onSaved, admin }) {
       if (admin) {
         if (!body.password) delete body.password
         await api.put(`/admins/${admin._id}`, body)
-        toast('تم تحديث بيانات المدير')
+        toast('Admin updated successfully')
       } else {
         await api.post('/admins', body)
-        toast('تمت إضافة مدير جديد')
+        toast('New admin added successfully')
       }
       onSaved()
       onClose()
@@ -61,26 +61,26 @@ export default function AdminModal({ open, onClose, onSaved, admin }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={admin ? 'تعديل مدير' : 'إضافة مدير'}>
+    <Modal open={open} onClose={onClose} title={admin ? 'Edit Admin' : 'Add Admin'}>
       <div className="space-y-4">
         <div>
-          <label className="label">الاسم *</label>
+          <label className="label">Name *</label>
           <input className="input" value={form.name} onChange={set('name')} />
         </div>
         <div>
-          <label className="label">اسم المستخدم *</label>
+          <label className="label">Username *</label>
           <input className="input" dir="ltr" value={form.username} onChange={set('username')} />
         </div>
         <div>
-          <label className="label">رقم الهاتف</label>
+          <label className="label">Phone</label>
           <input className="input" dir="ltr" value={form.phone} onChange={set('phone')} />
         </div>
         <div>
-          <label className="label">{admin ? 'كلمة مرور جديدة (اختياري)' : 'كلمة المرور *'}</label>
+          <label className="label">{admin ? 'New Password (optional)' : 'Password *'}</label>
           <input className="input" dir="ltr" type="password" value={form.password} onChange={set('password')} />
         </div>
         <div>
-          <p className="label">الصلاحيات</p>
+          <p className="label">Permissions</p>
           <div className="grid grid-cols-2 gap-2">
             {PERM_LABELS.map(([k, label]) => (
               <label key={k} className="flex items-center gap-2 text-sm text-slate-700 font-medium">
@@ -93,10 +93,10 @@ export default function AdminModal({ open, onClose, onSaved, admin }) {
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'حفظ'}
+          {saving ? <Spinner /> : 'Save'}
         </button>
       </div>
     </Modal>

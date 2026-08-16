@@ -92,7 +92,7 @@ export default function StudentDetails() {
     try {
       await api.post(`/students/${id}/notes`, { text: noteText })
       setNoteText('')
-      toast('تمت إضافة الملاحظة')
+      toast('Note added')
       load()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -103,18 +103,18 @@ export default function StudentDetails() {
     try {
       const r = await api.get(`/whatsapp/remind/${p._id}`)
       window.open(r.url, '_blank')
-      toast('تم فتح واتساب مع رسالة التذكير')
+      toast('WhatsApp opened with reminder message')
     } catch (e) {
       toast(errMsg(e), 'error')
     }
   }
 
   const remove = async () => {
-    const name = data?.student?.name || 'الطالب'
-    if (!window.confirm(`هل أنت متأكد من حذف "${name}" نهائيًا؟ سيتم حذف كل بياناته ومدفوعاته ولا يمكن التراجع.`)) return
+    const name = data?.student?.name || 'Student'
+    if (!window.confirm(`Are you sure you want to permanently delete "${name}"? All data and payments will be deleted and cannot be undone.`)) return
     try {
       await api.delete(`/students/${id}`)
-      toast('تم حذف الطالب نهائيًا')
+      toast('Student deleted permanently')
       navigate('/students')
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -129,7 +129,7 @@ export default function StudentDetails() {
   return (
     <div className="space-y-6">
       <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-primary-700">
-        <ArrowRight size={16} /> رجوع
+        <ArrowRight size={16} /> Back
       </button>
 
       <div className="card p-6">
@@ -142,7 +142,7 @@ export default function StudentDetails() {
               </h2>
               <p className="font-mono text-sm text-primary-700 font-bold" dir="ltr">{student.studentId}</p>
               <p className="text-sm text-slate-500 mt-1">
-                {student.room ? `غرفة ${student.room.number} — سرير ${student.bedNumber || '—'}` : 'بدون غرفة'}
+                {student.room ? `Room ${student.room.number} — Bed ${student.bedNumber || '—'}` : 'No room'}
               </p>
             </div>
           </div>
@@ -150,36 +150,36 @@ export default function StudentDetails() {
             {student.status === 'active' && (
               <>
                 <button className="btn-outline" onClick={() => setEditOpen(true)}>
-                  <Pencil size={15} /> تعديل
+                  <Pencil size={15} /> Edit
                 </button>
                 <button className="btn-primary !py-2" onClick={() => setTransferOpen(true)}>
-                  <MoveRight size={15} /> نقل
+                  <MoveRight size={15} /> Transfer
                 </button>
                 <button
                   className="btn-outline text-red-600 border-red-200 hover:bg-red-50"
                   onClick={() => setCheckoutOpen(true)}
                 >
-                  <Ban size={15} /> إنهاء الإقامة
+                  <Ban size={15} /> Check-out
                 </button>
                 <button
                   className="btn-outline text-amber-600 border-amber-200 hover:bg-amber-50"
-                  onClick={() => window.confirm('أرشفة الطالب؟ ستبقى كل بياناته محفوظة.') && doAction('/archive', 'تمت أرشفة الطالب')}
+                  onClick={() => window.confirm('Archive student? All data will be kept.') && doAction('/archive', 'Student archived')}
                 >
-                  <Archive size={15} /> أرشفة
+                  <Archive size={15} /> Archive
                 </button>
                 <button className="btn-danger" onClick={remove}>
-                  <Trash2 size={15} /> حذف
+                  <Trash2 size={15} /> Delete
                 </button>
               </>
             )}
             {student.status === 'archived' && (
-              <button className="btn-outline" onClick={() => doAction('/restore', 'تمت استعادة الطالب')}>
-                <RotateCcw size={15} /> استعادة
+              <button className="btn-outline" onClick={() => doAction('/restore', 'Student restored')}>
+                <RotateCcw size={15} /> Restore
               </button>
             )}
             {student.status === 'archived' && (
               <button className="btn-danger" onClick={remove}>
-                <Trash2 size={15} /> حذف نهائي
+                  <Trash2 size={15} /> Delete permanently
               </button>
             )}
           </div>
@@ -206,43 +206,43 @@ export default function StudentDetails() {
           <div className="card p-6">
             <div className="flex items-center gap-2 mb-4">
               <Wallet size={20} className="text-primary-700" />
-              <h3 className="font-extrabold text-slate-800">الملخص المالي</h3>
+              <h3 className="font-extrabold text-slate-800">Financial Summary</h3>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 rounded-xl bg-slate-50">
                 <p className="text-xs font-bold text-slate-500">Expected Rent</p>
-                <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(financial.totalExpected)} ج.م</p>
+                <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(financial.totalExpected)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-emerald-50">
                 <p className="text-xs font-bold text-emerald-600">Total Paid</p>
-                <p className="text-lg font-extrabold text-emerald-700 mt-1">{fmtMoney(financial.totalPaid)} ج.م</p>
+                <p className="text-lg font-extrabold text-emerald-700 mt-1">{fmtMoney(financial.totalPaid)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-red-50">
                 <p className="text-xs font-bold text-red-600">Total Remaining</p>
-                <p className="text-lg font-extrabold text-red-700 mt-1">{fmtMoney(financial.totalRemaining)} ج.م</p>
+                <p className="text-lg font-extrabold text-red-700 mt-1">{fmtMoney(financial.totalRemaining)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-orange-50">
                 <p className="text-xs font-bold text-orange-600">Total Overdue</p>
-                <p className="text-lg font-extrabold text-orange-700 mt-1">{fmtMoney(financial.totalOverdue)} ج.م</p>
+                <p className="text-lg font-extrabold text-orange-700 mt-1">{fmtMoney(financial.totalOverdue)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-indigo-50">
                 <p className="text-xs font-bold text-indigo-600">Total Upcoming</p>
-                <p className="text-lg font-extrabold text-indigo-700 mt-1">{fmtMoney(financial.totalUpcoming)} ج.م</p>
+                <p className="text-lg font-extrabold text-indigo-700 mt-1">{fmtMoney(financial.totalUpcoming)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-amber-50">
                 <p className="text-xs font-bold text-amber-600">Deposit</p>
-                <p className="text-lg font-extrabold text-amber-700 mt-1">{fmtMoney(deposit.originalAmount)} ج.م</p>
+                <p className="text-lg font-extrabold text-amber-700 mt-1">{fmtMoney(deposit.originalAmount)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-slate-100">
                 <p className="text-xs font-bold text-slate-600">Total Due</p>
-                <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(financial.totalDue)} ج.م</p>
+                <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(financial.totalDue)} EGP</p>
               </div>
               <div className="p-4 rounded-xl bg-violet-50">
-                <p className="text-xs font-bold text-violet-600">المواقف</p>
+                <p className="text-xs font-bold text-violet-600">Status</p>
                 <p className="text-sm font-extrabold text-violet-700 mt-1">
-                  {financial.monthsPaid + financial.monthsPartial + financial.monthsUnpaid + financial.monthsOverdue + financial.monthsUpcoming} شهر
+                  {financial.monthsPaid + financial.monthsPartial + financial.monthsUnpaid + financial.monthsOverdue + financial.monthsUpcoming} months
                 </p>
-                <p className="text-[10px] text-violet-500 mt-0.5">مدفوع {financial.monthsPaid} • جزئي {financial.monthsPartial} • متأخر {financial.monthsOverdue} • قادم {financial.monthsUpcoming}</p>
+                <p className="text-[10px] text-violet-500 mt-0.5">Paid {financial.monthsPaid} • Partial {financial.monthsPartial} • Overdue {financial.monthsOverdue} • Upcoming {financial.monthsUpcoming}</p>
               </div>
             </div>
           </div>
@@ -251,25 +251,25 @@ export default function StudentDetails() {
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
                 <ShieldCheck size={20} className="text-primary-700" />
-                <h3 className="font-extrabold text-slate-800">التأمين</h3>
+                <h3 className="font-extrabold text-slate-800">Deposit</h3>
                 {deposit?.statusLabel && <Badge label={deposit.statusLabel} cls={deposit.status === 'paid' ? 'bg-teal-100 text-teal-700' : deposit.status === 'full' ? 'bg-emerald-100 text-emerald-700' : deposit.status === 'partial' || deposit.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'} />}
               </div>
               <div className="flex flex-wrap gap-2">
                 {deposit?.paymentStatus !== 'paid' && (
                   <button className="btn-primary !py-1.5 text-xs" onClick={() => setPayOpen(true)}>
-                    <Check size={14} /> تسجيل دفع التأمين
+                    <Check size={14} /> Record deposit payment
                   </button>
                 )}
                 <button className="btn-outline !py-1.5 text-xs" onClick={() => setEditDepOpen(true)}>
-                  <Pencil size={14} /> تعديل
+                  <Pencil size={14} /> Edit
                 </button>
                 {deposit?.paymentStatus === 'paid' && deposit?.remainingAmount > 0 && deposit?.status !== 'full' && (
                   <>
                     <button className="btn-outline !py-1.5 text-xs text-red-600 !border-red-200" onClick={() => setDeductOpen(true)}>
-                      خصم
+                      Deduct
                     </button>
                     <button className="btn-outline !py-1.5 text-xs text-emerald-700 !border-emerald-200" onClick={() => setRefundOpen(true)} disabled={deposit.remainingAmount <= 0}>
-                      استرداد
+                      Refund
                     </button>
                   </>
                 )}
@@ -278,43 +278,43 @@ export default function StudentDetails() {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="p-4 rounded-xl bg-slate-50">
-                <p className="text-xs font-bold text-slate-500">المطلوب (الأصل)</p>
+                <p className="text-xs font-bold text-slate-500">Required (Original)</p>
                 <p className="text-lg font-extrabold text-slate-800 mt-1">{fmtMoney(deposit?.originalAmount)}</p>
               </div>
               <div className="p-4 rounded-xl bg-red-50">
-                <p className="text-xs font-bold text-red-600">إجمالي الخصومات</p>
+                <p className="text-xs font-bold text-red-600">Total Deductions</p>
                 <p className="text-lg font-extrabold text-red-700 mt-1">{fmtMoney(deposit?.totalDeductions)}</p>
               </div>
               <div className="p-4 rounded-xl bg-emerald-50">
-                <p className="text-xs font-bold text-emerald-600">المسترد</p>
+                <p className="text-xs font-bold text-emerald-600">Refunded</p>
                 <p className="text-lg font-extrabold text-emerald-700 mt-1">{fmtMoney(deposit?.refundedAmount)}</p>
               </div>
               <div className="p-4 rounded-xl bg-teal-50">
-                <p className="text-xs font-bold text-teal-600">المتبقي</p>
+                <p className="text-xs font-bold text-teal-600">Remaining</p>
                 <p className="text-lg font-extrabold text-teal-700 mt-1">{fmtMoney(deposit?.remainingAmount)}</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 text-sm">
               <span className="text-slate-500">
-                تاريخ الدفع: <b className="text-slate-700" dir="ltr">{deposit?.paymentDate || '—'}</b>
+                Payment date: <b className="text-slate-700" dir="ltr">{deposit?.paymentDate || '—'}</b>
               </span>
               <span className="text-slate-500">
-                طريقة الدفع: <b className="text-slate-700">{deposit?.paymentMethod === 'cash' ? 'نقدًا' : deposit?.paymentMethod === 'transfer' ? 'تحويل بنكي' : 'أخرى'}</b>
+                Payment method: <b className="text-slate-700">{deposit?.paymentMethod === 'cash' ? 'Cash' : deposit?.paymentMethod === 'transfer' ? 'Bank Transfer' : 'Other'}</b>
               </span>
               {deposit?.paymentProof && (
                 <a href={deposit.paymentProof} target="_blank" rel="noreferrer" className="text-primary-700 font-semibold flex items-center gap-1">
-                  <Image size={14} /> إثبات الدفع
+                  <Image size={14} /> Payment proof
                 </a>
               )}
               {deposit?.refundDate && (
                 <span className="text-slate-500">
-                  تاريخ الاسترداد: <b className="text-slate-700" dir="ltr">{deposit.refundDate}</b>
+                  Refund date: <b className="text-slate-700" dir="ltr">{deposit.refundDate}</b>
                 </span>
               )}
               {deposit?.paymentStatus === 'paid' && (
                 <button className="text-primary-700 font-semibold flex items-center gap-1" onClick={() => downloadBlob(`/api/students/${student._id}/deposit/receipt?type=pay`, `deposit-receipt.pdf`)}>
-                  <FileText size={14} /> وصل استلام التأمين
+                  <FileText size={14} /> Deposit receipt
                 </button>
               )}
             </div>
@@ -322,34 +322,34 @@ export default function StudentDetails() {
             {deposit?.originalAmount > 0 && (
               <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs font-bold text-slate-400 mb-2">الخصومات</p>
+                  <p className="text-xs font-bold text-slate-400 mb-2">Deductions</p>
                   {(deposit?.deductions || []).length === 0 ? (
-                    <p className="text-sm text-slate-400 text-center py-2">لا توجد خصومات</p>
+                    <p className="text-sm text-slate-400 text-center py-2">No deductions</p>
                   ) : (
                     <div className="overflow-x-auto rounded-lg border border-slate-100">
                       <table className="w-full text-sm">
                         <thead className="bg-slate-50">
                           <tr>
-                            <th className="th">المبلغ</th>
-                            <th className="th">السبب</th>
-                            <th className="th">التاريخ</th>
-                            <th className="th">مرفق</th>
+                            <th className="th">Amount</th>
+                            <th className="th">Reason</th>
+                            <th className="th">Date</th>
+                            <th className="th">Attachment</th>
                           </tr>
                         </thead>
                         <tbody>
                           {deposit.deductions.map((x) => (
                             <tr key={x._id} className="border-t border-slate-100">
-                              <td className="td font-extrabold text-red-700">{fmtMoney(x.amount)} ج.م</td>
+                              <td className="td font-extrabold text-red-700">{fmtMoney(x.amount)} EGP</td>
                               <td className="td">
                                 <p className="font-semibold text-slate-700">{x.reason}</p>
                                 {x.description && <p className="text-xs text-slate-400">{x.description}</p>}
-                                {x.adminName && <p className="text-[10px] text-slate-300">بواسطة: {x.adminName}</p>}
+                                {x.adminName && <p className="text-[10px] text-slate-300">By: {x.adminName}</p>}
                               </td>
                               <td className="td" dir="ltr">{x.date}</td>
                               <td className="td">
                                 {x.attachment ? (
                                   <a href={x.attachment} target="_blank" rel="noreferrer" className="text-primary-700 text-xs font-bold">
-                                    عرض
+                                    View
                                   </a>
                                 ) : (
                                   '—'
@@ -363,29 +363,29 @@ export default function StudentDetails() {
                   )}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-400 mb-2">الاستردادات</p>
+                  <p className="text-xs font-bold text-slate-400 mb-2">Refunds</p>
                   {(deposit?.refunds || []).length === 0 ? (
-                    <p className="text-sm text-slate-400 text-center py-2">لا توجد استردادات</p>
+                    <p className="text-sm text-slate-400 text-center py-2">No refunds</p>
                   ) : (
                     <div className="overflow-x-auto rounded-lg border border-slate-100">
                       <table className="w-full text-sm">
                         <thead className="bg-slate-50">
                           <tr>
-                            <th className="th">المبلغ</th>
-                            <th className="th">التاريخ</th>
-                            <th className="th">الطريقة</th>
-                            <th className="th">الوصل</th>
+                            <th className="th">Amount</th>
+                            <th className="th">Date</th>
+                            <th className="th">Method</th>
+                            <th className="th">Receipt</th>
                           </tr>
                         </thead>
                         <tbody>
                           {deposit.refunds.map((x) => (
                             <tr key={x._id} className="border-t border-slate-100">
-                              <td className="td font-extrabold text-emerald-700">{fmtMoney(x.amount)} ج.م</td>
+                              <td className="td font-extrabold text-emerald-700">{fmtMoney(x.amount)} EGP</td>
                               <td className="td" dir="ltr">{x.date}</td>
-                              <td className="td">{x.method === 'cash' ? 'نقدًا' : x.method === 'transfer' ? 'تحويل بنكي' : 'أخرى'}</td>
+                              <td className="td">{x.method === 'cash' ? 'Cash' : x.method === 'transfer' ? 'Bank Transfer' : 'Other'}</td>
                               <td className="td">
                                 <button className="btn-ghost text-primary-700" onClick={() => downloadBlob(`/api/students/${student._id}/deposit/receipt?type=refund&id=${x._id}`, 'refund-settlement.pdf')}>
-                                  <FileText size={14} /> وصل
+                                  <FileText size={14} /> Receipt
                                 </button>
                               </td>
                             </tr>
@@ -402,25 +402,25 @@ export default function StudentDetails() {
           <div className="card overflow-x-auto">
             <div className="flex flex-wrap items-center justify-between gap-2 px-6 py-4">
               <div>
-                <h3 className="font-extrabold text-slate-800">الدفعات الشهرية</h3>
+                <h3 className="font-extrabold text-slate-800">Monthly Payments</h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  مدفوع {financial.monthsPaid} • جزئي {financial.monthsPartial} • غير مدفوع {financial.monthsUnpaid} • متأخر {financial.monthsOverdue} • قادم {financial.monthsUpcoming}
+                  Paid {financial.monthsPaid} • Partial {financial.monthsPartial} • Unpaid {financial.monthsUnpaid} • Overdue {financial.monthsOverdue} • Upcoming {financial.monthsUpcoming}
                 </p>
               </div>
-              <span className="text-xs text-slate-500 font-bold">المتبقي الإجمالي: {fmtMoney(financial.totalRemaining)} ج.م</span>
+              <span className="text-xs text-slate-500 font-bold">Total remaining: {fmtMoney(financial.totalRemaining)} EGP</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="th">الشهر</th>
-                    <th className="th">المتوقع</th>
-                    <th className="th">المدفوع</th>
-                    <th className="th">المتبقي</th>
-                    <th className="th">الاستحقاق</th>
-                    <th className="th">الحالة</th>
-                    <th className="th">تاريخ آخر دفع</th>
-                    <th className="th">الإثبات</th>
+                    <th className="th">Month</th>
+                    <th className="th">Expected</th>
+                    <th className="th">Paid</th>
+                    <th className="th">Remaining</th>
+                    <th className="th">Due date</th>
+                    <th className="th">Status</th>
+                    <th className="th">Last payment date</th>
+                    <th className="th">Proof</th>
                     <th className="th"></th>
                   </tr>
                 </thead>
@@ -431,9 +431,9 @@ export default function StudentDetails() {
                     return (
                       <tr key={p._id} className="border-t border-slate-100 hover:bg-slate-50">
                         <td className="td font-semibold">{monthLabel(p.month)}</td>
-                        <td className="td">{fmtMoney(p.amount)} ج.م</td>
-                        <td className="td font-bold text-emerald-700">{fmtMoney(paidAmount)} ج.م</td>
-                        <td className="td font-bold text-red-600">{fmtMoney(remaining)} ج.م</td>
+                        <td className="td">{fmtMoney(p.amount)} EGP</td>
+                        <td className="td font-bold text-emerald-700">{fmtMoney(paidAmount)} EGP</td>
+                        <td className="td font-bold text-red-600">{fmtMoney(remaining)} EGP</td>
                         <td className="td" dir="ltr">{p.dueDate}</td>
                         <td className="td">
                           <Badge {...(paymentStatus[p.status] || paymentStatus.unpaid)} />
@@ -442,7 +442,7 @@ export default function StudentDetails() {
                         <td className="td">
                           {p.proof ? (
                             <a href={p.proof} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-primary-700 text-xs font-bold">
-                              <Image size={14} /> عرض
+                              <Image size={14} /> View
                             </a>
                           ) : (
                             '—'
@@ -452,13 +452,13 @@ export default function StudentDetails() {
                           <div className="flex items-center gap-1 justify-end">
                             {p.status !== 'paid' && remaining > 0 ? (
                               <button className="btn-primary !py-1.5 text-xs" onClick={() => setPayTarget(p)}>
-                                <Check size={14} /> {paidAmount > 0 ? 'دفعة إضافية' : 'تسجيل دفع'}
+                                <Check size={14} /> {paidAmount > 0 ? 'Additional payment' : 'Record payment'}
                               </button>
                             ) : null}
                             {paidAmount > 0 && (
                               <button
                                 className="btn-ghost text-primary-700"
-                                title="وصل الاستلام"
+                                title="Payment receipt"
                                 onClick={() => downloadBlob(`/api/payments/${p._id}/receipt`, `receipt-${p.month}.pdf`)}
                               >
                                 <FileText size={14} />
@@ -466,7 +466,7 @@ export default function StudentDetails() {
                             )}
                             <button
                               className="btn-ghost text-emerald-600"
-                              title="تذكير عبر واتساب"
+                              title="WhatsApp reminder"
                               onClick={() => sendReminder(p)}
                             >
                               <MessageCircle size={14} />
@@ -474,9 +474,9 @@ export default function StudentDetails() {
                             {p.status === 'paid' ? (
                               <button
                                 className="btn-ghost text-red-600"
-                                onClick={() => window.confirm('التراجع عن هذا الدفع؟') && api.post(`/payments/${p._id}/unpaid`).then(() => { toast('تم التراجع'); load() }).catch((e) => toast(errMsg(e), 'error'))}
+                                onClick={() => window.confirm('Reverse this payment?') && api.post(`/payments/${p._id}/unpaid`).then(() => { toast('Reversed'); load() }).catch((e) => toast(errMsg(e), 'error'))}
                               >
-                                تراجع
+                                Reverse
                               </button>
                             ) : null}
                           </div>
@@ -492,32 +492,32 @@ export default function StudentDetails() {
           <div className="card p-6">
             <div className="flex items-center gap-2 mb-4">
               <MoveRight size={20} className="text-primary-700" />
-              <h3 className="font-extrabold text-slate-800">سجل النقل والأسعار</h3>
+              <h3 className="font-extrabold text-slate-800">Transfer & Price History</h3>
             </div>
             {(student.transfers || []).length === 0 && (student.rentHistory || []).length === 0 ? (
-              <EmptyState message="لا توجد عمليات نقل — استخدم زر (نقل) لتغيير مكان الطالب" />
+              <EmptyState message="No transfers yet — use the (Transfer) button to change student location" />
             ) : (
               <div className="space-y-3">
                 {(student.transfers || []).slice().reverse().map((t) => (
                   <div key={t._id} className="p-3 rounded-xl bg-primary-50/60 border border-primary-100">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-sm font-bold text-slate-700">
-                        {[t.from?.propertyName, t.from?.floorName, t.from?.apartmentName].filter(Boolean).join(' — ') || 'بدون مكان'} غرفة {t.from?.roomNumber || '—'} سرير {t.from?.bedNumber || '—'}
+                        {[t.from?.propertyName, t.from?.floorName, t.from?.apartmentName].filter(Boolean).join(' — ') || 'No location'} Room {t.from?.roomNumber || '—'} Bed {t.from?.bedNumber || '—'}
                       </p>
                       <MoveRight size={15} className="text-primary-400 shrink-0" />
                       <p className="text-sm font-bold text-slate-700">
-                        {[t.to?.propertyName, t.to?.floorName, t.to?.apartmentName].filter(Boolean).join(' — ') || 'بدون مكان'} غرفة {t.to?.roomNumber || '—'} سرير {t.to?.bedNumber || '—'}
+                        {[t.to?.propertyName, t.to?.floorName, t.to?.apartmentName].filter(Boolean).join(' — ') || 'No location'} Room {t.to?.roomNumber || '—'} Bed {t.to?.bedNumber || '—'}
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 mt-2 text-xs">
-                      <span className="font-extrabold text-red-600">{fmtMoney(t.from?.price)} ج.م</span>
-                      <MoveRight size={12} className="text-slate-400" />
-                      <span className="font-extrabold text-emerald-600">{fmtMoney(t.to?.price)} ج.م</span>
+                        <span className="font-extrabold text-red-600">{fmtMoney(t.from?.price)} EGP</span>
+                        <MoveRight size={12} className="text-slate-400" />
+                        <span className="font-extrabold text-emerald-600">{fmtMoney(t.to?.price)} EGP</span>
                       <span className="text-slate-400">•</span>
                       <span className="text-slate-500" dir="ltr">{t.date}</span>
                       {t.reason && <span className="text-slate-500">• {t.reason}</span>}
-                      {t.prorated && <Badge label="تسعير نسبي" cls="bg-amber-100 text-amber-700" />}
-                      <span className="text-slate-400">• بواسطة {t.byName || '—'}</span>
+                      {t.prorated && <Badge label="Prorated" cls="bg-amber-100 text-amber-700" />}
+                      <span className="text-slate-400">• By {t.byName || '—'}</span>
                     </div>
                   </div>
                 ))}
@@ -526,10 +526,10 @@ export default function StudentDetails() {
                     <table className="w-full text-sm">
                       <thead className="bg-slate-50">
                         <tr>
-                          <th className="th">من</th>
-                          <th className="th">إلى</th>
-                          <th className="th">السعر</th>
-                          <th className="th">الموقع</th>
+                          <th className="th">From</th>
+                          <th className="th">To</th>
+                          <th className="th">Price</th>
+                          <th className="th">Location</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -537,8 +537,8 @@ export default function StudentDetails() {
                           <tr key={h._id} className="border-t border-slate-100">
                             <td className="td" dir="ltr">{h.fromDate}</td>
                             <td className="td" dir="ltr">{h.toDate}</td>
-                            <td className="td font-extrabold">{fmtMoney(h.price)} ج.م</td>
-                            <td className="td">غرفة {h.roomId ? rooms.find((r) => String(r._id) === String(h.roomId))?.number || '—' : '—'} سرير {h.bedNumber || '—'}</td>
+                            <td className="td font-extrabold">{fmtMoney(h.price)} EGP</td>
+                            <td className="td">Room {h.roomId ? rooms.find((r) => String(r._id) === String(h.roomId))?.number || '—' : '—'} Bed {h.bedNumber || '—'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -553,14 +553,14 @@ export default function StudentDetails() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <Sun size={20} className="text-orange-500" />
-                <h3 className="font-extrabold text-slate-800">الكورسات الصيفية</h3>
+                <h3 className="font-extrabold text-slate-800">Summer Courses</h3>
               </div>
               <Link to="/summer-courses" className="text-xs text-primary-700 font-semibold">
-                كل الكورسات
+                All Courses
               </Link>
             </div>
             {myCourses.length === 0 ? (
-              <EmptyState message="لا توجد كورسات صيفية لهذا الطالب" />
+              <EmptyState message="No summer courses for this student" />
             ) : (
               <div className="space-y-2">
                 {myCourses.map((c) => (
@@ -569,14 +569,14 @@ export default function StudentDetails() {
                       <p className="text-sm font-extrabold text-slate-700" dir="ltr">
                         {c.fromDate} → {c.toDate}
                       </p>
-                      <Badge label={c.status === 'active' ? 'نشط' : 'منتهي'} cls={c.status === 'active' ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'} />
+                      <Badge label={c.status === 'active' ? 'Active' : 'Ended'} cls={c.status === 'active' ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'} />
                     </div>
                     <p className="text-xs text-slate-500 mt-1">
-                      {[c.propertyName, c.floorName, c.apartmentName].filter(Boolean).join(' — ') || 'بدون مكان'} • غرفة {rooms.find((r) => String(r._id) === String(c.roomId))?.number || '—'} سرير {c.bedNumber} • {c.months} شهر × {fmtMoney(c.rent)} ج.م
+                      {[c.propertyName, c.floorName, c.apartmentName].filter(Boolean).join(' — ') || 'No location'} • Room {rooms.find((r) => String(r._id) === String(c.roomId))?.number || '—'} Bed {c.bedNumber} • {c.months} months × {fmtMoney(c.rent)} EGP
                     </p>
                     <p className="text-xs font-bold mt-1.5">
-                      الإجمالي <span className="text-primary-700">{fmtMoney(c.total)} ج.م</span> • المدفوع <span className="text-emerald-700">{fmtMoney(c.paid)}</span> • المتبقي{' '}
-                      <span className={c.remaining > 0 ? 'text-red-700' : 'text-emerald-700'}>{fmtMoney(c.remaining)} ج.م</span>
+                      Total <span className="text-primary-700">{fmtMoney(c.total)} EGP</span> • Paid <span className="text-emerald-700">{fmtMoney(c.paid)}</span> • Remaining{' '}
+                      <span className={c.remaining > 0 ? 'text-red-700' : 'text-emerald-700'}>{fmtMoney(c.remaining)} EGP</span>
                     </p>
                   </div>
                 ))}
@@ -588,14 +588,14 @@ export default function StudentDetails() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <FileText size={20} className="text-primary-700" />
-                <h3 className="font-extrabold text-slate-800">الفواتير</h3>
+                <h3 className="font-extrabold text-slate-800">Invoices</h3>
               </div>
               <button className="btn-primary !py-1.5 text-xs" onClick={() => setInvOpen(true)}>
-                <Plus size={14} /> إنشاء فاتورة
+                <Plus size={14} /> Create invoice
               </button>
             </div>
             {invoices.length === 0 ? (
-              <EmptyState message="لا توجد فواتير" />
+              <EmptyState message="No invoices" />
             ) : (
               <div className="space-y-2">
                 {invoices.map((inv) => (
@@ -603,7 +603,7 @@ export default function StudentDetails() {
                     <div>
                       <p className="font-mono text-sm font-bold text-primary-700" dir="ltr">{inv.invoiceNumber}</p>
                       <p className="text-xs text-slate-400">
-                        {inv.months.map(monthLabel).join('، ')} — {fmtMoney(inv.total)} ج.م
+                        {inv.months.map(monthLabel).join(', ')} — {fmtMoney(inv.total)} EGP
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -616,7 +616,7 @@ export default function StudentDetails() {
                       </button>
                       <button
                         className="btn-ghost text-red-600"
-                        onClick={() => window.confirm('حذف الفاتورة؟') && api.delete(`/invoices/${inv._id}`).then(() => { toast('تم الحذف'); load() }).catch((e) => toast(errMsg(e), 'error'))}
+                        onClick={() => window.confirm('Delete invoice?') && api.delete(`/invoices/${inv._id}`).then(() => { toast('Deleted'); load() }).catch((e) => toast(errMsg(e), 'error'))}
                       >
                         <Trash2 size={14} />
                       </button>
@@ -632,16 +632,16 @@ export default function StudentDetails() {
           <div className="card p-6">
             <div className="flex items-center gap-2 mb-4">
               <StickyNote size={20} className="text-amber-500" />
-              <h3 className="font-extrabold text-slate-800">ملاحظات خاصة</h3>
+              <h3 className="font-extrabold text-slate-800">Private Notes</h3>
             </div>
             <div className="flex gap-2 mb-4">
-              <input className="input" value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="أضف ملاحظة..." />
+              <input className="input" value={noteText} onChange={(e) => setNoteText(e.target.value)} placeholder="Add a note..." />
               <button className="btn-primary !px-3" onClick={addNote}>
                 <Plus size={16} />
               </button>
             </div>
             <div className="space-y-2">
-              {student.privateNotes?.length === 0 && <p className="text-sm text-slate-400 text-center py-2">لا توجد ملاحظات</p>}
+              {student.privateNotes?.length === 0 && <p className="text-sm text-slate-400 text-center py-2">No notes</p>}
               {student.privateNotes?.map((n, i) => (
                 <div key={i} className="p-3 rounded-xl bg-amber-50 border border-amber-100">
                   <p className="text-sm text-slate-700">{n.text}</p>
@@ -656,10 +656,10 @@ export default function StudentDetails() {
           <div className="card p-6">
             <div className="flex items-center gap-2 mb-4">
               <History size={20} className="text-slate-400" />
-              <h3 className="font-extrabold text-slate-800">سجل النشاط</h3>
+              <h3 className="font-extrabold text-slate-800">Activity Log</h3>
             </div>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {activity.length === 0 && <p className="text-sm text-slate-400 text-center py-2">لا يوجد نشاط</p>}
+              {activity.length === 0 && <p className="text-sm text-slate-400 text-center py-2">No activity</p>}
               {activity.map((a) => (
                 <div key={a._id} className="flex items-start gap-2">
                   <div className="p-1.5 rounded-full bg-slate-100 text-slate-500 text-xs font-bold mt-0.5">{a.adminName?.slice(0, 1)}</div>

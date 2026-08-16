@@ -138,7 +138,7 @@ router.post('/restore', auth, can('settings'), uploadExcel.single('file'), backu
 
 router.post('/upload/proof', auth, uploadProof.single('proof'), async (req, res, next) => {
   try {
-    if (!req.file) return res.status(400).json({ message: 'الملف مطلوب' });
+    if (!req.file) return res.status(400).json({ message: 'File required' });
     const p = await saveUploaded(req.file, 'proofs', 'proof');
     res.json({ path: p });
   } catch (e) {

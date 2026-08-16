@@ -7,7 +7,7 @@ import { errMsg } from '../hooks/useApi.js'
 import Badge from './Badge.jsx'
 import { fmtMoney } from '../utils/format.js'
 
-const REASONS = ['إيجار غير مدفوع', 'تلف أثاث', 'تلف الغرفة', 'أدوات ناقصة', 'تكاليف إصلاح', 'تكاليف تنظيف', 'أخرى']
+const REASONS = ['Unpaid Rent', 'Furniture Damage', 'Room Damage', 'Missing Items', 'Repair Costs', 'Cleaning Costs', 'Other']
 
 export default function CheckoutModal({ open, student, payments, financial, deposit, onClose, onDone }) {
   const { toast } = useToast()
@@ -30,7 +30,7 @@ export default function CheckoutModal({ open, student, payments, financial, depo
     }
   }, [open])
 
-  const reasonMap = { 'إيجار غير مدفوع': 'unpaid_rent', 'تلف أثاث': 'furniture', 'تلف الغرفة': 'room', 'أدوات ناقصة': 'missing', 'تكاليف إصلاح': 'repair', 'تكاليف تنظيف': 'cleaning', 'أخرى': 'other' }
+  const reasonMap = { 'Unpaid Rent': 'unpaid_rent', 'Furniture Damage': 'furniture', 'Room Damage': 'room', 'Missing Items': 'missing', 'Repair Costs': 'repair', 'Cleaning Costs': 'cleaning', 'Other': 'other' }
 
   const paidMonths = payments?.filter((p) => p.status === 'paid').length || 0
   const unpaidMonths = payments?.filter((p) => p.status !== 'paid').length || 0
@@ -42,8 +42,8 @@ export default function CheckoutModal({ open, student, payments, financial, depo
   const refund = n(refundAmount)
 
   const submit = async () => {
-    if (deduct < 0 || refund < 0) return toast('قيم غير صالحة', 'error')
-    if (deduct + refund > remaining) return toast(`مجموع الخصم والاسترداد أكبر من الرصيد المتبقي (${remaining} ج.م)`, 'error')
+    if (deduct < 0 || refund < 0) return toast('Invalid values', 'error')
+    if (deduct + refund > remaining) return toast(`Total deduction and refund exceeds remaining balance (${remaining} EGP)`, 'error')
     setSaving(true)
     try {
       await api.post(`/students/${student._id}/checkout`, {
@@ -55,7 +55,7 @@ export default function CheckoutModal({ open, student, payments, financial, depo
         refundMethod,
         refundNotes,
       })
-      toast('تم إنهاء الإقامة وتسوية التأمين')
+      toast('Checkout completed and deposit settled')
       onDone()
       onClose()
     } catch (e) {
@@ -66,30 +66,30 @@ export default function CheckoutModal({ open, student, payments, financial, depo
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`إنهاء إقامة ${student.name}`} wide>
+    <Modal open={open} onClose={onClose} title={`Checkout ${student.name}`} wide>
       <div className="space-y-4">
         <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-sm space-y-1">
           <p className="font-bold text-slate-700">{student.name} — {student.studentId}</p>
-          <p className="text-slate-500">دخول: {student.checkInDate || '—'} | خروج: {new Date().toISOString().slice(0, 10)}</p>
+          <p className="text-slate-500">Check-in: {student.checkInDate || '—'} | Check-out: {new Date().toISOString().slice(0, 10)}</p>
         </div>
 
         <div>
-          <p className="text-xs font-bold text-slate-400 mb-2">الإيجار الشهري — المستحق عن {financial?.monthsPaid + financial?.monthsUnpaid || 0} شهر</p>
+          <p className="text-xs font-bold text-slate-400 mb-2">Monthly Rent — Due for {financial?.monthsPaid + financial?.monthsUnpaid || 0} months</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
             <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-[11px] font-bold text-slate-500">شهور مدفوعة</p>
+              <p className="text-[11px] font-bold text-slate-500">Paid Months</p>
               <p className="font-extrabold text-slate-800">{paidMonths}</p>
             </div>
             <div className="p-3 rounded-xl bg-red-50">
-              <p className="text-[11px] font-bold text-red-500">شهور غير مدفوعة</p>
+              <p className="text-[11px] font-bold text-red-500">Unpaid Months</p>
               <p className="font-extrabold text-red-700">{unpaidMonths}</p>
             </div>
             <div className="p-3 rounded-xl bg-slate-50">
-              <p className="text-[11px] font-bold text-slate-500">المتوقع</p>
+              <p className="text-[11px] font-bold text-slate-500">Expected</p>
               <p className="font-extrabold text-slate-800">{fmtMoney(financial?.totalExpected)}</p>
             </div>
             <div className="p-3 rounded-xl bg-red-50">
-              <p className="text-[11px] font-bold text-red-500">إيجار متأخر</p>
+              <p className="text-[11px] font-bold text-red-500">Overdue Rent</p>
               <p className="font-extrabold text-red-700">{fmtMoney(outstanding)}</p>
             </div>
           </div>
@@ -97,24 +97,24 @@ export default function CheckoutModal({ open, student, payments, financial, depo
 
         <div className="p-4 rounded-xl bg-teal-50 border border-teal-100">
           <div className="flex items-center justify-between text-sm">
-            <span className="font-bold text-teal-800">التأمين</span>
+            <span className="font-bold text-teal-800">Deposit</span>
             <Badge label={deposit?.statusLabel || '—'} cls={deposit?.status === 'paid' ? 'bg-teal-100 text-teal-700' : deposit?.status === 'full' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'} />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 text-center">
             <div className="p-2 rounded-lg bg-white/60">
-              <p className="text-[11px] font-bold text-teal-700">الأصل</p>
+              <p className="text-[11px] font-bold text-teal-700">Original</p>
               <p className="font-extrabold">{fmtMoney(deposit?.originalAmount)}</p>
             </div>
             <div className="p-2 rounded-lg bg-white/60">
-              <p className="text-[11px] font-bold text-red-600">الخصومات</p>
+              <p className="text-[11px] font-bold text-red-600">Deductions</p>
               <p className="font-extrabold text-red-700">{fmtMoney(deposit?.totalDeductions)}</p>
             </div>
             <div className="p-2 rounded-lg bg-white/60">
-              <p className="text-[11px] font-bold text-emerald-600">المسترد</p>
+              <p className="text-[11px] font-bold text-emerald-600">Refunded</p>
               <p className="font-extrabold text-emerald-700">{fmtMoney(deposit?.refundedAmount)}</p>
             </div>
             <div className="p-2 rounded-lg bg-white/60">
-              <p className="text-[11px] font-bold text-teal-700">المتبقي</p>
+              <p className="text-[11px] font-bold text-teal-700">Remaining</p>
               <p className="font-extrabold">{fmtMoney(remaining)}</p>
             </div>
           </div>
@@ -122,8 +122,8 @@ export default function CheckoutModal({ open, student, payments, financial, depo
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3 p-4 rounded-xl border border-red-100 bg-red-50/40">
-            <p className="font-bold text-red-700 text-sm">خصم من التأمين (اختياري)</p>
-            <input className="input" type="number" dir="ltr" value={deductAmount} onChange={(e) => setDeductAmount(e.target.value)} placeholder="مبلغ الخصم" />
+            <p className="font-bold text-red-700 text-sm">Deposit Deduction (Optional)</p>
+            <input className="input" type="number" dir="ltr" value={deductAmount} onChange={(e) => setDeductAmount(e.target.value)} placeholder="Deduction amount" />
             <select className="input" value={deductReason} onChange={(e) => setDeductReason(e.target.value)}>
               {REASONS.map((r) => (
                 <option key={r} value={r}>
@@ -131,26 +131,26 @@ export default function CheckoutModal({ open, student, payments, financial, depo
                 </option>
               ))}
             </select>
-            <input className="input" value={deductDescription} onChange={(e) => setDeductDescription(e.target.value)} placeholder="وصف الخصم" />
+            <input className="input" value={deductDescription} onChange={(e) => setDeductDescription(e.target.value)} placeholder="Deduction description" />
           </div>
           <div className="space-y-3 p-4 rounded-xl border border-emerald-100 bg-emerald-50/40">
-            <p className="font-bold text-emerald-700 text-sm">استرداد المتبقي (اختياري)</p>
-            <input className="input" type="number" dir="ltr" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} placeholder="مبلغ الاسترداد" />
+            <p className="font-bold text-emerald-700 text-sm">Refund Remaining (Optional)</p>
+            <input className="input" type="number" dir="ltr" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} placeholder="Refund amount" />
             <select className="input" value={refundMethod} onChange={(e) => setRefundMethod(e.target.value)}>
-              <option value="cash">نقدًا</option>
-              <option value="transfer">تحويل بنكي</option>
-              <option value="other">أخرى</option>
+              <option value="cash">Cash</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="other">Other</option>
             </select>
-            <input className="input" value={refundNotes} onChange={(e) => setRefundNotes(e.target.value)} placeholder="ملاحظات الاسترداد" />
+            <input className="input" value={refundNotes} onChange={(e) => setRefundNotes(e.target.value)} placeholder="Refund notes" />
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-danger" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'إنهاء الإقامة'}
+          {saving ? <Spinner /> : 'Complete Checkout'}
         </button>
       </div>
     </Modal>

@@ -126,7 +126,7 @@ async function refreshOverdue(dueDay) {
     const s = sMap[String(p.studentId)];
     const status = deriveStatus(p);
     if (p.status !== status) {
-      const history = (p.history || []).concat([{ at: new Date().toISOString(), by: s ? s.name || '' : '', action: `وضع الحالة: ${status}` }]);
+      const history = (p.history || []).concat([{ at: new Date().toISOString(), by: s ? s.name || '' : '', action: `Status set to: ${status}` }]);
       await db.col('Payment').findByIdAndUpdate(p._id, { $set: { status, history } });
       changed++;
     }
@@ -225,8 +225,8 @@ async function notifyExpiring() {
     if (!s.expiringNotified) {
       await notifications.create({
         type: 'student_expiring',
-        title: 'اقتراب انتهاء الإقامة',
-        message: `إقامة ${s.name} (${s.studentId}) تنتهي بعد ${s.daysLeft} يوم.`,
+        title: 'Stay expiring soon',
+        message: `Stay of ${s.name} (${s.studentId}) expires in ${s.daysLeft} days.`,
         data: { studentId: String(s._id) },
       });
       await db.col('Student').findByIdAndUpdate(s._id, { $set: { expiringNotified: true } });

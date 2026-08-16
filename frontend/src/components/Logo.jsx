@@ -10,7 +10,7 @@ export default function Logo({ size = 22, tagline = true }) {
       </div>
       <div>
         <p className="font-extrabold leading-none text-white text-lg" dir="ltr">Homeunity</p>
-        {tagline && <p className="text-[10px] text-slate-400 mt-1 font-semibold">إدارة السكن الطلابي</p>}
+        {tagline && <p className="text-[10px] text-slate-400 mt-1 font-semibold">Student Housing Management</p>}
       </div>
     </div>
   )

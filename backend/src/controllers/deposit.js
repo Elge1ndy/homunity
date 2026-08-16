@@ -6,9 +6,9 @@ const notifications = require('../services/notifications');
 const { depositReceiptPdf, depositRefundPdf } = require('../utils/pdf');
 const depositService = require('../services/deposit');
 
-const PAYMENT_STATUS = { unpaid: 'غير مدفوع', paid: 'مدفوع' };
-const REFUND_STATUS = { none: 'لا يوجد', pending: 'بانتظار الاسترداد', partial: 'مسترد جزئيًا', full: 'مسترد بالكامل' };
-const DEDUCT_REASONS = ['إيجار غير مدفوع', 'تلف أثاث', 'تلف الغرفة', 'أدوات ناقصة', 'تكاليف إصلاح', 'تكاليف تنظيف', 'أخرى'];
+const PAYMENT_STATUS = { unpaid: 'Unpaid', paid: 'Paid' };
+const REFUND_STATUS = { none: 'None', pending: 'Pending Refund', partial: 'Partially Refunded', full: 'Fully Refunded' };
+const DEDUCT_REASONS = ['Unpaid rent', 'Furniture damage', 'Room damage', 'Missing items', 'Repair costs', 'Cleaning costs', 'Other'];
 
 function money(v) {
   return Math.round((Number(v) || 0) * 100) / 100;
@@ -44,7 +44,7 @@ async function nextReceiptNo() {
 async function getStudent(id, res) {
   const student = await db.col('Student').findById(id);
   if (!student) {
-    res.status(404).json({ message: 'الطالب غير موجود' });
+    res.status(404).json({ message: 'Student not found' });
     return null;
   }
   return student;
@@ -61,10 +61,10 @@ exports.pay = async (req, res, next) => {
     const student = await getStudent(req.params.id, res);
     if (!student) return;
     let d = normalize(student);
-    if (d.paymentStatus === 'paid') return res.status(400).json({ message: 'التأمين مسجل كمدفوع بالفعل — يمكنك تعديل البيانات' });
+    if (d.paymentStatus === 'paid') return res.status(400).json({ message: 'Deposit is already recorded as paid — you can edit the data' });
     const amount = money(req.body.amount);
     if (d.originalAmount <= 0 && amount > 0) d.originalAmount = amount;
-    if (d.originalAmount <= 0) return res.status(400).json({ message: 'لا يوجد مبلغ تأمين محدد لهذا الطالب' });
+    if (d.originalAmount <= 0) return res.status(400).json({ message: 'No deposit amount set for this student' });
     const date = String(req.body.date || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
     const method = ['cash', 'transfer', 'other'].includes(req.body.method) ? req.body.method : 'other';
     const receipt = { _id: newId(), type: 'pay', receiptNo: await nextReceiptNo(), createdAt: new Date().toISOString() };
@@ -79,13 +79,13 @@ exports.pay = async (req, res, next) => {
     };
     const updated = await saveDeposit(student, d);
     await log(req, {
-      action: `سجل ${req.user.name} دفع تأمين ${student.name} (${student.studentId}) — ${d.originalAmount} ج.م (وصل ${receipt.receiptNo})`,
+      action: `${req.user.name} recorded deposit payment for ${student.name} (${student.studentId}) — ${d.originalAmount} EGP (receipt ${receipt.receiptNo})`,
       category: 'students',
       targetType: 'student',
       targetId: String(student._id),
       details: JSON.stringify({ amount: d.originalAmount, receiptNo: receipt.receiptNo, housingId: student.housingId || '', recordId: receipt._id }),
     });
-    await notifications.create({ type: 'deposit_paid', title: 'تم دفع التأمين', message: `سُجل دفع تأمين ${student.name} بقيمة ${d.originalAmount} ج.م (${receipt.receiptNo})`, data: { studentId: String(student._id) } });
+    await notifications.create({ type: 'deposit_paid', title: 'Deposit Paid', message: `Deposit payment recorded for ${student.name} — ${d.originalAmount} EGP (${receipt.receiptNo})`, data: { studentId: String(student._id) } });
     emit(req, 'deposit:updated', {});
     emit(req, 'student:updated', {});
     res.json({ student: updated, deposit: compute(updated), receipt });
@@ -100,14 +100,14 @@ exports.edit = async (req, res, next) => {
     if (!student) return;
     const d = normalize(student);
     const newAmount = money(req.body.originalAmount);
-    if (newAmount < 0) return res.status(400).json({ message: 'القيمة غير صالحة' });
+    if (newAmount < 0) return res.status(400).json({ message: 'Invalid value' });
     const totalDeductions = money(d.deductions.reduce((a, x) => a + x.amount, 0));
-    if (newAmount < totalDeductions) return res.status(400).json({ message: 'مبلغ التأمين لا يمكن أن يقل عن الخصومات المسجلة' });
-    const audit = (d.audit || []).concat([{ _id: newId(), action: 'تعديل بيانات التأمين', note: `تغيير المبلغ من ${d.originalAmount} إلى ${newAmount}${req.body.note ? ' — ' + req.body.note : ''}`, amount: newAmount, adminId: String(req.user._id || ''), adminName: req.user.name, createdAt: new Date().toISOString() }]);
+    if (newAmount < totalDeductions) return res.status(400).json({ message: 'Deposit amount cannot be less than recorded deductions' });
+    const audit = (d.audit || []).concat([{ _id: newId(), action: 'Edited deposit data', note: `Changed amount from ${d.originalAmount} to ${newAmount}${req.body.note ? ' — ' + req.body.note : ''}`, amount: newAmount, adminId: String(req.user._id || ''), adminName: req.user.name, createdAt: new Date().toISOString() }]);
     const updatedD = { ...d, originalAmount: newAmount, paymentDate: req.body.paymentDate !== undefined ? String(req.body.paymentDate).slice(0, 10) : d.paymentDate, paymentMethod: ['cash', 'transfer', 'other'].includes(req.body.paymentMethod) ? req.body.paymentMethod : d.paymentMethod, notes: req.body.notes !== undefined ? String(req.body.notes).trim() : d.notes, audit };
     const updated = await saveDeposit(student, updatedD);
     await log(req, {
-      action: `عدّل ${req.user.name} بيانات تأمين ${student.name} (${student.studentId}) — المبلغ الجديد ${newAmount} ج.م`,
+      action: `${req.user.name} edited deposit data for ${student.name} (${student.studentId}) — new amount ${newAmount} EGP`,
       category: 'students',
       targetType: 'student',
       targetId: String(student._id),
@@ -126,15 +126,15 @@ exports.deduct = async (req, res, next) => {
     const student = await getStudent(req.params.id, res);
     if (!student) return;
     const d = normalize(student);
-    if (d.paymentStatus !== 'paid') return res.status(400).json({ message: 'لا يمكن خصم التأمين قبل تسجيل الدفع' });
+    if (d.paymentStatus !== 'paid') return res.status(400).json({ message: 'Cannot deduct from deposit before payment is recorded' });
     const amount = money(req.body.amount);
-    if (amount <= 0) return res.status(400).json({ message: 'المبلغ غير صالح' });
+    if (amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
     const totalDeductions = money(d.deductions.reduce((a, x) => a + x.amount, 0));
-    if (amount > money(d.originalAmount - totalDeductions)) return res.status(400).json({ message: 'الخصم أكبر من رصيد التأمين المتاح' });
+    if (amount > money(d.originalAmount - totalDeductions)) return res.status(400).json({ message: 'Deduction exceeds available deposit balance' });
     const deduction = {
       _id: newId(),
       amount,
-      reason: String(req.body.reason || 'أخرى'),
+      reason: String(req.body.reason || 'Other'),
       description: String(req.body.description || '').trim(),
       date: String(req.body.date || '').slice(0, 10) || new Date().toISOString().slice(0, 10),
       adminId: String(req.user._id || ''),
@@ -145,13 +145,13 @@ exports.deduct = async (req, res, next) => {
     const updatedD = { ...d, deductions: (d.deductions || []).concat([deduction]) };
     const updated = await saveDeposit(student, updatedD);
     await log(req, {
-      action: `أضاف ${req.user.name} خصم ${amount} ج.م من تأمين ${student.name} (${student.studentId}) — ${deduction.reason}`,
+      action: `${req.user.name} added deduction of ${amount} EGP from ${student.name}'s deposit (${student.studentId}) — ${deduction.reason}`,
       category: 'students',
       targetType: 'student',
       targetId: String(student._id),
       details: JSON.stringify({ amount, reason: deduction.reason, housingId: student.housingId || '', recordId: deduction._id }),
     });
-    await notifications.create({ type: 'deposit_deducted', title: 'خصم من التأمين', message: `خصم ${amount} ج.م من تأمين ${student.name} (${deduction.reason})`, data: { studentId: String(student._id) } });
+    await notifications.create({ type: 'deposit_deducted', title: 'Deposit Deduction', message: `Deducted ${amount} EGP from ${student.name}'s deposit (${deduction.reason})`, data: { studentId: String(student._id) } });
     emit(req, 'deposit:updated', {});
     emit(req, 'student:updated', {});
     res.json({ student: updated, deposit: compute(updated), deduction });
@@ -165,11 +165,11 @@ exports.refund = async (req, res, next) => {
     const student = await getStudent(req.params.id, res);
     if (!student) return;
     const d = normalize(student);
-    if (d.paymentStatus !== 'paid') return res.status(400).json({ message: 'لا يمكن الاسترداد قبل تسجيل الدفع' });
+    if (d.paymentStatus !== 'paid') return res.status(400).json({ message: 'Cannot refund before payment is recorded' });
     const amount = money(req.body.amount);
-    if (amount <= 0) return res.status(400).json({ message: 'المبلغ غير صالح' });
+    if (amount <= 0) return res.status(400).json({ message: 'Invalid amount' });
     const remainingAmount = compute(student).remainingAmount;
-    if (amount > remainingAmount) return res.status(400).json({ message: `المبلغ أكبر من رصيد التأمين المتبقي (${remainingAmount} ج.م)` });
+    if (amount > remainingAmount) return res.status(400).json({ message: `Amount exceeds remaining deposit balance (${remainingAmount} EGP)` });
     const date = String(req.body.date || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
     const method = ['cash', 'transfer', 'other'].includes(req.body.method) ? req.body.method : 'other';
     const refund = {
@@ -193,13 +193,13 @@ exports.refund = async (req, res, next) => {
     };
     const updated = await saveDeposit(student, updatedD);
     await log(req, {
-      action: `استرد ${req.user.name} ${amount} ج.م من تأمين ${student.name} (${student.studentId}) — (وصل ${receipt.receiptNo})`,
+      action: `${req.user.name} refunded ${amount} EGP from ${student.name}'s deposit (${student.studentId}) — (receipt ${receipt.receiptNo})`,
       category: 'students',
       targetType: 'student',
       targetId: String(student._id),
       details: JSON.stringify({ amount, method, housingId: student.housingId || '', recordId: refund._id, receiptNo: receipt.receiptNo }),
     });
-    await notifications.create({ type: 'deposit_refunded', title: 'استرداد تأمين', message: `استرداد ${amount} ج.م من تأمين ${student.name} (${receipt.receiptNo})`, data: { studentId: String(student._id) } });
+    await notifications.create({ type: 'deposit_refunded', title: 'Deposit Refund', message: `Refunded ${amount} EGP from ${student.name}'s deposit (${receipt.receiptNo})`, data: { studentId: String(student._id) } });
     emit(req, 'deposit:updated', {});
     emit(req, 'student:updated', {});
     res.json({ student: updated, deposit: compute(updated), refund, receipt });
@@ -221,11 +221,11 @@ exports.receipt = async (req, res, next) => {
     } else {
       const id = String(req.query.id || '');
       const refund = id ? d.refunds.find((r) => r._id === id) : d.refunds[d.refunds.length - 1];
-      if (!refund) return res.status(404).json({ message: 'الاسترداد غير موجود' });
+      if (!refund) return res.status(404).json({ message: 'Refund not found' });
       record = refund;
       receiptNo = (d.receipts.find((r) => r.type === 'refund') || {}).receiptNo || '';
     }
-    if (type === 'pay' && !d.paymentDate) return res.status(400).json({ message: 'لم يُسجل دفع التأمين بعد' });
+    if (type === 'pay' && !d.paymentDate) return res.status(400).json({ message: 'Deposit payment has not been recorded yet' });
     const housing = (await db.col('Housing').findOne({ _id: student.housingId })) || (await db.col('Housing').findOne({}));
     const room = student.roomId ? await db.col('Room').findById(student.roomId) : null;
     const doc = {
@@ -255,21 +255,21 @@ exports.settle = async ({ student, actions, byName, byId }) => {
   const refundAmount = money(actions.refundAmount);
   const remainingBefore = compute(student).remainingAmount;
   if (refundAmount + deductAmount > remainingBefore) {
-    const err = new Error(`مجموع الاسترداد والخصم أكبر من الرصيد المتبقي (${remainingBefore} ج.م)`);
+    const err = new Error(`Total refund and deduction exceeds remaining balance (${remainingBefore} EGP)`);
     err.status = 400;
     throw err;
   }
   let totalDeductions = money(d.deductions.reduce((a, x) => a + x.amount, 0));
   if (deductAmount > 0) {
     if (deductAmount > money(d.originalAmount - totalDeductions)) {
-      const err = new Error('الخصم أكبر من رصيد التأمين المتاح');
+      const err = new Error('Deduction exceeds available deposit balance');
       err.status = 400;
       throw err;
     }
     const deduction = {
       _id: newId(),
       amount: deductAmount,
-      reason: String(actions.deductReason || 'أخرى'),
+      reason: String(actions.deductReason || 'Other'),
       description: String(actions.deductDescription || '').trim(),
       date: String(actions.deductDate || '').slice(0, 10) || new Date().toISOString().slice(0, 10),
       adminId: String(byId || ''),
@@ -368,7 +368,7 @@ async function collect(students, req) {
   const perHousing = {};
   students.forEach((s) => {
     const hid = String(s.housingId || '');
-    if (!perHousing[hid]) perHousing[hid] = { housingId: hid, housingName: housingMap[hid] ? housingMap[hid].name : (hid ? 'سكن ' + hid : 'سكن افتراضي') };
+      if (!perHousing[hid]) perHousing[hid] = { housingId: hid, housingName: housingMap[hid] ? housingMap[hid].name : (hid ? 'Housing ' + hid : 'Default Housing') };
   });
   Object.keys(perHousing).forEach((hid) => {
     const subset = students.filter((s) => String(s.housingId || '') === hid);
@@ -412,40 +412,40 @@ exports.exportExcel = async (req, res, next) => {
     const students = await db.col('Student').find({});
     const data = await collect(students, req);
     const statusAr = {
-      unpaid: 'غير مدفوع',
-      paid: 'مدفوع',
-      pending: 'بانتظار الاسترداد',
-      partial: 'مسترد جزئيًا',
-      full: 'مسترد بالكامل',
-      none: 'لا يوجد',
+      unpaid: 'Unpaid',
+      paid: 'Paid',
+      pending: 'Pending Refund',
+      partial: 'Partially Refunded',
+      full: 'Fully Refunded',
+      none: 'None',
     };
     const rows = data.rows.map((r) => ({
-      'اسم الطالب': r.name,
-      'رقم التليفون': r.phone,
-      'السكن': r.housingName,
-      'الغرفة': r.roomNumber,
-      'الإيجار الشهري': r.monthlyRent,
-      'التأمين': r.originalAmount,
-      'حالة الدفع': statusAr[r.paymentStatus] || r.paymentStatus,
-      'تاريخ دفع التأمين': r.paymentDate,
-      'إجمالي الخصومات': r.totalDeductions,
-      'المسترد': r.refundedAmount,
-      'المتبقي': r.remainingAmount,
-      'حالة الاسترداد': statusAr[r.refundStatus] || r.refundStatus,
-      'تاريخ الاسترداد': r.refundDate,
+      'Student Name': r.name,
+      'Phone Number': r.phone,
+      'Housing': r.housingName,
+      'Room': r.roomNumber,
+      'Monthly Rent': r.monthlyRent,
+      'Deposit': r.originalAmount,
+      'Payment Status': statusAr[r.paymentStatus] || r.paymentStatus,
+      'Deposit Payment Date': r.paymentDate,
+      'Total Deductions': r.totalDeductions,
+      'Refunded': r.refundedAmount,
+      'Remaining': r.remainingAmount,
+      'Refund Status': statusAr[r.refundStatus] || r.refundStatus,
+      'Refund Date': r.refundDate,
     }));
     rows.push({
-      'اسم الطالب': 'الإجمالي',
-      'التأمين': data.totals.required,
-      'حالة الدفع': '',
-      'تاريخ دفع التأمين': '',
-      'إجمالي الخصومات': data.totals.deductions,
-      'المسترد': data.totals.refunded,
-      'المتبقي': data.totals.held,
+      'Student Name': 'Total',
+      'Deposit': data.totals.required,
+      'Payment Status': '',
+      'Deposit Payment Date': '',
+      'Total Deductions': data.totals.deductions,
+      'Refunded': data.totals.refunded,
+      'Remaining': data.totals.held,
     });
     const ws = excel.jsonToSheet(rows);
     const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'التأمين');
+    xlsx.utils.book_append_sheet(wb, ws, 'Deposit');
     const buf = excel.writeBuffer(wb);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition', `attachment; filename=deposits-${Date.now()}.xlsx`);

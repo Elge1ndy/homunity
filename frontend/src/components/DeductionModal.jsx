@@ -5,7 +5,7 @@ import Spinner from './Spinner.jsx'
 import { useToast } from '../context/ToastContext.jsx'
 import { errMsg } from '../hooks/useApi.js'
 
-const REASONS = ['إيجار غير مدفوع', 'تلف أثاث', 'تلف الغرفة', 'أدوات ناقصة', 'تكاليف إصلاح', 'تكاليف تنظيف', 'أخرى']
+const REASONS = ['Unpaid Rent', 'Furniture Damage', 'Room Damage', 'Missing Items', 'Repair Costs', 'Cleaning Costs', 'Other']
 
 export default function DeductionModal({ open, studentId, remaining, onClose, onSaved }) {
   const { toast } = useToast()
@@ -38,7 +38,7 @@ export default function DeductionModal({ open, studentId, remaining, onClose, on
       fd.append('proof', file)
       const { data } = await api.post('/upload/proof', fd)
       setAttachment(data.path)
-      toast('تم رفع المرفق')
+      toast('Attachment uploaded')
     } catch (err) {
       toast(errMsg(err), 'error')
     } finally {
@@ -48,8 +48,8 @@ export default function DeductionModal({ open, studentId, remaining, onClose, on
 
   const submit = async () => {
     const v = Number(amount)
-    if (!v || v <= 0) return toast('أدخل مبلغ خصم صحيح', 'error')
-    if (remaining !== null && v > remaining) return toast(`الخصم أكبر من رصيد التأمين المتاح (${remaining} ج.م)`, 'error')
+    if (!v || v <= 0) return toast('Enter a valid deduction amount', 'error')
+    if (remaining !== null && v > remaining) return toast(`Deduction exceeds available deposit balance (${remaining} EGP)`, 'error')
     setSaving(true)
     try {
       await api.post(`/students/${studentId}/deposit/deduct`, {
@@ -59,7 +59,7 @@ export default function DeductionModal({ open, studentId, remaining, onClose, on
         date,
         attachment,
       })
-      toast('تم تسجيل الخصم')
+      toast('Deduction recorded')
       onSaved()
       onClose()
     } catch (e) {
@@ -70,20 +70,20 @@ export default function DeductionModal({ open, studentId, remaining, onClose, on
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="خصم من التأمين">
+    <Modal open={open} onClose={onClose} title="Deposit Deduction">
       <div className="space-y-4">
         {remaining !== null && remaining !== undefined && (
           <div className="p-3 rounded-xl bg-slate-50 text-sm">
-            <span className="text-slate-500 font-bold">المتاح للخصم: </span>
-            <span className="text-red-600 font-extrabold">{remaining} ج.م</span>
+            <span className="text-slate-500 font-bold">Available for deduction: </span>
+            <span className="text-red-600 font-extrabold">{remaining} EGP</span>
           </div>
         )}
         <div>
-          <label className="label">المبلغ (ج.م)</label>
+          <label className="label">Amount (EGP)</label>
           <input className="input" type="number" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
         </div>
         <div>
-          <label className="label">السبب</label>
+          <label className="label">Reason</label>
           <select className="input" value={reason} onChange={(e) => setReason(e.target.value)}>
             {REASONS.map((r) => (
               <option key={r} value={r}>
@@ -93,25 +93,25 @@ export default function DeductionModal({ open, studentId, remaining, onClose, on
           </select>
         </div>
         <div>
-          <label className="label">الوصف التفصيلي</label>
+          <label className="label">Detailed Description</label>
           <textarea className="input" rows="2" value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="label">التاريخ</label>
+            <label className="label">Date</label>
             <input className="input" type="date" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div className="flex-1">
-            <label className="label">مرفق (اختياري)</label>
+            <label className="label">Attachment (Optional)</label>
             <input className="input" type="file" accept="image/*" onChange={uploadFile} disabled={uploading} />
             {uploading && (
               <p className="text-xs text-primary-600 mt-1 flex items-center gap-1">
-                <Spinner /> جاري الرفع...
+                <Spinner /> Uploading...
               </p>
             )}
             {attachment && (
               <a href={attachment} target="_blank" rel="noreferrer" className="text-xs text-primary-700 font-semibold mt-1 inline-block">
-                ✓ تم الرفع — عرض
+                ✓ Uploaded — View
               </a>
             )}
           </div>
@@ -119,10 +119,10 @@ export default function DeductionModal({ open, studentId, remaining, onClose, on
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-danger" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'تسجيل الخصم'}
+          {saving ? <Spinner /> : 'Record Deduction'}
         </button>
       </div>
     </Modal>

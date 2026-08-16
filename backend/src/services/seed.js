@@ -5,13 +5,13 @@ async function seed() {
   const housingCount = await db.col('Housing').count({});
   if (housingCount === 0) {
     await db.col('Housing').insert({
-      name: 'سكن هومونيتي',
+      name: 'Homeunity Housing',
       address: '',
       phone: '',
       description: '',
       images: [],
-      services: ['Wi-Fi', 'كهرباء', 'مياه'],
-      rules: ['الالتزام بالهدوء بعد الساعة 11 مساءً', 'منع الزيارات غير المسجلة'],
+      services: ['Wi-Fi', 'Electricity', 'Water'],
+      rules: ['Maintain quiet after 11 PM', 'Unregistered visits are not allowed'],
       dueDay: 1,
       currency: 'EGP',
     });
@@ -22,7 +22,7 @@ async function seed() {
   if (userCount === 0) {
     const hash = await bcrypt.hash('admin123', 10);
     await db.col('User').insert({
-      name: 'مدير السكن',
+      name: 'Housing Manager',
       username: 'admin',
       phone: '',
       password: hash,

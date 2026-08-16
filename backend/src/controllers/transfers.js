@@ -30,19 +30,19 @@ exports.transfer = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
-    if (student.status !== 'active') return res.status(400).json({ message: 'يمكن نقل الطلاب النشطين فقط' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
+    if (student.status !== 'active') return res.status(400).json({ message: 'Only active students can be transferred' });
 
     const { toRoomId, toBedNumber, transferDate, reason, prorate, monthlyRent } = req.body;
-    if (!toRoomId) return res.status(400).json({ message: 'اختر الغرفة الجديدة' });
-    if (!toBedNumber) return res.status(400).json({ message: 'اختر السرير الجديد' });
+    if (!toRoomId) return res.status(400).json({ message: 'Select new room' });
+    if (!toBedNumber) return res.status(400).json({ message: 'Select new bed' });
 
     const toRoom = await db.col('Room').findById(toRoomId);
-    if (!toRoom) return res.status(400).json({ message: 'الغرفة الجديدة غير موجودة' });
+    if (!toRoom) return res.status(400).json({ message: 'New room not found' });
     const toBed = (toRoom.beds || []).find((b) => b.bedNumber === Number(toBedNumber));
-    if (!toBed) return res.status(400).json({ message: `السرير ${toBedNumber} غير موجود في الغرفة` });
-    if (toBed.studentId && String(toBed.studentId) !== String(student._id)) return res.status(400).json({ message: `السرير ${toBedNumber} مشغول` });
-    if (toRoom.status === 'inactive') return res.status(400).json({ message: 'الغرفة الجديدة متوقفة' });
+    if (!toBed) return res.status(400).json({ message: `Bed ${toBedNumber} not found in room` });
+    if (toBed.studentId && String(toBed.studentId) !== String(student._id)) return res.status(400).json({ message: `Bed ${toBedNumber} is occupied` });
+    if (toRoom.status === 'inactive') return res.status(400).json({ message: 'New room is inactive' });
 
     const date = String(transferDate || '').slice(0, 10) || new Date().toISOString().slice(0, 10);
     const doProrate = prorate === undefined || prorate === true || prorate === 'true' || prorate === 1;
@@ -56,7 +56,7 @@ exports.transfer = async (req, res, next) => {
     const fromLabels = await structure.labelsFor({ roomId: student.roomId, bedNumber: student.bedNumber });
     const toLabels = await structure.labelsFor({ roomId: toRoomId, bedNumber: Number(toBedNumber) });
 
-    // تعويم السرير القديم وتركيب الجديد
+    // Free old bed and assign new bed
     if (student.roomId && String(student.roomId) !== String(toRoomId)) {
       const oldRoom = await db.col('Room').findById(student.roomId);
       if (oldRoom && student.bedNumber) await setBed(oldRoom, student.bedNumber, null);
@@ -67,7 +67,7 @@ exports.transfer = async (req, res, next) => {
     const freshToRoom = await db.col('Room').findById(toRoomId);
     await setBed(freshToRoom || toRoom, toBedNumber, String(student._id));
 
-    // سجل النقل
+    // Transfer record
     const transfer = {
       _id: genId(),
       date,
@@ -81,7 +81,7 @@ exports.transfer = async (req, res, next) => {
     };
     const transfers = (student.transfers || []).concat([transfer]);
 
-    // سجل الأسعار (إغلاق الشريحة الحالية)
+    // Price history record (close current rent period)
     const rentHistory = (student.rentHistory || []).concat([
       {
         _id: genId(),
@@ -95,7 +95,7 @@ exports.transfer = async (req, res, next) => {
       },
     ]);
 
-    // تسعير نسبي لشهر النقل إذا وقع في منتصف الشهر
+    // Prorate rent for transfer month if mid-month
     const updated = await db.col('Student').findByIdAndUpdate(id, {
       $set: {
         roomId: String(toRoom._id),
@@ -109,7 +109,7 @@ exports.transfer = async (req, res, next) => {
 
     if (money(newRent) !== oldRent) await paymentsService.updateRentFor(updated, newRent);
 
-    // تسعير نسبي لشهر النقل (بعد updateRentFor حتى لا يُمسح المبلغ)
+    // Prorate rent for transfer month (after updateRentFor so amount is not overwritten)
     let proration = null;
     const curMonth = paymentsService.monthKey(new Date());
     if (doProrate && money(newRent) !== oldRent && date.startsWith(curMonth)) {
@@ -118,7 +118,7 @@ exports.transfer = async (req, res, next) => {
         const pr = prorateAmount(curMonth, date, oldRent, newRent);
         if (Number(pr.amount) !== Number(pay.amount)) {
           const history = (pay.history || []).concat([
-            { at: new Date().toISOString(), by: req.user.name || '', action: `نقل — تسعير نسبي: ${pr.before} يوم × ${oldRent} + ${pr.after} يوم × ${newRent} = ${pr.amount}` },
+            { at: new Date().toISOString(), by: req.user.name || '', action: `Transfer — prorated: ${pr.before} days × ${oldRent} + ${pr.after} days × ${newRent} = ${pr.amount}` },
           ]);
           await db.col('Payment').findByIdAndUpdate(pay._id, { $set: { amount: pr.amount, history } });
           proration = { month: curMonth, ...pr };
@@ -127,15 +127,15 @@ exports.transfer = async (req, res, next) => {
     }
 
     await log(req, {
-      action: `نقل الطالب ${student.name} (${student.studentId}) من ${fromLabels.propertyName} ${fromLabels.floorName} ${fromLabels.apartmentName} غرفة ${fromLabels.roomNumber} سرير ${fromLabels.bedNumber || '—'} إلى ${toLabels.propertyName} ${toLabels.floorName} ${toLabels.apartmentName} غرفة ${toLabels.roomNumber} سرير ${toBedNumber} (السعر ${oldRent} → ${newRent})${proration ? ' — تسعير نسبي' : ''}`,
+      action: `Transferred student ${student.name} (${student.studentId}) from ${fromLabels.propertyName} ${fromLabels.floorName} ${fromLabels.apartmentName} room ${fromLabels.roomNumber} bed ${fromLabels.bedNumber || '—'} to ${toLabels.propertyName} ${toLabels.floorName} ${toLabels.apartmentName} room ${toLabels.roomNumber} bed ${toBedNumber} (rent ${oldRent} → ${newRent})${proration ? ' — prorated' : ''}`,
       category: 'students',
       targetType: 'student',
       targetId: id,
     });
     await notifications.create({
       type: 'student_transferred',
-      title: 'نقل طالب',
-      message: `نقل ${student.name} إلى غرفة ${toLabels.roomNumber} — سرير ${toBedNumber} (السعر ${oldRent} → ${newRent})`,
+      title: 'Student Transfer',
+      message: `Transferred ${student.name} to room ${toLabels.roomNumber} — bed ${toBedNumber} (rent ${oldRent} → ${newRent})`,
       data: { studentId: String(id) },
     });
     emit(req, 'student:updated', {});

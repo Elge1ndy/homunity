@@ -36,7 +36,7 @@ export default function DepositPayModal({ open, studentId, originalAmount, onClo
       fd.append('proof', file)
       const { data } = await api.post('/upload/proof', fd)
       setProof(data.path)
-      toast('تم رفع إثبات الدفع')
+      toast('Payment proof uploaded')
     } catch (err) {
       toast(errMsg(err), 'error')
     } finally {
@@ -45,13 +45,13 @@ export default function DepositPayModal({ open, studentId, originalAmount, onClo
   }
 
   const submit = async () => {
-    if (originalAmount <= 0 && (!Number(amount) || Number(amount) <= 0)) return toast('أدخل قيمة التأمين أولًا', 'error')
+    if (originalAmount <= 0 && (!Number(amount) || Number(amount) <= 0)) return toast('Enter the deposit amount first', 'error')
     setSaving(true)
     try {
       const body = { date, method, proof, note }
       if (originalAmount <= 0) body.amount = Number(amount)
       await api.post(`/students/${studentId}/deposit/pay`, body)
-      toast('تم تسجيل دفع التأمين')
+      toast('Deposit payment recorded')
       onSaved()
       onClose()
     } catch (e) {
@@ -62,59 +62,59 @@ export default function DepositPayModal({ open, studentId, originalAmount, onClo
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="تسجيل دفع التأمين">
+    <Modal open={open} onClose={onClose} title="Record Deposit Payment">
       <div className="space-y-4">
         {originalAmount > 0 && (
           <div className="p-3 rounded-xl bg-slate-50 text-sm">
-            <span className="text-slate-500 font-bold">قيمة التأمين المسجلة: </span>
-            <span className="text-primary-700 font-extrabold">{originalAmount} ج.م</span>
+            <span className="text-slate-500 font-bold">Registered deposit amount: </span>
+            <span className="text-primary-700 font-extrabold">{originalAmount} EGP</span>
           </div>
         )}
         {originalAmount <= 0 && (
           <div>
-            <label className="label">قيمة التأمين (ج.م)</label>
+            <label className="label">Deposit Amount (EGP)</label>
             <input className="input" type="number" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
           </div>
         )}
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="label">تاريخ الدفع</label>
+            <label className="label">Payment Date</label>
             <input className="input" type="date" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
           <div className="flex-1">
-            <label className="label">طريقة الدفع</label>
+            <label className="label">Payment Method</label>
             <select className="input" value={method} onChange={(e) => setMethod(e.target.value)}>
-              <option value="cash">نقدًا</option>
-              <option value="transfer">تحويل بنكي</option>
-              <option value="other">أخرى</option>
+              <option value="cash">Cash</option>
+              <option value="transfer">Bank Transfer</option>
+              <option value="other">Other</option>
             </select>
           </div>
         </div>
         <div>
-          <label className="label">إثبات الدفع (سكرين شوت)</label>
+          <label className="label">Payment Proof (Screenshot)</label>
           <input className="input" type="file" accept="image/*" onChange={uploadFile} disabled={uploading} />
           {uploading && (
             <p className="text-xs text-primary-600 mt-1 flex items-center gap-1">
-              <Spinner /> جاري الرفع...
+              <Spinner /> Uploading...
             </p>
           )}
           {proof && (
             <a href={proof} target="_blank" rel="noreferrer" className="text-xs text-primary-700 font-semibold mt-1 inline-block">
-              ✓ تم رفع الصورة — عرض
+              ✓ Image uploaded — View
             </a>
           )}
         </div>
         <div>
-          <label className="label">ملاحظات</label>
+          <label className="label">Notes</label>
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'تأكيد الدفع'}
+          {saving ? <Spinner /> : 'Confirm Payment'}
         </button>
       </div>
     </Modal>

@@ -32,7 +32,7 @@ exports.list = async (req, res, next) => {
 exports.get = async (req, res, next) => {
   try {
     const room = await db.col('Room').findById(req.params.id);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     res.json({ room });
   } catch (e) {
     next(e);
@@ -42,10 +42,10 @@ exports.get = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { number, type, capacity, monthlyRent, floor, status, notes, propertyId, apartmentId, floorId } = req.body;
-    if (!number) return res.status(400).json({ message: 'رقم الغرفة مطلوب' });
-    if (!capacity || Number(capacity) < 1) return res.status(400).json({ message: 'سعة غير صحيحة' });
+    if (!number) return res.status(400).json({ message: 'Room number is required' });
+    if (!capacity || Number(capacity) < 1) return res.status(400).json({ message: 'Invalid capacity' });
     const exists = await db.col('Room').findOne({ number: String(number).trim() });
-    if (exists) return res.status(400).json({ message: 'يوجد غرفة بنفس الرقم' });
+    if (exists) return res.status(400).json({ message: 'A room with this number already exists' });
     const beds = [];
     const prices = req.body.bedPrices || {};
     for (let i = 1; i <= Number(capacity); i++) beds.push({ bedNumber: i, studentId: null, status: 'available', monthlyRent: prices[i] !== undefined && prices[i] !== null && prices[i] !== '' ? Number(prices[i]) || 0 : null });
@@ -63,7 +63,7 @@ exports.create = async (req, res, next) => {
       floorId: floorId || null,
     });
     if (propertyId) await structure.linkRoom(propertyId, room._id, apartmentId, floorId);
-    await log(req, { action: `تمت إضافة غرفة ${room.number}`, category: 'rooms', targetType: 'room', targetId: room._id });
+    await log(req, { action: `Added room ${room.number}`, category: 'rooms', targetType: 'room', targetId: room._id });
     emit(req, 'room:updated', {});
     emit(req, 'property:updated', {});
     res.json({ room });
@@ -76,12 +76,12 @@ exports.update = async (req, res, next) => {
   try {
     const { id } = req.params;
     const room = await db.col('Room').findById(id);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     const { number, type, monthlyRent, floor, status, capacity, notes, propertyId, apartmentId, floorId } = req.body;
     const set = {};
     if (number !== undefined) {
       const dup = await db.col('Room').findOne({ number: String(number).trim() });
-      if (dup && String(dup._id) !== String(id)) return res.status(400).json({ message: 'يوجد غرفة بنفس الرقم' });
+      if (dup && String(dup._id) !== String(id)) return res.status(400).json({ message: 'A room with this number already exists' });
       set.number = String(number).trim();
     }
     if (type !== undefined) set.type = type;
@@ -98,7 +98,7 @@ exports.update = async (req, res, next) => {
     if (capacity !== undefined && Number(capacity) !== room.capacity) {
       const newCap = Number(capacity);
       const occupied = (room.beds || []).filter((b) => b.studentId).length;
-      if (newCap < occupied) return res.status(400).json({ message: `لا يمكن تقليل السعة، الغرفة فيها ${occupied} طالب` });
+      if (newCap < occupied) return res.status(400).json({ message: `Cannot reduce capacity, room has ${occupied} student(s)` });
       const prices = req.body.bedPrices || {};
       const beds = [];
       for (let i = 1; i <= newCap; i++) {
@@ -115,7 +115,7 @@ exports.update = async (req, res, next) => {
       });
     }
     const updated = await db.col('Room').findByIdAndUpdate(id, { $set: set });
-    await log(req, { action: `تم تعديل غرفة ${updated.number}`, category: 'rooms', targetType: 'room', targetId: id });
+    await log(req, { action: `Updated room ${updated.number}`, category: 'rooms', targetType: 'room', targetId: id });
     emit(req, 'room:updated', {});
     if (relink) emit(req, 'property:updated', {});
     res.json({ room: updated });
@@ -128,12 +128,12 @@ exports.remove = async (req, res, next) => {
   try {
     const { id } = req.params;
     const room = await db.col('Room').findById(id);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     const occupied = (room.beds || []).filter((b) => b.studentId).length;
-    if (occupied > 0) return res.status(400).json({ message: 'لا يمكن حذف غرفة بها طلاب' });
+    if (occupied > 0) return res.status(400).json({ message: 'Cannot delete a room with students' });
     await db.col('Room').deleteById(id);
     if (room.propertyId) await structure.unlinkRoom(room.propertyId, id);
-    await log(req, { action: `تم حذف غرفة ${room.number}`, category: 'rooms', targetType: 'room', targetId: id });
+    await log(req, { action: `Deleted room ${room.number}`, category: 'rooms', targetType: 'room', targetId: id });
     emit(req, 'room:updated', {});
     emit(req, 'property:updated', {});
     res.json({ ok: true });

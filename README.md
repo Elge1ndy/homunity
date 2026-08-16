@@ -1,6 +1,6 @@
-# Homeunity - Student Housing Management System
+# Homeunity - نظام إدارة السكن الجامعي 🏠
 
-A complete, full-stack web application for managing student dormitories and housing.
+A complete, free, open-source full-stack web application for managing student dormitories and housing.
 
 ## Features
 
@@ -84,7 +84,11 @@ SUPABASE_KEY=your-anon-key
 DB_DRIVER=supabase
 ```
 
-## Deployment
+## Available On
+
+- **Web** — Run locally or deploy to any server
+- **Desktop** — Build EXE with `npm run build:exe` or `npm run build:desktop`
+- **Mobile** — PWA support (installable from browser)
 
 ### Render
 1. Push to GitHub
@@ -118,8 +122,12 @@ frontend/
 
 ## License
 
-MIT License - see LICENSE file
+MIT License - Free to use, modify, and distribute. See [LICENSE](LICENSE) file.
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.
 
 ## Support
 
-For questions or issues, contact the seller.
+If you have questions or issues, open a [GitHub Issue](https://github.com/Elge1ndy/homunity/issues).

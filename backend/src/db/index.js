@@ -300,10 +300,10 @@ async function supabaseConnect() {
   ensureApi();
   const r = await fetch(`${API_BASE}/homunity_docs?select=id&limit=1`, { headers: API_HEADERS });
   if (r.status === 404 || r.status === 400) {
-    throw new Error('Supabase: الجدول homunity_docs غير موجود — شغّل كود SQL في SQL Editor أولًا ثم أعد تشغيل الخادم');
+    throw new Error('Supabase: homunity_docs table not found — run the SQL code in SQL Editor first, then restart the server');
   }
-  if (!r.ok) throw new Error('Supabase: تعذر الاتصال (' + r.status + ') - تأكد من صحة الرابط والمفتاح');
-  console.log('[db] Using Supabase (PostgreSQL عبر REST)');
+  if (!r.ok) throw new Error('Supabase: connection failed (' + r.status + ') - check the URL and key');
+  console.log('[db] Using Supabase (PostgreSQL via REST)');
 }
 
 async function loadAll(name) {

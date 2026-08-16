@@ -16,24 +16,24 @@ function monthLabel(payment) {
 exports.remind = async (req, res, next) => {
   try {
     const payment = await db.col('Payment').findById(req.params.id);
-    if (!payment) return res.status(404).json({ message: 'الدفعة غير موجودة' });
+    if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
     const student = await db.col('Student').findById(payment.studentId);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
 
     const phone = normalizePhone(student.phone);
-    if (!phone) return res.status(400).json({ message: 'رقم هاتف الطالب غير صالح' });
+    if (!phone) return res.status(400).json({ message: 'Invalid student phone number' });
 
     const housing = await db.col('Housing').findOne({});
-    const housingName = housing?.name || 'السكن';
+    const housingName = housing?.name || 'Housing';
 
     const amount = payment.amount.toLocaleString('ar-EG');
     const msg =
-      `مرحبًا ${student.name} 👋\n` +
-      `تذكير من ${housingName}: 📌\n` +
-      `الدفعة المستحقة عن شهر ${monthLabel(payment)} بقيمة ${amount} ج.م\n` +
-      `تاريخ الاستحقاق: ${payment.dueDate}\n` +
-      `برجاء سدادها في أقرب وقت، وشكرًا لتعاونك 🌟`;
+      `Hello ${student.name} 👋\n` +
+      `Reminder from ${housingName}: 📌\n` +
+      `Payment due for month ${monthLabel(payment)} — ${amount} EGP\n` +
+      `Due date: ${payment.dueDate}\n` +
+      `Please pay as soon as possible. Thank you for your cooperation 🌟`;
 
     res.json({
       phone: '20' + phone.slice(2),

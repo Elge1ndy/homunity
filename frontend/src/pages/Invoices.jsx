@@ -19,10 +19,10 @@ export default function Invoices() {
   useRealtime(refetch, ['invoice:created'])
 
   const remove = async (inv) => {
-    if (!window.confirm(`حذف الفاتورة ${inv.invoiceNumber}؟`)) return
+    if (!window.confirm(`Delete invoice ${inv.invoiceNumber}?`)) return
     try {
       await api.delete(`/invoices/${inv._id}`)
-      toast('تم حذف الفاتورة')
+      toast('Invoice deleted')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -32,9 +32,9 @@ export default function Invoices() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">{data?.invoices?.length || 0} فاتورة</p>
+        <p className="text-sm text-slate-500">{data?.invoices?.length || 0} invoices</p>
         <button className="btn-primary" onClick={() => setCreateOpen(true)}>
-          <Plus size={16} /> إنشاء فاتورة
+          <Plus size={16} /> Create Invoice
         </button>
       </div>
 
@@ -42,18 +42,18 @@ export default function Invoices() {
         {loading ? (
           <Spinner full />
         ) : !data?.invoices?.length ? (
-          <EmptyState message="لا توجد فواتير" />
+          <EmptyState message="No invoices" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">رقم الفاتورة</th>
-                  <th className="th">الطالب</th>
-                  <th className="th">الشهور</th>
-                  <th className="th">الإجمالي</th>
-                  <th className="th">الحالة</th>
-                  <th className="th">التاريخ</th>
+                  <th className="th">Invoice Number</th>
+                  <th className="th">Student</th>
+                  <th className="th">Months</th>
+                  <th className="th">Total</th>
+                  <th className="th">Status</th>
+                  <th className="th">Date</th>
                   <th className="th"></th>
                 </tr>
               </thead>
@@ -65,8 +65,8 @@ export default function Invoices() {
                       <span className="font-semibold">{inv.student?.name || '—'}</span>
                       <p className="text-xs text-slate-400 font-mono" dir="ltr">{inv.student?.studentId || ''}</p>
                     </td>
-                    <td className="td text-xs">{inv.months.map(monthLabel).join('، ')}</td>
-                    <td className="td font-bold">{fmtMoney(inv.total)} ج.م</td>
+                    <td className="td text-xs">{inv.months.map(monthLabel).join(', ')}</td>
+                    <td className="td font-bold">{fmtMoney(inv.total)} EGP</td>
                     <td className="td">
                       <Badge {...invoiceStatus[inv.status]} />
                     </td>
@@ -106,9 +106,9 @@ export default function Invoices() {
               <table className="w-full mt-4">
                 <thead>
                   <tr className="border-b border-slate-200">
-                    <th className="th">الشهر</th>
-                    <th className="th">المبلغ</th>
-                    <th className="th">الحالة</th>
+                    <th className="th">Month</th>
+                    <th className="th">Amount</th>
+                    <th className="th">Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -124,11 +124,11 @@ export default function Invoices() {
                 </tbody>
               </table>
               <div className="flex justify-between mt-4 p-4 rounded-xl bg-primary-50">
-                <span className="font-bold text-primary-800">الإجمالي</span>
-                <span className="font-extrabold text-primary-900">{fmtMoney(view.total)} ج.م</span>
+                <span className="font-bold text-primary-800">Total</span>
+                <span className="font-extrabold text-primary-900">{fmtMoney(view.total)} EGP</span>
               </div>
               <button className="btn-primary w-full mt-4" onClick={() => downloadBlob(`/api/invoices/${view._id}/pdf`, `${view.invoiceNumber}.pdf`)}>
-                <FileText size={16} /> تحميل PDF
+                <FileText size={16} /> Download PDF
               </button>
             </div>
           </div>

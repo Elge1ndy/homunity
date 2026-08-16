@@ -13,7 +13,7 @@ function emitAll(req) {
 async function findProperty(id, res) {
   const property = await db.col('Property').findById(id);
   if (!property) {
-    if (res) res.status(404).json({ message: 'العقار غير موجود' });
+    if (res) res.status(404).json({ message: 'Property not found' });
     return null;
   }
   return property;
@@ -43,7 +43,7 @@ exports.get = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { name, code, type, gender, address, notes, floors, apartments } = req.body;
-    if (!name) return res.status(400).json({ message: 'اسم العقار مطلوب' });
+    if (!name) return res.status(400).json({ message: 'Property name is required' });
     const ptype = structure.PROPERTY_TYPES.includes(type) ? type : 'house';
     const pgender = structure.PROPERTY_GENDERS.includes(gender) ? gender : '';
     if (ptype === 'apartment') {
@@ -68,7 +68,7 @@ exports.create = async (req, res, next) => {
         ],
         roomLinks: [],
       });
-      await log(req, { action: `تمت إضافة شقة مستقلة ${property.name}`, category: 'properties', targetType: 'property', targetId: property._id });
+      await log(req, { action: `Added standalone apartment ${property.name}`, category: 'properties', targetType: 'property', targetId: property._id });
       emit(req, 'property:updated', {});
       res.json({ property });
     } else {
@@ -85,7 +85,7 @@ exports.create = async (req, res, next) => {
         apartments: [],
         roomLinks: [],
       });
-      await log(req, { action: `تمت إضافة بيت ${property.name} بأدواره (${floorDocs.length})`, category: 'properties', targetType: 'property', targetId: property._id });
+      await log(req, { action: `Added house ${property.name} with ${floorDocs.length} floor(s)`, category: 'properties', targetType: 'property', targetId: property._id });
       emit(req, 'property:updated', {});
       res.json({ property });
     }
@@ -111,7 +111,7 @@ exports.update = async (req, res, next) => {
     if (notes !== undefined) set.notes = notes || '';
     const updated = await db.col('Property').findByIdAndUpdate(id, { $set: set }, { new: true });
     await structure.ensureDefaults();
-    await log(req, { action: `تم تعديل بيانات العقار ${updated.name}`, category: 'properties', targetType: 'property', targetId: id });
+    await log(req, { action: `Updated property ${updated.name}`, category: 'properties', targetType: 'property', targetId: id });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -129,9 +129,9 @@ exports.remove = async (req, res, next) => {
       await db.col('Room').findByIdAndUpdate(r._id, { $set: { propertyId: '', apartmentId: '', floorId: '' } });
     }
     await db.col('Property').deleteById(id);
-    await log(req, { action: `تم حذف العقار ${property.name}`, category: 'properties', targetType: 'property', targetId: id });
+    await log(req, { action: `Deleted property ${property.name}`, category: 'properties', targetType: 'property', targetId: id });
     emit(req, 'property:updated', {});
-    res.json({ message: 'تم الحذف بنجاح' });
+    res.json({ message: 'Deleted successfully' });
   } catch (e) {
     next(e);
   }
@@ -140,11 +140,11 @@ exports.remove = async (req, res, next) => {
 exports.setBedStatus = async (req, res, next) => {
   try {
     const room = await db.col('Room').findById(req.params.rid);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     const { bedNumber, status: bedstat } = req.body;
     const beds = (room.beds || []).map((b) => (Number(b.bedNumber) === Number(bedNumber) ? { ...b, status: bedStatus(bedstat) } : b));
     const updated = await db.col('Room').findByIdAndUpdate(room._id, { $set: { beds } }, { new: true });
-    await log(req, { action: `تغيير حالة السرير ${bedNumber} في غرفة ${room.number}`, category: 'properties', targetType: 'room', targetId: String(room._id) });
+    await log(req, { action: `Changed bed ${bedNumber} status in room ${room.number}`, category: 'properties', targetType: 'room', targetId: String(room._id) });
     emitAll(req);
     res.json({ room: updated });
   } catch (e) {
@@ -155,12 +155,12 @@ exports.setBedStatus = async (req, res, next) => {
 exports.setBedPrice = async (req, res, next) => {
   try {
     const room = await db.col('Room').findById(req.params.rid);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     const bn = Number(req.params.bn);
     const price = money(req.body.price === undefined ? 0 : req.body.price);
     const beds = (room.beds || []).map((b) => (Number(b.bedNumber) === bn ? { ...b, monthlyRent: price } : b));
     const updated = await db.col('Room').findByIdAndUpdate(room._id, { $set: { beds } }, { new: true });
-    await log(req, { action: `تعديل سعر السرير ${bn} في غرفة ${room.number} إلى ${price}`, category: 'properties', targetType: 'room', targetId: String(room._id) });
+    await log(req, { action: `Updated bed ${bn} price in room ${room.number} to ${price}`, category: 'properties', targetType: 'room', targetId: String(room._id) });
     emitAll(req);
     res.json({ room: updated });
   } catch (e) {
@@ -171,18 +171,18 @@ exports.setBedPrice = async (req, res, next) => {
 exports.removeBed = async (req, res, next) => {
   try {
     const room = await db.col('Room').findById(req.params.rid);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     const bn = Number(req.params.bn);
     const bed = (room.beds || []).find((b) => Number(b.bedNumber) === bn);
     if (bed && bed.studentId) {
       // prevent deletion of occupied bed; clear it instead
       const students = await db.col('Student').find({});
       const s = students.find((x) => String(x._id) === String(bed.studentId));
-      if (s) return res.status(400).json({ message: `السرير ${bn} مشغول بالطالب ${s.name} — لا يمكن حذفه` });
+      if (s) return res.status(400).json({ message: `Bed ${bn} is occupied by student ${s.name} — cannot delete` });
     }
     const beds = (room.beds || []).filter((b) => Number(b.bedNumber) !== bn);
     const updated = await db.col('Room').findByIdAndUpdate(room._id, { $set: { beds } }, { new: true });
-    await log(req, { action: `حذف السرير ${bn} من غرفة ${room.number}`, category: 'properties', targetType: 'room', targetId: String(room._id) });
+    await log(req, { action: `Deleted bed ${bn} from room ${room.number}`, category: 'properties', targetType: 'room', targetId: String(room._id) });
     emitAll(req);
     res.json({ room: updated });
   } catch (e) {
@@ -195,10 +195,10 @@ exports.addFloor = async (req, res, next) => {
     const property = await findProperty(req.params.id, res);
     if (!property) return;
     const { name, code, sort } = req.body;
-    if (!name) return res.status(400).json({ message: 'اسم الدور مطلوب' });
+    if (!name) return res.status(400).json({ message: 'Floor name is required' });
     const floors = (property.floors || []).concat([{ _id: genId(), name: String(name).trim(), code: String(code || '').trim(), status: 'active', sort: Number(sort) || 0 }]);
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { floors } }, { new: true });
-    await log(req, { action: `إضافة دور ${name} إلى ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Added floor ${name} to ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -213,7 +213,7 @@ exports.updateFloor = async (req, res, next) => {
     const { name, code, sort } = req.body;
     const floors = (property.floors || []).map((f) => (String(f._id) === String(req.params.fid) ? { ...f, name: name !== undefined ? String(name).trim() : f.name, code: code !== undefined ? String(code).trim() : f.code, sort: sort !== undefined ? Number(sort) : f.sort } : f));
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { floors } }, { new: true });
-    await log(req, { action: `تعديل دور في ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Updated floor in ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -230,7 +230,7 @@ exports.removeFloor = async (req, res, next) => {
     const apartments = (property.apartments || []).filter((a) => String(a.floorId) !== fid);
     const roomLinks = (property.roomLinks || []).filter((lk) => String(lk.floorId) !== fid);
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { floors, apartments, roomLinks } }, { new: true });
-    await log(req, { action: `حذف دور من ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Deleted floor from ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -243,10 +243,10 @@ exports.addApartment = async (req, res, next) => {
     const property = await findProperty(req.params.id, res);
     if (!property) return;
     const { name, code, monthlyRent, floorId } = req.body;
-    if (!name) return res.status(400).json({ message: 'اسم الشقة مطلوب' });
+    if (!name) return res.status(400).json({ message: 'Apartment name is required' });
     const apartments = (property.apartments || []).concat([{ _id: genId(), name: String(name).trim(), code: String(code || '').trim(), status: 'active', monthlyRent: money(monthlyRent || 0), floorId: floorId || null }]);
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { apartments } }, { new: true });
-    await log(req, { action: `إضافة شقة ${name} إلى ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Added apartment ${name} to ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -261,7 +261,7 @@ exports.updateApartment = async (req, res, next) => {
     const { name, code, monthlyRent, floorId } = req.body;
     const apartments = (property.apartments || []).map((a) => (String(a._id) === String(req.params.aid) ? { ...a, name: name !== undefined ? String(name).trim() : a.name, code: code !== undefined ? String(code).trim() : a.code, monthlyRent: monthlyRent !== undefined ? money(monthlyRent) : a.monthlyRent, floorId: floorId !== undefined ? floorId : a.floorId } : a));
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { apartments } }, { new: true });
-    await log(req, { action: `تعديل شقة في ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Updated apartment in ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -277,7 +277,7 @@ exports.removeApartment = async (req, res, next) => {
     const apartments = (property.apartments || []).filter((a) => String(a._id) !== aid);
     const roomLinks = (property.roomLinks || []).map((lk) => (String(lk.apartmentId) === aid ? { ...lk, apartmentId: null, floorId: null } : lk));
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { apartments, roomLinks } }, { new: true });
-    await log(req, { action: `حذف شقة من ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Deleted apartment from ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -290,14 +290,14 @@ exports.addRoom = async (req, res, next) => {
     const property = await findProperty(req.params.id, res);
     if (!property) return;
     const { roomId, apartmentId, floorId } = req.body;
-    if (!roomId) return res.status(400).json({ message: 'الغرفة مطلوبة' });
+    if (!roomId) return res.status(400).json({ message: 'Room is required' });
     const room = await db.col('Room').findById(roomId);
-    if (!room) return res.status(404).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(404).json({ message: 'Room not found' });
     const ok = await structure.linkRoom(String(property._id), String(room._id), apartmentId || null, floorId || null);
-    if (!ok) return res.status(400).json({ message: 'تعذر ربط الغرفة' });
-    await log(req, { action: `ربط غرفة ${room.number} بالعقار ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    if (!ok) return res.status(400).json({ message: 'Failed to link room' });
+    await log(req, { action: `Linked room ${room.number} to property ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
-    res.json({ message: 'تم الربط بنجاح' });
+    res.json({ message: 'Linked successfully' });
   } catch (e) {
     next(e);
   }
@@ -313,9 +313,9 @@ exports.removeRoom = async (req, res, next) => {
     if (room) {
       await db.col('Room').findByIdAndUpdate(rid, { $set: { propertyId: '', apartmentId: '', floorId: '' } });
     }
-    await log(req, { action: `فصل غرفة عن العقار ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Unlinked room from property ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
-    res.json({ message: 'تم الفصل بنجاح' });
+    res.json({ message: 'Unlinked successfully' });
   } catch (e) {
     next(e);
   }
@@ -326,11 +326,11 @@ exports.addMaintenance = async (req, res, next) => {
     const property = await findProperty(req.params.id, res);
     if (!property) return;
     const { name, amount, apartmentId } = req.body;
-    if (!name || amount === undefined) return res.status(400).json({ message: 'اسم ومبلغ الصيانة مطلوبان' });
+    if (!name || amount === undefined) return res.status(400).json({ message: 'Maintenance name and amount are required' });
     const maintenance = { _id: genId(), apartmentId: apartmentId || '', name, amount: money(amount), date: new Date().toISOString().slice(0, 10), notes: '', by: '', createdAt: new Date() };
     const maintenanceList = (property.maintenance || []).concat([maintenance]);
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { maintenance: maintenanceList } }, { new: true });
-    await log(req, { action: `إضافة صيانة ${name} بمبلغ ${maintenance.amount} إلى ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Added maintenance ${name} for ${maintenance.amount} to ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ maintenance, property: updated });
   } catch (e) {
@@ -344,7 +344,7 @@ exports.removeMaintenance = async (req, res, next) => {
     if (!property) return;
     const maintenance = (property.maintenance || []).filter((m) => String(m._id) !== String(req.params.mid));
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { maintenance } }, { new: true });
-    await log(req, { action: `حذف صيانة من ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Deleted maintenance from ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {
@@ -357,11 +357,11 @@ exports.addExpense = async (req, res, next) => {
     const property = await findProperty(req.params.id, res);
     if (!property) return;
     const { name, amount, apartmentId } = req.body;
-    if (!name || amount === undefined) return res.status(400).json({ message: 'اسم ومبلغ المصروف مطلوبان' });
+    if (!name || amount === undefined) return res.status(400).json({ message: 'Expense name and amount are required' });
     const expense = { _id: genId(), apartmentId: apartmentId || '', name, amount: money(amount), date: new Date().toISOString().slice(0, 10), notes: '', by: '', createdAt: new Date() };
     const expenses = (property.expenses || []).concat([expense]);
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { expenses } }, { new: true });
-    await log(req, { action: `إضافة مصروف ${name} بمبلغ ${expense.amount} إلى ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Added expense ${name} for ${expense.amount} to ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ expense, property: updated });
   } catch (e) {
@@ -375,7 +375,7 @@ exports.removeExpense = async (req, res, next) => {
     if (!property) return;
     const expenses = (property.expenses || []).filter((e) => String(e._id) !== String(req.params.eid));
     const updated = await db.col('Property').findByIdAndUpdate(property._id, { $set: { expenses } }, { new: true });
-    await log(req, { action: `حذف مصروف من ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
+    await log(req, { action: `Deleted expense from ${property.name}`, category: 'properties', targetType: 'property', targetId: String(property._id) });
     emit(req, 'property:updated', {});
     res.json({ property: updated });
   } catch (e) {

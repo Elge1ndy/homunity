@@ -33,25 +33,25 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
 
   const submit = async () => {
     if (!form.name.trim()) {
-      toast('اسم العقار مطلوب', 'warn')
+      toast('Property name is required', 'warn')
       return
     }
     if (!edit && form.type === 'house' && !floors.some((f) => f.name.trim())) {
-      toast('أضف دورًا واحدًا على الأقل للبيت', 'warn')
+      toast('Add at least one floor', 'warn')
       return
     }
     setSaving(true)
     try {
       if (edit) {
         await api.put(`/properties/${property._id}`, form)
-        toast('تم تحديث العقار')
+        toast('Property updated successfully')
       } else {
         await api.post('/properties', {
           ...form,
           floors: form.type === 'house' ? floors.filter((f) => f.name.trim()).map((f) => ({ name: f.name.trim(), code: f.code.trim() })) : [],
           apartments: form.type === 'apartment' ? [{ name: apartment.name || form.name, code: apartment.code, monthlyRent: apartment.monthlyRent }] : [],
         })
-        toast('تمت إضافة العقار')
+        toast('Property added successfully')
       }
       onSaved()
       onClose()
@@ -63,15 +63,15 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={edit ? 'تعديل العقار' : 'إضافة عقار جديد'}>
+    <Modal open={open} onClose={onClose} title={edit ? 'Edit Property' : 'Add New Property'}>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">اسم العقار *</label>
+            <label className="label">Property Name *</label>
             <input className="input" value={form.name} onChange={set('name')} />
           </div>
           <div>
-            <label className="label">الكود</label>
+            <label className="label">Code</label>
             <input className="input" dir="ltr" value={form.code} onChange={set('code')} />
           </div>
         </div>
@@ -79,31 +79,31 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
         {!edit && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">نوع العقار</label>
+              <label className="label">Property Type</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, type: 'house' }))}
                   className={`p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 ${form.type === 'house' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                 >
-                  <Home size={16} /> بيت كامل
+                  <Home size={16} /> Full House
                 </button>
                 <button
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, type: 'apartment' }))}
                   className={`p-3 rounded-xl border text-sm font-bold flex items-center justify-center gap-2 ${form.type === 'apartment' ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                 >
-                  <Building size={16} /> شقة مستقلة
+                  <Building size={16} /> Apartment
                 </button>
               </div>
             </div>
             <div>
-              <label className="label">نوع السكن</label>
+              <label className="label">Housing Type</label>
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { v: '', l: 'مختلط' },
-                  { v: 'male', l: 'ذكور' },
-                  { v: 'female', l: 'إناث' },
+                  { v: '', l: 'Mixed' },
+                  { v: 'male', l: 'Male' },
+                  { v: 'female', l: 'Female' },
                 ].map((g) => (
                   <button
                     key={g.v}
@@ -122,18 +122,18 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
         {edit && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">نوع السكن</label>
+              <label className="label">Housing Type</label>
               <select className="input" value={form.gender} onChange={set('gender')}>
-                <option value="">مختلط</option>
-                <option value="male">ذكور</option>
-                <option value="female">إناث</option>
+                <option value="">Mixed</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
               </select>
             </div>
             <div>
-              <label className="label">الحالة</label>
+              <label className="label">Status</label>
               <select className="input" value={form.status} onChange={set('status')}>
-                <option value="active">نشط</option>
-                <option value="inactive">متوقف</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
               </select>
             </div>
           </div>
@@ -141,12 +141,12 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
 
         {!edit && form.type === 'house' && (
           <div>
-            <label className="label">الأدوار (Floor)</label>
+            <label className="label">Floors</label>
             <div className="space-y-2">
               {floors.map((f, i) => (
                 <div key={i} className="flex gap-2">
-                  <input className="input flex-1" placeholder={`اسم الدور ${i + 1} *`} value={f.name} onChange={(e) => setFloors((arr) => arr.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
-                  <input className="input !w-28" dir="ltr" placeholder="كود" value={f.code} onChange={(e) => setFloors((arr) => arr.map((x, j) => (j === i ? { ...x, code: e.target.value } : x)))} />
+                  <input className="input flex-1" placeholder={`Floor name ${i + 1} *`} value={f.name} onChange={(e) => setFloors((arr) => arr.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+                  <input className="input !w-28" dir="ltr" placeholder="Code" value={f.code} onChange={(e) => setFloors((arr) => arr.map((x, j) => (j === i ? { ...x, code: e.target.value } : x)))} />
                   <button className="btn-ghost text-red-600" onClick={() => setFloors((arr) => arr.filter((_, j) => j !== i))}>
                     <Trash2 size={15} />
                   </button>
@@ -154,7 +154,7 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
               ))}
             </div>
             <button className="btn-outline !py-1.5 text-xs mt-2" onClick={() => setFloors((arr) => [...arr, { name: '', code: '' }])}>
-              <Plus size={14} /> إضافة دور
+              <Plus size={14} /> Add Floor
             </button>
           </div>
         )}
@@ -162,15 +162,15 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
         {!edit && form.type === 'apartment' && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="label">اسم الشقة</label>
+              <label className="label">Apartment Name</label>
               <input className="input" value={apartment.name} onChange={(e) => setApartment((a) => ({ ...a, name: e.target.value }))} placeholder={form.name} />
             </div>
             <div>
-              <label className="label">كود الشقة</label>
+              <label className="label">Apartment Code</label>
               <input className="input" dir="ltr" value={apartment.code} onChange={(e) => setApartment((a) => ({ ...a, code: e.target.value }))} />
             </div>
             <div>
-              <label className="label">الإيجار الافتراضي</label>
+              <label className="label">Default Rent</label>
               <input className="input" type="number" dir="ltr" value={apartment.monthlyRent} onChange={(e) => setApartment((a) => ({ ...a, monthlyRent: e.target.value }))} />
             </div>
           </div>
@@ -178,21 +178,21 @@ export default function PropertyFormModal({ open, onClose, onSaved, property }) 
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">العنوان</label>
+            <label className="label">Address</label>
             <input className="input" value={form.address} onChange={set('address')} />
           </div>
           <div>
-            <label className="label">ملاحظات</label>
+            <label className="label">Notes</label>
             <input className="input" value={form.notes} onChange={set('notes')} />
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : edit ? 'حفظ التعديلات' : 'إضافة العقار'}
+          {saving ? <Spinner /> : edit ? 'Save Changes' : 'Add Property'}
         </button>
       </div>
     </Modal>

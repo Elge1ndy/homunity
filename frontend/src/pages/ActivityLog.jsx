@@ -6,15 +6,15 @@ import Spinner, { EmptyState } from '../components/Spinner.jsx'
 import { fmtDateTime } from '../utils/format.js'
 
 const CATEGORIES = [
-  ['', 'الكل'],
-  ['students', 'الطلاب'],
-  ['rooms', 'الغرف'],
-  ['payments', 'المدفوعات'],
-  ['invoices', 'الفواتير'],
-  ['housing', 'السكن'],
-  ['admins', 'المديرين'],
-  ['auth', 'الدخول'],
-  ['general', 'أخرى'],
+  ['', 'All'],
+  ['students', 'Students'],
+  ['rooms', 'Rooms'],
+  ['payments', 'Payments'],
+  ['invoices', 'Invoices'],
+  ['housing', 'Housing'],
+  ['admins', 'Admins'],
+  ['auth', 'Auth'],
+  ['general', 'Other'],
 ]
 
 export default function ActivityLog() {
@@ -28,7 +28,7 @@ export default function ActivityLog() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">{activity.length} حدث</p>
+        <p className="text-sm text-slate-500">{activity.length} events</p>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -49,16 +49,16 @@ export default function ActivityLog() {
         {loading ? (
           <Spinner full />
         ) : !activity.length ? (
-          <EmptyState message="لا يوجد نشاط مسجل" />
+          <EmptyState message="No activity recorded" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">الحدث</th>
-                  <th className="th">بواسطة</th>
-                  <th className="th">التصنيف</th>
-                  <th className="th">الوقت</th>
+                  <th className="th">Event</th>
+                  <th className="th">By</th>
+                  <th className="th">Category</th>
+                  <th className="th">Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -69,7 +69,7 @@ export default function ActivityLog() {
                     <td className="td">
                       <span className="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-0.5 bg-slate-100 text-slate-600">
                         <ListOrdered size={12} />
-                        {CATEGORIES.find(([v]) => v === a.category)?.[1] || a.category || 'أخرى'}
+                        {CATEGORIES.find(([v]) => v === a.category)?.[1] || a.category || 'Other'}
                       </span>
                     </td>
                     <td className="td text-slate-500">{fmtDateTime(a.createdAt)}</td>

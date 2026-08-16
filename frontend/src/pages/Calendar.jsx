@@ -7,7 +7,7 @@ import PaymentModal from '../components/PaymentModal.jsx'
 import Spinner from '../components/Spinner.jsx'
 import { fmtMoney, monthLabel, currentMonthKey } from '../utils/format.js'
 
-const WEEKDAYS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
+const WEEKDAYS = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
 function daysInMonth(monthKey) {
   const [y, m] = monthKey.split('-').map(Number)
@@ -29,7 +29,7 @@ function badge(status) {
       : 'bg-slate-100 text-slate-600'
 }
 
-const STATUS_LABEL = { paid: 'مدفوع', overdue: 'متأخر', unpaid: 'غير مدفوع' }
+const STATUS_LABEL = { paid: 'Paid', overdue: 'Overdue', unpaid: 'Unpaid' }
 
 export default function Calendar() {
   const [month, setMonth] = useState(currentMonthKey())
@@ -53,13 +53,13 @@ export default function Calendar() {
         />
         <div className="flex gap-4 text-xs font-bold text-slate-500 ms-auto">
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-emerald-50 border border-emerald-300" /> مدفوع
+            <span className="w-3 h-3 rounded bg-emerald-50 border border-emerald-300" /> Paid
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-amber-50 border border-amber-300" /> مستحق
+            <span className="w-3 h-3 rounded bg-amber-50 border border-amber-300" /> Due
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-red-50 border border-red-300" /> متأخر
+            <span className="w-3 h-3 rounded bg-red-50 border border-red-300" /> Overdue
           </span>
         </div>
       </div>
@@ -68,7 +68,7 @@ export default function Calendar() {
         <Spinner full />
       ) : (
         <div className="card p-6">
-          <h3 className="font-extrabold text-slate-800 mb-4">تقويم دفعات {monthLabel(month)}</h3>
+          <h3 className="font-extrabold text-slate-800 mb-4">Payment Calendar {monthLabel(month)}</h3>
           <div className="grid grid-cols-7 gap-2">
             {WEEKDAYS.map((d, i) => (
               <div key={i} className="text-center text-xs font-bold text-slate-400 py-1">
@@ -100,7 +100,7 @@ export default function Calendar() {
           <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
               <h3 className="font-extrabold text-slate-800">
-                دفعات يوم {selected.day} — {monthLabel(month)}
+                Payments for day {selected.day} — {monthLabel(month)}
               </h3>
               <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-600">
                 ✕
@@ -117,7 +117,7 @@ export default function Calendar() {
                       {p.student?.name || '—'}
                     </Link>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {fmtMoney(p.amount)} ج.م — {p.dueDate}
+                      {fmtMoney(p.amount)} EGP — {p.dueDate}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -126,7 +126,7 @@ export default function Calendar() {
                     </span>
                     {p.status !== 'paid' && (
                       <button className="btn-primary !py-1 text-xs" onClick={() => setPayTarget(p)}>
-                        <Check size={14} /> دفع
+                        <Check size={14} /> Pay
                       </button>
                     )}
                   </div>
@@ -153,7 +153,7 @@ export default function Calendar() {
 function EmptyNote({ month }) {
   return (
     <p className="text-sm text-slate-400 text-center py-6">
-      لا توجد دفعات مسجلة لشهر {monthLabel(month)}
+      No payments recorded for {monthLabel(month)}
     </p>
   )
 }

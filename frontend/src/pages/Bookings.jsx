@@ -6,7 +6,7 @@ import { useRealtime } from '../socket.js'
 import Spinner from '../components/Spinner.jsx'
 import { currentMonthKey } from '../utils/format.js'
 
-const WEEKDAYS = ['ح', 'ن', 'ث', 'ر', 'خ', 'ج', 'س']
+const WEEKDAYS = ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
 function daysInMonth(monthKey) {
   const [y, m] = monthKey.split('-').map(Number)
@@ -71,31 +71,31 @@ export default function Bookings() {
       <div className="flex items-center gap-3 flex-wrap">
         <input type="month" className="input !w-auto" dir="ltr" value={month} onChange={(e) => setMonth(e.target.value)} />
         <button className="btn-outline !py-2" onClick={() => setMonth(currentMonthKey())}>
-          اليوم
+          Today
         </button>
         <div className="flex gap-4 text-xs font-bold text-slate-500 ms-auto">
           <span className="flex items-center gap-1.5">
-            <Sun size={14} className="text-orange-500" /> كورس صيفي
+            <Sun size={14} className="text-orange-500" /> Summer Course
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-emerald-50 border border-emerald-300" /> إقامة
+            <span className="w-3 h-3 rounded bg-emerald-50 border border-emerald-300" /> Stay
           </span>
           <span className="flex items-center gap-1.5">
-            <UserPlus size={14} className="text-primary-700" /> دخول
+            <UserPlus size={14} className="text-primary-700" /> Check-in
           </span>
           <span className="flex items-center gap-1.5">
-            <LogOut size={14} className="text-red-500" /> خروج
+            <LogOut size={14} className="text-red-500" /> Check-out
           </span>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <div className="p-3 rounded-xl bg-orange-50 border border-orange-200 min-w-[130px]">
-          <p className="text-[10px] font-bold text-orange-600">كورسات هذا الشهر</p>
+          <p className="text-[10px] font-bold text-orange-600">Courses This Month</p>
           <p className="text-lg font-extrabold text-orange-700 mt-0.5">{monthStats.courses}</p>
         </div>
         <div className="p-3 rounded-xl bg-primary-50 border border-primary-200 min-w-[130px]">
-          <p className="text-[10px] font-bold text-primary-600">مقيمون اليوم</p>
+          <p className="text-[10px] font-bold text-primary-600">Guests Today</p>
           <p className="text-lg font-extrabold text-primary-700 mt-0.5">{todayDay ? dayItems(todayDay).filter((x) => x.kind === 'student').length : '—'}</p>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function Bookings() {
         <Spinner full />
       ) : (
         <div className="card p-6">
-          <h3 className="font-extrabold text-slate-800 mb-4">حجوزات الأسرة</h3>
+          <h3 className="font-extrabold text-slate-800 mb-4">Bed Bookings</h3>
           <div className="grid grid-cols-7 gap-1.5">
             {WEEKDAYS.map((d, i) => (
               <div key={i} className="text-center text-[10px] font-bold text-slate-400 py-1">
@@ -152,7 +152,7 @@ export default function Bookings() {
           <div className="absolute inset-0 bg-slate-900/50" onClick={() => setSelected(null)} />
           <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between sticky top-0 bg-white">
-              <h3 className="font-extrabold text-slate-800">حجوزات يوم {selected.day} — {month.replace('-', ' / ')}</h3>
+              <h3 className="font-extrabold text-slate-800">Bookings for day {selected.day} — {month.replace('-', ' / ')}</h3>
               <button onClick={() => setSelected(null)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
             <div className="p-6 space-y-2">
@@ -167,7 +167,7 @@ export default function Bookings() {
                       <span className="text-[10px] text-orange-600 font-bold">{x.c.fromDate} → {x.c.toDate}</span>
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {[x.c.propertyName, x.c.floorName, x.c.apartmentName].filter(Boolean).join(' — ')} • غرفة {roomMap[x.c.roomId]?.number || '—'} سرير {x.c.bedNumber} • {x.c.rent} ج.م/شهر
+                      {[x.c.propertyName, x.c.floorName, x.c.apartmentName].filter(Boolean).join(' — ')} • Room {roomMap[x.c.roomId]?.number || '—'} Bed {x.c.bedNumber} • {x.c.rent} EGP/month
                     </p>
                   </div>
                 ) : (
@@ -177,7 +177,7 @@ export default function Bookings() {
                         {x.s.name}
                       </Link>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        {x.event === 'in' ? `يدخل اليوم (${x.s.checkInDate})` : x.event === 'out' ? `يخرج اليوم (${x.s.checkOutDate})` : 'مقيم'} • غرفة {roomMap[x.s.roomId]?.number || '—'} سرير {x.s.bedNumber || '—'}
+                        {x.event === 'in' ? `Checking in today (${x.s.checkInDate})` : x.event === 'out' ? `Checking out today (${x.s.checkOutDate})` : 'Guest'} • Room {roomMap[x.s.roomId]?.number || '—'} Bed {x.s.bedNumber || '—'}
                       </p>
                     </div>
                     {x.event === 'in' && <UserPlus size={16} className="text-primary-600 shrink-0" />}

@@ -24,15 +24,15 @@ function bedRent(bed, room) {
 }
 
 function floorLabel(floor) {
-  return floor ? (floor.name || floor.code || 'دور بدون اسم') : '';
+  return floor ? (floor.name || floor.code || 'Unnamed Floor') : '';
 }
 
 function apartmentLabel(ap) {
-  return ap ? (ap.name || ap.code || 'شقة بدون اسم') : '';
+  return ap ? (ap.name || ap.code || 'Unnamed Apartment') : '';
 }
 
 function roomLabel(room) {
-  return room ? (room.number || 'غرفة') : '';
+  return room ? (room.number || 'Room') : '';
 }
 
 async function loadContext() {
@@ -63,14 +63,14 @@ async function checkBedAvailability(roomId, bedNumber, from, to, opts = {}) {
   for (const sc of summerCourses) {
     if (excludeCourseId && String(sc._id) === String(excludeCourseId)) continue;
     if (overlap(from, to, sc.fromDate, sc.toDate)) {
-      return { ok: false, reason: `السرير ${bedNumber} محجوز في كورس صيفي (${sc.studentName || ''}) من ${sc.fromDate} إلى ${sc.toDate}` };
+      return { ok: false, reason: `Bed ${bedNumber} is booked for a summer course (${sc.studentName || ''}) from ${sc.fromDate} to ${sc.toDate}` };
     }
   }
   const students = await db.col('Student').find({ roomId: String(roomId), bedNumber: Number(bedNumber), status: 'active' });
   for (const s of students) {
     if (excludeStudentId && String(s._id) === String(excludeStudentId)) continue;
     if (overlap(from, to, s.checkInDate, s.checkOutDate)) {
-      return { ok: false, reason: `السرير ${bedNumber} مشغول بطالب (${s.name}) من ${s.checkInDate || '?'}${s.checkOutDate ? ' إلى ' + s.checkOutDate : ''}` };
+      return { ok: false, reason: `Bed ${bedNumber} is occupied by student (${s.name}) from ${s.checkInDate || '?'}${s.checkOutDate ? ' to ' + s.checkOutDate : ''}` };
     }
   }
   return { ok: true };
@@ -112,7 +112,7 @@ function buildTree(property, rooms, students, summerCourses) {
             const s = sMap[String(b.studentId)];
             return s
               ? { _id: String(s._id), name: s.name, studentId: s.studentId, status: s.status, monthlyRent: s.monthlyRent || 0, propertyName: property.name || '' }
-              : { _id: String(b.studentId), name: 'طالب محذوف', studentId: '', monthlyRent: 0, propertyName: property.name || '' };
+              : { _id: String(b.studentId), name: 'Deleted Student', studentId: '', monthlyRent: 0, propertyName: property.name || '' };
           })()
         : null;
       return {
@@ -282,7 +282,7 @@ async function ensureDefaults() {
   const housing = await db.col('Housing').findOne({});
   const rooms = await db.col('Room').find({});
   const property = await db.col('Property').insert({
-    name: (housing && housing.name) || 'السكن الرئيسي',
+    name: (housing && housing.name) || 'Primary Housing',
     code: '',
     type: 'house',
     gender: '',

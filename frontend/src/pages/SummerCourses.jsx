@@ -11,9 +11,9 @@ import SummerCourseModal from '../components/SummerCourseModal.jsx'
 import { fmtMoney, fmtDate } from '../utils/format.js'
 
 const FILTERS = [
-  ['all', 'الكل'],
-  ['active', 'نشط'],
-  ['ended', 'منتهي'],
+  ['all', 'All'],
+  ['active', 'Active'],
+  ['ended', 'Ended'],
 ]
 
 function PayModal({ open, onClose, onSaved, course }) {
@@ -25,11 +25,11 @@ function PayModal({ open, onClose, onSaved, course }) {
   const [saving, setSaving] = useState(false)
 
   const submit = async () => {
-    if (!amount || Number(amount) <= 0) return toast('أدخل المبلغ', 'warn')
+    if (!amount || Number(amount) <= 0) return toast('Enter the amount', 'warn')
     setSaving(true)
     try {
       await api.post(`/summer-courses/${course._id}/pay`, { amount: Number(amount), date, method, note })
-      toast('تم تسجيل الدفعة')
+      toast('Payment recorded')
       onSaved()
       onClose()
     } catch (e) {
@@ -40,45 +40,45 @@ function PayModal({ open, onClose, onSaved, course }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`دفعة لكورس ${course?.studentName}`}>
+    <Modal open={open} onClose={onClose} title={`Payment for course ${course?.studentName}`}>
       <div className="space-y-4">
         <div className="p-3 rounded-xl bg-slate-50 text-sm">
           <p className="text-slate-500">
-            الإجمالي <b className="text-slate-700">{fmtMoney(course?.total)}</b> • المدفوع{' '}
-            <b className="text-emerald-700">{fmtMoney(course?.paid)}</b> • المتبقي <b className="text-red-700">{fmtMoney(course?.remaining)}</b> ج.م
+            Total <b className="text-slate-700">{fmtMoney(course?.total)}</b> • Paid{' '}
+             <b className="text-emerald-700">{fmtMoney(course?.paid)}</b> • Remaining <b className="text-red-700">{fmtMoney(course?.remaining)}</b> EGP
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">المبلغ</label>
+            <label className="label">Amount</label>
             <input type="number" className="input" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" />
           </div>
           <div>
-            <label className="label">التاريخ</label>
+            <label className="label">Date</label>
             <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="label">طريقة الدفع</label>
+            <label className="label">Payment Method</label>
             <select className="input" value={method} onChange={(e) => setMethod(e.target.value)}>
-              <option value="cash">نقدًا</option>
-              <option value="transfer">تحويل بنكي</option>
-              <option value="other">أخرى</option>
+              <option value="cash">Cash</option>
+               <option value="transfer">Bank Transfer</option>
+               <option value="other">Other</option>
             </select>
           </div>
           <div>
-            <label className="label">ملاحظة</label>
-            <input className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="اختياري" />
+            <label className="label">Note</label>
+            <input className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Optional" />
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'تسجيل الدفعة'}
+          {saving ? <Spinner /> : 'Record Payment'}
         </button>
       </div>
     </Modal>
@@ -102,10 +102,10 @@ export default function SummerCourses() {
   const courses = (data?.courses || []).filter((c) => filter === 'all' || c.status === filter)
 
   const end = async (c) => {
-    if (!window.confirm(`إنهاء كورس ${c.studentName}؟`)) return
+    if (!window.confirm(`End course ${c.studentName}?`)) return
     try {
       await api.post(`/summer-courses/${c._id}/end`)
-      toast('تم إنهاء الكورس')
+      toast('Course ended')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -113,10 +113,10 @@ export default function SummerCourses() {
   }
 
   const remove = async (c) => {
-    if (!window.confirm(`حذف كورس ${c.studentName} نهائيًا؟ لا يمكن التراجع.`)) return
+    if (!window.confirm(`Delete course ${c.studentName} permanently? This cannot be undone.`)) return
     try {
       await api.delete(`/summer-courses/${c._id}`)
-      toast('تم حذف الكورس')
+      toast('Course deleted')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -138,7 +138,7 @@ export default function SummerCourses() {
           ))}
         </div>
         <button className="btn-primary" onClick={() => setFormOpen(true)}>
-          <Plus size={16} /> إضافة كورس صيفي
+          <Plus size={16} /> Add Summer Course
         </button>
       </div>
 
@@ -146,7 +146,7 @@ export default function SummerCourses() {
         <Spinner full />
       ) : !courses.length ? (
         <div className="card">
-          <EmptyState message="لا توجد كورسات صيفية — أضف كورسًا لطالب في سرير متاح" />
+          <EmptyState message="No summer courses — Add a course for a student in an available bed" />
         </div>
       ) : (
         <div className="space-y-3">
@@ -167,32 +167,32 @@ export default function SummerCourses() {
                   </div>
                   <div className="text-xs text-slate-500">
                     <p className="font-bold">
-                      {[c.propertyName, c.floorName, c.apartmentName].filter(Boolean).join(' — ') || 'بدون مكان'}
+                      {[c.propertyName, c.floorName, c.apartmentName].filter(Boolean).join(' — ') || 'No location'}
                     </p>
                     <p className="text-slate-400 mt-0.5">
-                      غرفة {rooms.data?.rooms?.find((r) => r._id === c.roomId)?.number || '—'} سرير {c.bedNumber}
+                      Room {rooms.data?.rooms?.find((r) => r._id === c.roomId)?.number || '—'} Bed {c.bedNumber}
                     </p>
                   </div>
                   <div className="text-xs text-slate-500">
                     <p className="font-bold" dir="ltr">
                       {c.fromDate} → {c.toDate}
                     </p>
-                    <p className="text-slate-400 mt-0.5">{c.months} شهر • {fmtMoney(c.rent)} ج.م/شهر</p>
+                    <p className="text-slate-400 mt-0.5">{c.months} months • {fmtMoney(c.rent)} EGP/month</p>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Badge label={isActive ? 'نشط' : 'منتهي'} cls={isActive ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'} />
-                    {c.remaining > 0 && <Badge label={`متبقي ${fmtMoney(c.remaining)}`} cls="bg-red-100 text-red-700" />}
-                    {c.remaining === 0 && <Badge label="مدفوع بالكامل" cls="bg-emerald-100 text-emerald-700" />}
+                    <Badge label={isActive ? 'Active' : 'Ended'} cls={isActive ? 'bg-orange-100 text-orange-700' : 'bg-slate-200 text-slate-600'} />
+                    {c.remaining > 0 && <Badge label={`Remaining ${fmtMoney(c.remaining)}`} cls="bg-red-100 text-red-700" />}
+                    {c.remaining === 0 && <Badge label="Fully Paid" cls="bg-emerald-100 text-emerald-700" />}
                   </div>
                   <div className="flex items-center gap-1">
                     {isActive && (
                       <button className="btn-primary !py-1.5 text-xs" onClick={() => setPayTarget(c)}>
-                        <Check size={14} /> دفعة
+                        <Check size={14} /> Payment
                       </button>
                     )}
                     {isActive && (
                       <button className="btn-outline !py-1.5 text-xs" onClick={() => end(c)}>
-                        <X size={14} /> إنهاء
+                        <X size={14} /> End
                       </button>
                     )}
                     <button className="btn-ghost text-slate-400" onClick={() => setExpanded((e) => ({ ...e, [c._id]: !e[c._id] }))}>
@@ -207,36 +207,36 @@ export default function SummerCourses() {
                 {expandedIds && (
                   <div className="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
                     <div className="p-3 rounded-xl bg-slate-50">
-                      <p className="text-[10px] font-bold text-slate-400">إيجار الفترة</p>
-                      <p className="text-sm font-extrabold text-slate-700 mt-0.5">{fmtMoney(c.totalRent)} ج.م</p>
+                      <p className="text-[10px] font-bold text-slate-400">Period Rent</p>
+                      <p className="text-sm font-extrabold text-slate-700 mt-0.5">{fmtMoney(c.totalRent)} EGP</p>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50">
-                      <p className="text-[10px] font-bold text-slate-400">التأمين</p>
-                      <p className="text-sm font-extrabold text-slate-700 mt-0.5">{fmtMoney(c.deposit)} ج.م</p>
+                      <p className="text-[10px] font-bold text-slate-400">Deposit</p>
+                      <p className="text-sm font-extrabold text-slate-700 mt-0.5">{fmtMoney(c.deposit)} EGP</p>
                     </div>
                     <div className="p-3 rounded-xl bg-slate-50">
-                      <p className="text-[10px] font-bold text-slate-400">الإجمالي</p>
-                      <p className="text-sm font-extrabold text-primary-700 mt-0.5">{fmtMoney(c.total)} ج.م</p>
+                      <p className="text-[10px] font-bold text-slate-400">Total</p>
+                      <p className="text-sm font-extrabold text-primary-700 mt-0.5">{fmtMoney(c.total)} EGP</p>
                     </div>
                     <div className="p-3 rounded-xl bg-emerald-50">
-                      <p className="text-[10px] font-bold text-emerald-600">المدفوع</p>
-                      <p className="text-sm font-extrabold text-emerald-700 mt-0.5">{fmtMoney(c.paid)} ج.م</p>
+                      <p className="text-[10px] font-bold text-emerald-600">Paid</p>
+                      <p className="text-sm font-extrabold text-emerald-700 mt-0.5">{fmtMoney(c.paid)} EGP</p>
                     </div>
                     <div className="p-3 rounded-xl bg-red-50">
-                      <p className="text-[10px] font-bold text-red-600">المتبقي</p>
-                      <p className="text-sm font-extrabold text-red-700 mt-0.5">{fmtMoney(c.remaining)} ج.م</p>
+                      <p className="text-[10px] font-bold text-red-600">Remaining</p>
+                      <p className="text-sm font-extrabold text-red-700 mt-0.5">{fmtMoney(c.remaining)} EGP</p>
                     </div>
                     <div className="col-span-2 sm:col-span-5">
                       <p className="text-xs font-bold text-slate-400 mb-1 flex items-center gap-1">
-                        <Wallet size={12} /> سجل الدفعات
+                        <Wallet size={12} /> Payment History
                       </p>
                       {(c.payments || []).length === 0 ? (
-                        <p className="text-xs text-slate-400">لا توجد دفعات مسجلة</p>
+                        <p className="text-xs text-slate-400">No payments recorded</p>
                       ) : (
                         <div className="flex flex-wrap gap-2">
                           {(c.payments || []).map((p, i) => (
                             <span key={p._id || i} className="px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-bold text-slate-600">
-                              {fmtMoney(p.amount)} ج.م • <span dir="ltr">{p.date}</span> • {p.method === 'cash' ? 'نقدًا' : p.method === 'transfer' ? 'تحويل' : 'أخرى'} {p.by && `• ${p.by}`}
+                              {fmtMoney(p.amount)} EGP • <span dir="ltr">{p.date}</span> • {p.method === 'cash' ? 'Cash' : p.method === 'transfer' ? 'Transfer' : 'Other'} {p.by && `• ${p.by}`}
                             </span>
                           ))}
                         </div>

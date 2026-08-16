@@ -63,10 +63,10 @@ export default function RoomFormModal({ open, onClose, onSaved, room, defaults }
       const payload = { ...form, bedPrices }
       if (room) {
         await api.put(`/rooms/${room._id}`, payload)
-        toast('تم تحديث الغرفة')
+        toast('Room updated')
       } else {
         await api.post('/rooms', payload)
-        toast('تمت إضافة الغرفة')
+        toast('Room added')
       }
       onSaved()
       onClose()
@@ -78,72 +78,72 @@ export default function RoomFormModal({ open, onClose, onSaved, room, defaults }
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={room ? 'تعديل الغرفة' : 'إضافة غرفة'}>
+    <Modal open={open} onClose={onClose} title={room ? 'Edit Room' : 'Add Room'}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">رقم الغرفة *</label>
+          <label className="label">Room Number *</label>
           <input className="input" value={form.number} onChange={set('number')} />
         </div>
         <div>
-          <label className="label">النوع</label>
+          <label className="label">Type</label>
           <select className="input" value={form.type} onChange={set('type')}>
-            <option value="shared">مشتركة</option>
-            <option value="single">فردية</option>
-            <option value="double">مزدوجة</option>
-            <option value="triple">ثلاثية</option>
+            <option value="shared">Shared</option>
+            <option value="single">Single</option>
+            <option value="double">Double</option>
+            <option value="triple">Triple</option>
           </select>
         </div>
         <div>
-          <label className="label">السعة (عدد الأسرة)</label>
+          <label className="label">Capacity (Number of Beds)</label>
           <input className="input" type="number" dir="ltr" min="1" value={form.capacity} onChange={set('capacity')} disabled={room && room.beds?.some((b) => b.studentId)} />
-          {room && room.beds?.some((b) => b.studentId) && <p className="text-[11px] text-amber-600 mt-1">لا يمكن تغيير السعة لوجود طلاب</p>}
+          {room && room.beds?.some((b) => b.studentId) && <p className="text-[11px] text-amber-600 mt-1">Cannot change capacity while students are assigned</p>}
         </div>
         <div>
-          <label className="label">الإيجار الشهري</label>
+          <label className="label">Monthly Rent</label>
           <input className="input" type="number" dir="ltr" value={form.monthlyRent} onChange={set('monthlyRent')} />
-          <p className="text-[11px] text-slate-400 mt-1">السعر الافتراضي للأسرة التي لا سعر لها</p>
+          <p className="text-[11px] text-slate-400 mt-1">Default price for beds without a specific price</p>
         </div>
         <div>
-          <label className="label">الطابق</label>
+          <label className="label">Floor</label>
           <input className="input" value={form.floor} onChange={set('floor')} />
         </div>
         <div className="sm:col-span-2">
-          <label className="label">أسعار الأسرة (اختياري)</label>
+          <label className="label">Bed Prices (Optional)</label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Array.from({ length: Number(form.capacity) || 0 }, (_, i) => i + 1).map((n) => (
               <div key={n}>
-                <label className="label !mb-1 text-[11px]">سرير {n}</label>
+                <label className="label !mb-1 text-[11px]">Bed {n}</label>
                 <input
                   className="input"
                   type="number"
                   dir="ltr"
-                  placeholder={form.monthlyRent ? `يأخذ ${form.monthlyRent}` : 'من سعر الغرفة'}
+                  placeholder={form.monthlyRent ? `Uses ${form.monthlyRent}` : 'From room price'}
                   value={prices[n] ?? ''}
                   onChange={(e) => setPrices((p) => ({ ...p, [n]: e.target.value }))}
                 />
               </div>
             ))}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">اترك السرير فارغًا ليأخذ سعر الغرفة تلقائيًا — أو حدد له سعرًا خاصًا</p>
+          <p className="text-[11px] text-slate-400 mt-1">Leave empty to use the room price automatically — or set a custom price</p>
         </div>
         <div>
-          <label className="label">الحالة</label>
+          <label className="label">Status</label>
           <select className="input" value={form.status} onChange={set('status')}>
-            <option value="active">نشطة</option>
-            <option value="inactive">غير نشطة</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
         <div className="sm:col-span-2">
-          <label className="label">ملاحظات</label>
+          <label className="label">Notes</label>
           <textarea className="input" rows="2" value={form.notes} onChange={set('notes')} />
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : room ? 'حفظ التعديلات' : 'إضافة الغرفة'}
+          {saving ? <Spinner /> : room ? 'Save Changes' : 'Add Room'}
         </button>
       </div>
     </Modal>

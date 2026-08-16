@@ -86,7 +86,7 @@ exports.get = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const room = student.roomId ? await db.col('Room').findById(student.roomId) : null;
     const payments = await db.col('Payment').find({ studentId: String(id) }, { month: 1 });
     const invoices = await db.col('Invoice').find({ studentId: String(id) }, { createdAt: -1 });
@@ -130,21 +130,21 @@ exports.get = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { name, phone, university, email, roomId, bedNumber, monthlyRent, checkInDate, checkOutDate, notes, depositAmount } = req.body;
-    if (!name || !phone) return res.status(400).json({ message: 'الاسم ورقم الهاتف مطلوبان' });
+    if (!name || !phone) return res.status(400).json({ message: 'Name and phone number are required' });
     const housing = await getHousing();
     const dueDay = housing ? housing.dueDay : 1;
     const dup = await db.col('Student').findOne({ phone: String(phone).trim() });
-    if (dup) return res.status(400).json({ message: `رقم الهاتف مستخدم بالفعل للطالب ${dup.name}` });
+    if (dup) return res.status(400).json({ message: `Phone number already in use by student ${dup.name}` });
 
     let room = null;
     let bed = null;
     if (roomId) {
       room = await db.col('Room').findById(roomId);
-      if (!room) return res.status(400).json({ message: 'الغرفة غير موجودة' });
+        if (!room) return res.status(400).json({ message: 'Room not found' });
       if (bedNumber) {
         const b = (room.beds || []).find((x) => x.bedNumber === Number(bedNumber));
-        if (!b) return res.status(400).json({ message: `السرير ${bedNumber} غير موجود في الغرفة` });
-        if (b.studentId) return res.status(400).json({ message: `السرير ${bedNumber} مشغول` });
+        if (!b) return res.status(400).json({ message: `Bed ${bedNumber} not found in room` });
+        if (b.studentId) return res.status(400).json({ message: `Bed ${bedNumber} is occupied` });
         bed = Number(bedNumber);
       }
     }
@@ -183,7 +183,7 @@ const student = await db.col('Student').insert({
             ...depositService.normalize({}),
             originalAmount: depAmount,
             paymentStatus: 'unpaid',
-            notes: 'تأمين عند الدخول',
+            notes: 'Deposit on check-in',
           },
           housingId: housing ? String(housing._id || '') : '',
         },
@@ -193,11 +193,11 @@ const student = await db.col('Student').insert({
     }
     if (room && bed) await setBed(room, bed, String(student._id));
     await paymentsService.generateForStudent(student, dueDay);
-    await log(req, { action: `تمت إضافة طالب ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: student._id });
+    await log(req, { action: `Added student ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: student._id });
     await notifications.create({
       type: 'student_added',
-      title: 'طالب جديد',
-      message: `تمت إضافة ${student.name} (${student.studentId})`,
+      title: 'New student',
+      message: `Added ${student.name} (${student.studentId})`,
       data: { studentId: String(student._id) },
     });
     emit(req, 'student:added', {});
@@ -212,14 +212,14 @@ exports.update = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const { name, phone, university, email, monthlyRent, checkInDate, checkOutDate, notes, roomId, bedNumber } = req.body;
     const set = {};
     if (name !== undefined) set.name = String(name).trim();
     if (phone !== undefined) {
       const trim = String(phone).trim();
       const dup = await db.col('Student').findOne({ phone: trim });
-      if (dup && String(dup._id) !== String(id)) return res.status(400).json({ message: `رقم الهاتف مستخدم بالفعل للطالب ${dup.name}` });
+      if (dup && String(dup._id) !== String(id)) return res.status(400).json({ message: `Phone number already in use by student ${dup.name}` });
       set.phone = trim;
     }
     if (university !== undefined) set.university = university;
@@ -239,11 +239,11 @@ exports.update = async (req, res, next) => {
       let bedEntry = null;
       if (newRoomId) {
         room = await db.col('Room').findById(newRoomId);
-        if (!room) return res.status(400).json({ message: 'الغرفة غير موجودة' });
+      if (!room) return res.status(400).json({ message: 'Room not found' });
         if (newBed) {
           const b = (room.beds || []).find((x) => x.bedNumber === newBed);
-          if (!b) return res.status(400).json({ message: `السرير ${newBed} غير موجود` });
-          if (b.studentId && String(b.studentId) !== String(id)) return res.status(400).json({ message: `السرير ${newBed} مشغول` });
+          if (!b) return res.status(400).json({ message: `Bed ${newBed} not found` });
+          if (b.studentId && String(b.studentId) !== String(id)) return res.status(400).json({ message: `Bed ${newBed} is occupied` });
           bedEntry = b;
         }
       }
@@ -275,7 +275,7 @@ exports.update = async (req, res, next) => {
     if (set.monthlyRent !== undefined) await paymentsService.updateRentFor(updated, updated.monthlyRent);
     if (set.checkInDate !== undefined || set.checkOutDate !== undefined) await paymentsService.generateForStudent(updated, dueDay);
 
-    await log(req, { action: `تم تعديل بيانات الطالب ${updated.name} (${updated.studentId})`, category: 'students', targetType: 'student', targetId: id });
+    await log(req, { action: `Updated student ${updated.name} (${updated.studentId})`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
     emit(req, 'room:updated', {});
     res.json({ student: updated });
@@ -288,7 +288,7 @@ exports.checkout = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const checkOut = req.body.checkOutDate || new Date().toISOString().slice(0, 10);
 
     const settle = await depositService.settle({
@@ -310,12 +310,12 @@ exports.checkout = async (req, res, next) => {
     const updated = await db.col('Student').findByIdAndUpdate(id, { $set: { status: 'ended', checkOutDate: checkOut } });
     await freeBed(student.roomId, student.bedNumber);
     const notes = [];
-    settle.deductions.forEach((x) => notes.push(`خصم ${x.amount} ج.م (${x.reason})`));
-    settle.refunds.forEach((x) => notes.push(`استرداد ${x.amount} ج.م`));
-    const settleText = notes.length ? ' — تسوية التأمين: ' + notes.join('، ') : '';
+    settle.deductions.forEach((x) => notes.push(`Deducted ${x.amount} EGP (${x.reason})`));
+    settle.refunds.forEach((x) => notes.push(`Refunded ${x.amount} EGP`));
+    const settleText = notes.length ? ' — Deposit settlement: ' + notes.join(', ') : '';
     const done = { ...updated, deposit: settle.deposit };
     await log(req, {
-      action: `إنهاء إقامة الطالب ${student.name} (${student.studentId})${settleText}`,
+      action: `Ended stay for student ${student.name} (${student.studentId})${settleText}`,
       category: 'students',
       targetType: 'student',
       targetId: id,
@@ -324,15 +324,15 @@ exports.checkout = async (req, res, next) => {
     if (settle.refunds.length) {
       await notifications.create({
         type: 'deposit_refunded',
-        title: 'استرداد تأمين عند الخروج',
-        message: `استرداد ${settle.refunds[0].amount} ج.م من تأمين ${student.name}`,
+        title: 'Deposit refund on checkout',
+        message: `Refunded ${settle.refunds[0].amount} EGP deposit from ${student.name}`,
         data: { studentId: String(id) },
       });
     }
     await notifications.create({
       type: 'student_checkout',
-      title: 'إنهاء إقامة',
-      message: `تم إنهاء إقامة ${student.name} (${student.studentId}) بتاريخ ${checkOut}`,
+      title: 'Stay ended',
+      message: `Ended stay for ${student.name} (${student.studentId}) on ${checkOut}`,
       data: { studentId: String(id) },
     });
     emit(req, 'student:updated', {});
@@ -348,10 +348,10 @@ exports.archive = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const updated = await db.col('Student').findByIdAndUpdate(id, { $set: { status: 'archived', archivedAt: new Date().toISOString() } });
     await freeBed(student.roomId, student.bedNumber);
-    await log(req, { action: `أرشفة الطالب ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: id });
+    await log(req, { action: `Archived student ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
     emit(req, 'room:updated', {});
     res.json({ student: updated });
@@ -364,9 +364,9 @@ exports.restore = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const updated = await db.col('Student').findByIdAndUpdate(id, { $set: { status: 'active', archivedAt: null } });
-    await log(req, { action: `استعادة الطالب ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: id });
+    await log(req, { action: `Restored student ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
     res.json({ student: updated });
   } catch (e) {
@@ -378,12 +378,12 @@ exports.remove = async (req, res, next) => {
   try {
     const id = req.params.id;
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     await freeBed(student.roomId, student.bedNumber);
     await db.col('Student').deleteById(id);
     await db.col('Payment').deleteMany({ studentId: String(id) });
     await db.col('Invoice').deleteMany({ studentId: String(id) });
-    await log(req, { action: `حذف الطالب ${student.name} (${student.studentId}) نهائيًا`, category: 'students', targetType: 'student', targetId: id });
+    await log(req, { action: `Permanently deleted student ${student.name} (${student.studentId})`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
     emit(req, 'room:updated', {});
     res.json({ ok: true });
@@ -396,12 +396,12 @@ exports.addNote = async (req, res, next) => {
   try {
     const id = req.params.id;
     const { text } = req.body;
-    if (!text) return res.status(400).json({ message: 'النص مطلوب' });
+    if (!text) return res.status(400).json({ message: 'Text is required' });
     const student = await db.col('Student').findById(id);
-    if (!student) return res.status(404).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(404).json({ message: 'Student not found' });
     const privateNotes = (student.privateNotes || []).concat([{ text: String(text).trim(), by: req.user.name, createdAt: new Date().toISOString() }]);
     const updated = await db.col('Student').findByIdAndUpdate(id, { $set: { privateNotes } });
-    await log(req, { action: `إضافة ملاحظة خاصة للطالب ${student.name}`, category: 'students', targetType: 'student', targetId: id });
+    await log(req, { action: `Added private note for student ${student.name}`, category: 'students', targetType: 'student', targetId: id });
     emit(req, 'student:updated', {});
     res.json({ student: updated });
   } catch (e) {
@@ -431,7 +431,7 @@ function pick(row, keys) {
 
 exports.import = async (req, res, next) => {
   try {
-    if (!req.file) return res.status(400).json({ message: 'يرجى رفع ملف Excel' });
+    if (!req.file) return res.status(400).json({ message: 'Please upload an Excel file' });
     const wb = xlsx.read(req.file.buffer, { type: 'buffer' });
     const ws = wb.Sheets[wb.SheetNames[0]];
     const rows = xlsx.utils.sheet_to_json(ws, { defval: '' });
@@ -461,15 +461,15 @@ exports.import = async (req, res, next) => {
       const studentId = pick(row, ['studentid', 'رقم الطالب', 'id']);
 
       if (!name || !phone) {
-        report.errors.push({ line, message: 'بيانات ناقصة (الاسم أو الهاتف)' });
+        report.errors.push({ line, message: 'Incomplete data (name or phone)' });
         continue;
       }
       if (seenPhones.has(phone)) {
-        report.errors.push({ line, message: `هاتف مكرر: ${phone}` });
+        report.errors.push({ line, message: `Duplicate phone: ${phone}` });
         continue;
       }
       if (studentId && seenIds.has(studentId)) {
-        report.errors.push({ line, message: `رقم طالب مكرر: ${studentId}` });
+        report.errors.push({ line, message: `Duplicate student ID: ${studentId}` });
         continue;
       }
       let room = null;
@@ -477,17 +477,17 @@ exports.import = async (req, res, next) => {
       if (roomNum) {
         room = mapRoom[String(roomNum)];
         if (!room) {
-          report.errors.push({ line, message: `غرفة غير موجودة: ${roomNum}` });
+          report.errors.push({ line, message: `Room not found: ${roomNum}` });
           continue;
         }
         if (bedNum) {
           const b = (room.beds || []).find((x) => x.bedNumber === Number(bedNum));
           if (!b) {
-            report.errors.push({ line, message: `سرير غير موجود: ${roomNum}/${bedNum}` });
+            report.errors.push({ line, message: `Bed not found: ${roomNum}/${bedNum}` });
             continue;
           }
           if (b.studentId) {
-            report.errors.push({ line, message: `سرير مشغول: ${roomNum}/${bedNum}` });
+            report.errors.push({ line, message: `Bed occupied: ${roomNum}/${bedNum}` });
             continue;
           }
           bed = Number(bedNum);
@@ -518,7 +518,7 @@ exports.import = async (req, res, next) => {
       if (studentId) seenIds.add(studentId);
       report.added++;
     }
-    await log(req, { action: `استيراد طلاب من Excel: تمت إضافة ${report.added} من أصل ${report.total}`, category: 'students' });
+    await log(req, { action: `Imported students from Excel: added ${report.added} of ${report.total}`, category: 'students' });
     emit(req, 'student:added', {});
     emit(req, 'room:updated', {});
     res.json({ report });
@@ -560,23 +560,23 @@ exports.exportExcel = async (req, res, next) => {
     const rows = students.map((s) => {
       const d = depositService.compute(s);
       return {
-        'رقم الطالب': s.studentId,
-        'الاسم': s.name,
-        'الهاتف': s.phone,
-        'الجامعة': s.university,
-        'الغرفة': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
-        'السرير': s.bedNumber || '',
-        'الإيجار الشهري': s.monthlyRent,
-        'التأمين': d.originalAmount,
-        'حالة دفع التأمين': { unpaid: 'غير مدفوع', paid: 'مدفوع' }[d.paymentStatus] || d.paymentStatus,
-        'تاريخ دفع التأمين': d.paymentDate,
-        'إجمالي الخصومات': d.totalDeductions,
-        'المسترد': d.refundedAmount,
-        'المتبقي': d.remainingAmount,
-        'حالة الاسترداد': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
-        'تاريخ الدخول': s.checkInDate,
-        'تاريخ الخروج': s.checkOutDate,
-        'الحالة': s.status,
+        'Student ID': s.studentId,
+        'Name': s.name,
+        'Phone': s.phone,
+        'University': s.university,
+        'Room': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
+        'Bed': s.bedNumber || '',
+        'Monthly Rent': s.monthlyRent,
+        'Deposit': d.originalAmount,
+        'Deposit Payment Status': { unpaid: 'Unpaid', paid: 'Paid' }[d.paymentStatus] || d.paymentStatus,
+        'Deposit Payment Date': d.paymentDate,
+        'Total Deductions': d.totalDeductions,
+        'Refunded': d.refundedAmount,
+        'Remaining': d.remainingAmount,
+        'Refund Status': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
+        'Check-in Date': s.checkInDate,
+        'Check-out Date': s.checkOutDate,
+        'Status': s.status,
       };
     });
     const ws = excel.jsonToSheet(rows);

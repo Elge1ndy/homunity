@@ -60,7 +60,7 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
       if (!body.bedNumber) body.bedNumber = null
       if (student) {
         await api.put(`/students/${student._id}`, body)
-        toast('تم تحديث بيانات الطالب')
+        toast('Student updated successfully')
       } else {
         await api.post('/students', body)
         setAutoFill('student', {
@@ -69,7 +69,7 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
           depositAmount: body.depositAmount,
           university: body.university,
         })
-        toast('تمت إضافة الطالب ✓')
+        toast('Student added successfully ✓')
       }
       onSaved()
       onClose()
@@ -81,34 +81,34 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={student ? 'تعديل بيانات الطالب' : 'إضافة طالب جديد'} wide>
+    <Modal open={open} onClose={onClose} title={student ? 'Edit Student' : 'Add New Student'} wide>
       {!student && autoFilled && (
         <div className="flex items-center justify-between gap-2 bg-primary-50 border border-primary-200 text-primary-800 text-xs font-semibold rounded-xl px-4 py-2.5 mb-4">
-          <span>✨ تمملأ تلقائيًا من آخر طالب أضفته</span>
-          <button onClick={() => { clearAutoFill('student'); setAutoFilled(false); setForm((f) => ({ ...f, roomId: '', monthlyRent: '', depositAmount: '', university: '' })) }} className="text-primary-600 hover:text-primary-800 underline">مسح</button>
+          <span>✨ Auto-filled from last student</span>
+          <button onClick={() => { clearAutoFill('student'); setAutoFilled(false); setForm((f) => ({ ...f, roomId: '', monthlyRent: '', depositAmount: '', university: '' })) }} className="text-primary-600 hover:text-primary-800 underline">Clear</button>
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">الاسم *</label>
-          <input className="input" value={form.name} onChange={set('name')} placeholder="الاسم الكامل" />
+          <label className="label">Name *</label>
+          <input className="input" value={form.name} onChange={set('name')} placeholder="Full Name" />
         </div>
         <div>
-          <label className="label">رقم الهاتف *</label>
+          <label className="label">Phone *</label>
           <input className="input" dir="ltr" value={form.phone} onChange={set('phone')} placeholder="01xxxxxxxxx" />
         </div>
         <div>
-          <label className="label">الجامعة</label>
+          <label className="label">University</label>
           <input className="input" value={form.university} onChange={set('university')} />
         </div>
         <div>
-          <label className="label">البريد الإلكتروني</label>
+          <label className="label">Email</label>
           <input className="input" dir="ltr" value={form.email} onChange={set('email')} />
         </div>
         <div>
-          <label className="label">الغرفة</label>
+          <label className="label">Room</label>
           <select className="input" value={form.roomId} onChange={(e) => setForm((f) => ({ ...f, roomId: e.target.value, bedNumber: '' }))}>
-            <option value="">بدون غرفة</option>
+            <option value="">No room</option>
             {rooms?.map((r) => (
               <option key={r._id} value={r._id}>
                 {r.number} — {r.type}
@@ -117,45 +117,45 @@ export default function StudentFormModal({ open, onClose, onSaved, student, room
           </select>
         </div>
         <div>
-          <label className="label">السرير</label>
+          <label className="label">Bed</label>
           <select className="input" value={form.bedNumber} onChange={set('bedNumber')} disabled={!room}>
-            <option value="">اختر السرير</option>
+            <option value="">Select bed</option>
             {freeBeds.map((b) => (
               <option key={b.bedNumber} value={b.bedNumber}>
-                سرير {b.bedNumber} {b.studentId ? '(الطالب الحالي)' : '(متاح)'}
+                Bed {b.bedNumber} {b.studentId ? '(Occupied)' : '(Available)'}
               </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="label">الإيجار الشهري</label>
-          <input className="input" type="number" dir="ltr" value={form.monthlyRent} onChange={set('monthlyRent')} placeholder={room ? `افتراضي ${room.monthlyRent}` : ''} />
+          <label className="label">Monthly Rent</label>
+          <input className="input" type="number" dir="ltr" value={form.monthlyRent} onChange={set('monthlyRent')} placeholder={room ? `Default ${room.monthlyRent}` : ''} />
         </div>
         {!student && (
           <div>
-            <label className="label">التأمين المدفوع</label>
+            <label className="label">Deposit Paid</label>
             <input className="input" type="number" dir="ltr" value={form.depositAmount} onChange={set('depositAmount')} placeholder="0" />
           </div>
         )}
         <div>
-          <label className="label">تاريخ الدخول</label>
+          <label className="label">Check-in Date</label>
           <input className="input" type="date" dir="ltr" value={form.checkInDate} onChange={set('checkInDate')} />
         </div>
         <div>
-          <label className="label">تاريخ الخروج</label>
+          <label className="label">Check-out Date</label>
           <input className="input" type="date" dir="ltr" value={form.checkOutDate} onChange={set('checkOutDate')} />
         </div>
         <div className="sm:col-span-2">
-          <label className="label">ملاحظات</label>
+          <label className="label">Notes</label>
           <textarea className="input" rows="2" value={form.notes} onChange={set('notes')} />
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : student ? 'حفظ التعديلات' : 'إضافة الطالب'}
+          {saving ? <Spinner /> : student ? 'Save Changes' : 'Add Student'}
         </button>
       </div>
     </Modal>

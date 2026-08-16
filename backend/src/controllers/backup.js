@@ -9,22 +9,22 @@ const { log } = require('../services/activity');
 const emit = require('../utils/realtime');
 
 const SHEET_TO_COL = {
-  'الحسابات-خام': 'User',
-  'بيانات السكن-خام': 'Housing',
-  'الطلاب-خام': 'Student',
-  'الغرف-خام': 'Room',
-  'المدفوعات-خام': 'Payment',
-  'الفواتير-خام': 'Invoice',
-  'سجل النشاط-خام': 'ActivityLog',
+  'Users-Raw': 'User',
+  'Housing-Raw': 'Housing',
+  'Students-Raw': 'Student',
+  'Rooms-Raw': 'Room',
+  'Payments-Raw': 'Payment',
+  'Invoices-Raw': 'Invoice',
+  'Activity Log-Raw': 'ActivityLog',
 };
 
 const LEGACY_SHEET_TO_COL = {
-  'الحسابات-خام': 'الحسابات',
-  'بيانات السكن-خام': 'بيانات السكن',
-  'الطلاب-خام': 'الطلاب',
-  'الغرف-خام': 'الغرف',
-  'المدفوعات-خام': 'المدفوعات',
-  'سجل النشاط-خام': 'سجل النشاط',
+  'Users-Raw': 'Users',
+  'Housing-Raw': 'Housing',
+  'Students-Raw': 'Students',
+  'Rooms-Raw': 'Rooms',
+  'Payments-Raw': 'Payments',
+  'Activity Log-Raw': 'Activity Log',
 };
 
 exports.export = async (req, res, next) => {
@@ -59,13 +59,13 @@ function cleanValue(v) {
 exports.restore = async (req, res, next) => {
   try {
     const buffer = req.file && req.file.buffer;
-    if (!buffer) return res.status(400).json({ message: 'ارفع ملف النسخة الاحتياطية أولًا' });
+    if (!buffer) return res.status(400).json({ message: 'Upload backup file first' });
 
     let wb;
     try {
       wb = xlsx.read(buffer, { type: 'buffer' });
     } catch (e) {
-      return res.status(400).json({ message: 'الملف ليس ملف Excel صالحًا' });
+      return res.status(400).json({ message: 'File is not a valid Excel file' });
     }
 
     const counts = {};
@@ -78,7 +78,7 @@ exports.restore = async (req, res, next) => {
     fs.writeFileSync(preFile, excel.writeBuffer(await buildWorkbook()));
 
     await log(req, {
-      action: `بدء استعادة البيانات من النسخة الاحتياطية (نسخة أمان سابقة: ${path.basename(preFile)})`,
+      action: `Started data restore from backup (safety copy: ${path.basename(preFile)})`,
       category: 'settings',
     });
 
@@ -107,7 +107,7 @@ exports.restore = async (req, res, next) => {
       }
     }
 
-    if (!foundSheets) return res.status(400).json({ message: 'الملف لا يحتوي على أوراق بيانات معروفة (تأكد إنه من النسخة الاحتياطية)' });
+    if (!foundSheets) return res.status(400).json({ message: 'File does not contain known sheets (make sure it is a backup file)' });
 
     emit(req, 'data:refresh', {});
     res.json({ ok: true, counts, errors, preBackup: path.basename(preFile) });

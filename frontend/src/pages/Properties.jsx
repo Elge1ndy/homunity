@@ -11,8 +11,8 @@ import PropertyFormModal from '../components/PropertyFormModal.jsx'
 import { fmtMoney } from '../utils/format.js'
 
 const GENDER = {
-  male: { label: 'ذكور', cls: 'bg-blue-100 text-blue-700' },
-  female: { label: 'إناث', cls: 'bg-pink-100 text-pink-700' },
+  male: { label: 'Male', cls: 'bg-blue-100 text-blue-700' },
+  female: { label: 'Female', cls: 'bg-pink-100 text-pink-700' },
   '': null,
 }
 
@@ -26,10 +26,10 @@ export default function Properties() {
   useRealtime(() => { refetch(); overview.refetch() }, ['property:updated', 'room:updated', 'student:updated', 'student:added', 'summer:updated', 'payment:updated'])
 
   const remove = async (p) => {
-    if (!window.confirm(`حذف العقار ${p.name}؟ لا يمكن التراجع.`)) return
+    if (!window.confirm(`Delete property ${p.name}? This cannot be undone.`)) return
     try {
       await api.delete(`/properties/${p._id}`)
-      toast('تم حذف العقار')
+      toast('Property deleted')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -41,38 +41,38 @@ export default function Properties() {
       {overview.data?.totals && (
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
           <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-            <p className="text-[10px] font-bold text-slate-400">عقارات / غرف / مشغول</p>
+            <p className="text-[10px] font-bold text-slate-400">Properties / Rooms / Occupied</p>
             <p className="text-lg font-extrabold text-slate-700 mt-0.5">
               {overview.data.totals.properties} / {overview.data.totals.rooms} / {overview.data.totals.occupied}
             </p>
           </div>
           <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-            <p className="text-[10px] font-bold text-emerald-600">متوقع الشهر</p>
-            <p className="text-lg font-extrabold text-emerald-700 mt-0.5">{fmtMoney(overview.data.totals.expected)} ج.م</p>
+            <p className="text-[10px] font-bold text-emerald-600">Expected this month</p>
+            <p className="text-lg font-extrabold text-emerald-700 mt-0.5">{fmtMoney(overview.data.totals.expected)} EGP</p>
           </div>
           <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
-            <p className="text-[10px] font-bold text-blue-600">المحصّل</p>
-            <p className="text-lg font-extrabold text-blue-700 mt-0.5">{fmtMoney(overview.data.totals.paid)} ج.م</p>
+            <p className="text-[10px] font-bold text-blue-600">Collected</p>
+            <p className="text-lg font-extrabold text-blue-700 mt-0.5">{fmtMoney(overview.data.totals.paid)} EGP</p>
           </div>
           <div className="p-3 rounded-xl bg-red-50 border border-red-200">
-            <p className="text-[10px] font-bold text-red-600">المتبقي</p>
-            <p className="text-lg font-extrabold text-red-700 mt-0.5">{fmtMoney(overview.data.totals.remaining)} ج.م</p>
+            <p className="text-[10px] font-bold text-red-600">Remaining</p>
+            <p className="text-lg font-extrabold text-red-700 mt-0.5">{fmtMoney(overview.data.totals.remaining)} EGP</p>
           </div>
           <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-            <p className="text-[10px] font-bold text-amber-600">تأمين</p>
-            <p className="text-lg font-extrabold text-amber-700 mt-0.5">{fmtMoney(overview.data.totals.deposits)} ج.م</p>
+            <p className="text-[10px] font-bold text-amber-600">Deposits</p>
+            <p className="text-lg font-extrabold text-amber-700 mt-0.5">{fmtMoney(overview.data.totals.deposits)} EGP</p>
           </div>
           <div className="p-3 rounded-xl bg-violet-50 border border-violet-200">
             <p className="text-[10px] font-bold text-violet-600">
-              صافي <span className="text-slate-400">(بعد صيانة {fmtMoney(overview.data.totals.maintenance)})</span>
+              Net <span className="text-slate-400">(after maintenance {fmtMoney(overview.data.totals.maintenance)})</span>
             </p>
-            <p className="text-lg font-extrabold text-violet-700 mt-0.5">{fmtMoney(overview.data.totals.net)} ج.م</p>
+            <p className="text-lg font-extrabold text-violet-700 mt-0.5">{fmtMoney(overview.data.totals.net)} EGP</p>
           </div>
         </div>
       )}
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-slate-500">{data?.properties?.length || 0} عقار</p>
+        <p className="text-sm text-slate-500">{data?.properties?.length || 0} properties</p>
         <button
           className="btn-primary"
           onClick={() => {
@@ -80,7 +80,7 @@ export default function Properties() {
             setFormOpen(true)
           }}
         >
-          <Plus size={16} /> إضافة عقار
+          <Plus size={16} /> Add Property
         </button>
       </div>
 
@@ -88,7 +88,7 @@ export default function Properties() {
         <Spinner full />
       ) : !data?.properties?.length ? (
         <div className="card">
-          <EmptyState message="لا توجد عقارات — ابدأ بإضافة بيت أو شقة مستقلة" />
+          <EmptyState message="No properties — start by adding a standalone house or apartment" />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -106,9 +106,9 @@ export default function Properties() {
                     <div>
                       <h3 className="font-extrabold text-slate-800">{p.name}</h3>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <Badge label={p.type === 'house' ? 'بيت كامل' : 'شقة مستقلة'} cls={p.type === 'house' ? 'bg-primary-100 text-primary-700' : 'bg-amber-100 text-amber-700'} />
+                        <Badge label={p.type === 'house' ? 'Full House' : 'Standalone Apartment'} cls={p.type === 'house' ? 'bg-primary-100 text-primary-700' : 'bg-amber-100 text-amber-700'} />
                         {gender && <Badge {...gender} />}
-                        {p.status === 'inactive' && <Badge label="متوقف" cls="bg-slate-200 text-slate-600" />}
+                        {p.status === 'inactive' && <Badge label="Inactive" cls="bg-slate-200 text-slate-600" />}
                       </div>
                     </div>
                   </div>
@@ -124,19 +124,19 @@ export default function Properties() {
 
                 <div className="grid grid-cols-4 gap-2 mt-4 text-center">
                   <div className="p-2 rounded-lg bg-slate-50">
-                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><LayoutGrid size={10} /> أدوار</p>
+                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><LayoutGrid size={10} /> Floors</p>
                     <p className="text-sm font-extrabold text-slate-700 mt-0.5">{p.type === 'house' ? s.floors : '—'}</p>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-50">
-                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><Home size={10} /> شقق</p>
+                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><Home size={10} /> Apartments</p>
                     <p className="text-sm font-extrabold text-slate-700 mt-0.5">{s.apartments}</p>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-50">
-                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><DoorOpen size={10} /> غرف</p>
+                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><DoorOpen size={10} /> Rooms</p>
                     <p className="text-sm font-extrabold text-slate-700 mt-0.5">{s.rooms}</p>
                   </div>
                   <div className="p-2 rounded-lg bg-slate-50">
-                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><BedDouble size={10} /> أسرة</p>
+                    <p className="text-[10px] font-bold text-slate-400 flex items-center justify-center gap-1"><BedDouble size={10} /> Beds</p>
                     <p className="text-sm font-extrabold text-slate-700 mt-0.5">{s.beds}</p>
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export default function Properties() {
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-slate-500 mb-1">
                     <span>
-                      مشغول <b className="text-slate-700">{s.occupied} / {s.beds}</b>
+                      Occupied <b className="text-slate-700">{s.occupied} / {s.beds}</b>
                     </span>
                     <span className="font-bold text-slate-600">{pct}%</span>
                   </div>
@@ -155,7 +155,7 @@ export default function Properties() {
 
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
                   <Link to={`/properties/${p._id}`} className="btn-primary !py-1.5 text-xs ms-auto">
-                    فتح العقار
+                    Open Property
                   </Link>
                 </div>
               </div>

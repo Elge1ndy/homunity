@@ -55,7 +55,7 @@ exports.stats = async (req, res, next) => {
     const housingMap = {};
     students.forEach((s) => {
       const hid = String(s.housingId || '');
-      if (hid && !housingMap[hid]) housingMap[hid] = { housingId: hid, housingName: housingNameMap[hid] || 'سكن', required: 0, paid: 0, deductions: 0, refunded: 0, held: 0 };
+      if (hid && !housingMap[hid]) housingMap[hid] = { housingId: hid, housingName: housingNameMap[hid] || 'Housing', required: 0, paid: 0, deductions: 0, refunded: 0, held: 0 };
     });
     Object.keys(housingMap).forEach((hid) => {
       const subset = students.filter((s) => String(s.housingId || '') === hid);

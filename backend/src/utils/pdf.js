@@ -19,8 +19,8 @@ const C_GRID = '#e2e8f0';
 const C_BG = '#f8fafc';
 
 const STATUS_COLOR = { paid: '#15803d', partial: '#b45309', unpaid: '#be123c', overdue: '#b91c1c' };
-const STATUS_AR = { paid: 'مدفوع', partial: 'جزئي', unpaid: 'غير مدفوع', overdue: 'متأخر' };
-const AR_TO_COLOR = { 'مدفوع': STATUS_COLOR.paid, 'جزئي': STATUS_COLOR.partial, 'غير مدفوع': STATUS_COLOR.unpaid, 'متأخر': STATUS_COLOR.overdue };
+const STATUS_AR = { paid: 'Paid', partial: 'Partial', unpaid: 'Unpaid', overdue: 'Overdue' };
+const AR_TO_COLOR = { 'Paid': STATUS_COLOR.paid, 'Partial': STATUS_COLOR.partial, 'Unpaid': STATUS_COLOR.unpaid, 'Overdue': STATUS_COLOR.overdue };
 
 function ar(text) {
   const s = String(text ?? '');
@@ -130,14 +130,14 @@ function totalBox(doc, labelText, valueText, y, left, width) {
 
 function pageFooter(doc, housing) {
   const wm = housing && housing.watermark;
-  doc.font('T').fontSize(8).fillColor(C_FAINT).text(ar(wm ? wm : 'شكرًا لاستخدامك Homeunity'), 48, doc.page.maxY() - 20, { align: 'center', width: doc.page.width - 96 });
+  doc.font('T').fontSize(8).fillColor(C_FAINT).text(ar(wm ? wm : 'Thank you for using Homeunity'), 48, doc.page.maxY() - 20, { align: 'center', width: doc.page.width - 96 });
 }
 
 function pageNumbers(doc) {
   let n = 0;
   doc.on('pageAdded', () => {
     n++;
-    doc.font('T').fontSize(7.5).fillColor(C_FAINT).text(ar('صفحة ' + n), 48, doc.page.maxY() - 20, { align: 'left', width: 90 });
+    doc.font('T').fontSize(7.5).fillColor(C_FAINT).text(ar('Page ' + n), 48, doc.page.maxY() - 20, { align: 'left', width: 90 });
   });
   return () => n;
 }
@@ -179,7 +179,7 @@ function collect(doc) {
   });
 }
 
-const MONTHS_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+const MONTHS_AR = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 function invoicePdf(invoice, student, housing) {
   return new Promise(async (resolve, reject) => {
@@ -189,26 +189,26 @@ function invoicePdf(invoice, student, housing) {
       const pages = pageNumbers(doc);
       const W = doc.page.width - 96;
 
-      header(doc, housing, 'فاتورة سكن', await logoBuffer(housing));
+      header(doc, housing, 'Housing Invoice', await logoBuffer(housing));
 
       doc.roundedRect(48, doc.y, 250, 26, 5).lineWidth(0.8).strokeColor(C_TEAL);
-      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`رقم الفاتورة: ${invoice.invoiceNumber || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
-      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`التاريخ: ${new Date(invoice.createdAt || Date.now()).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
+      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`Invoice Number: ${invoice.invoiceNumber || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
+      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Date: ${new Date(invoice.createdAt || Date.now()).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
       doc.y += 52;
 
       doc.y = card(doc, [
-        ['الطالب', `${student.name || ''}  (${student.studentId || ''})`],
-        ['الهاتف', student.phone || '—'],
-        ['الجامعة', student.university || '—'],
-        ['الغرفة / السرير', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
+        ['Student', `${student.name || ''}  (${student.studentId || ''})`],
+        ['Phone', student.phone || '—'],
+        ['University', student.university || '—'],
+        ['Room / Bed', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
       ], doc.y, 48, W);
 
-      const headers = ['الحالة', 'المبلغ', 'الشهر'];
+      const headers = ['Status', 'Amount', 'Month'];
       const widths = [140, 130, W - 270];
       const rows = (invoice.items || []).map((it) => [STATUS_AR[it.status] || it.status, String(it.amount), String(it.month)]);
       const y = table(doc, headers, rows, widths, { y: doc.y + 6, cellOf: (v) => AR_TO_COLOR[v] });
 
-      totalBox(doc, 'الإجمالي', `${invoice.total || 0} ${housing && housing.currency || 'ج.م'}`, y, 48, W);
+      totalBox(doc, 'Total', `${invoice.total || 0} ${housing && housing.currency || 'EGP'}`, y, 48, W);
 
       pageFooter(doc, housing);
       doc.end();
@@ -229,16 +229,16 @@ function reportPdf(month, data, housing) {
       const pageN = pageNumbers(doc);
 
       const [yy, mm] = String(month || '').split('-');
-      const title = `التقرير الشهري — ${MONTHS_AR[Number(mm) - 1] || mm} ${yy || ''}`;
+      const title = `Monthly Report — ${MONTHS_AR[Number(mm) - 1] || mm} ${yy || ''}`;
       header(doc, housing, title, await logoBuffer(housing));
 
       const stats = [
-        ['المتوقع', data.expected || 0],
-        ['المحصل', data.collected || 0],
-        ['المتبقي', data.remaining || 0],
-        ['دافعون', data.paidStudents || 0],
-        ['غير دافعين', data.unpaidStudents || 0],
-        ['تأمين محصل', (data.depositsCollected && data.depositsCollected.sum) || 0],
+        ['Expected', data.expected || 0],
+        ['Collected', data.collected || 0],
+        ['Remaining', data.remaining || 0],
+        ['Paying', data.paidStudents || 0],
+        ['Non-paying', data.unpaidStudents || 0],
+        ['Deposits Collected', (data.depositsCollected && data.depositsCollected.sum) || 0],
       ];
       const bw = Math.floor((W - 50) / 6);
       let sx = 48;
@@ -250,7 +250,7 @@ function reportPdf(month, data, housing) {
       });
       doc.y += 72;
 
-      const headers = ['تاريخ الدفع', 'الحالة', 'المبلغ', 'الرقم', 'الطالب'];
+      const headers = ['Payment Date', 'Status', 'Amount', 'ID', 'Student'];
       const widths = [110, 90, 90, 90, W - 380];
       const rows = (data.rows || []).map((p) => [
         p.paidAt ? new Date(p.paidAt).toLocaleDateString('en-GB') : '—',
@@ -271,7 +271,7 @@ function reportPdf(month, data, housing) {
   });
 }
 
-const CURRENCY = (h) => (h && h.currency) || 'ج.م';
+const CURRENCY = (h) => (h && h.currency) || 'EGP';
 
 function depositReceiptPdf({ student, housing, deposit, receiptNo, adminName }) {
   return new Promise(async (resolve, reject) => {
@@ -280,32 +280,32 @@ function depositReceiptPdf({ student, housing, deposit, receiptNo, adminName }) 
       const done = collect(doc);
       const W = doc.page.width - 96;
 
-      header(doc, housing, 'وصل استلام تأمين', await logoBuffer(housing));
+      header(doc, housing, 'Deposit Receipt', await logoBuffer(housing));
 
       doc.roundedRect(48, doc.y, 250, 26, 5).lineWidth(0.8).strokeColor(C_TEAL);
-      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`رقم الوصل: ${receiptNo || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
-      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`التاريخ: ${new Date(deposit.paymentDate || Date.now()).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
+      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`Receipt Number: ${receiptNo || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
+      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Date: ${new Date(deposit.paymentDate || Date.now()).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
       doc.y += 52;
 
       doc.y = card(doc, [
-        ['الطالب', `${student.name || ''}  (${student.studentId || ''})`],
-        ['الهاتف', student.phone || '—'],
-        ['الغرفة / السرير', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
+        ['Student', `${student.name || ''}  (${student.studentId || ''})`],
+        ['Phone', student.phone || '—'],
+        ['Room / Bed', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
       ], doc.y, 48, W);
 
-      totalBox(doc, 'قيمة التأمين', `${deposit.originalAmount || 0} ${CURRENCY(housing)}`, doc.y + 6, 48, W);
+      totalBox(doc, 'Deposit Amount', `${deposit.originalAmount || 0} ${CURRENCY(housing)}`, doc.y + 6, 48, W);
 
-      doc.font('T').fontSize(9).fillColor(C_SLATE).text(ar(`حالة الدفع: مدفوع  |  طريقة الدفع: ${deposit.paymentMethod === 'cash' ? 'نقدًا' : deposit.paymentMethod === 'transfer' ? 'تحويل بنكي' : 'أخرى'}`), 48, doc.y + 4, { width: W, align: 'right' });
+      doc.font('T').fontSize(9).fillColor(C_SLATE).text(ar(`Payment Status: Paid  |  Payment Method: ${deposit.paymentMethod === 'cash' ? 'Cash' : deposit.paymentMethod === 'transfer' ? 'Bank Transfer' : 'Other'}`), 48, doc.y + 4, { width: W, align: 'right' });
       doc.y += 18;
       if (deposit.notes) {
-        doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`البيان: ${deposit.notes}`), 48, doc.y, { width: W, align: 'right' });
+        doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Notes: ${deposit.notes}`), 48, doc.y, { width: W, align: 'right' });
         doc.y += 16;
       }
       doc.y += 6;
-      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('استلمت أنا الموقّع أدناه قيمة التأمين المذكورة أعلاه نظير حجز مكان بالسكن، وموافق على الشروط. يجوز خصم أي تلفيات من هذا المبلغ عند انتهاء الإقامة.'), 48, doc.y, { width: W, align: 'right' });
+      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('I, the undersigned, have received the above deposit amount for reserving a housing spot, and agree to the terms. Any damages may be deducted from this amount upon checkout.'), 48, doc.y, { width: W, align: 'right' });
       doc.y += 34;
-      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('توقيع المستلم / المسؤول: ____________________'), 48, doc.y, { width: W, align: 'right' });
-      doc.text(ar(`مسجل بواسطة: ${adminName || '—'}`), 48, doc.y + 20, { width: W, align: 'right' });
+      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('Recipient / Manager Signature: ____________________'), 48, doc.y, { width: W, align: 'right' });
+      doc.text(ar(`Recorded by: ${adminName || '—'}`), 48, doc.y + 20, { width: W, align: 'right' });
 
       pageFooter(doc, housing);
       doc.end();
@@ -323,31 +323,31 @@ function depositRefundPdf({ student, housing, deposit, record, receiptNo, adminN
       const done = collect(doc);
       const W = doc.page.width - 96;
 
-      header(doc, housing, 'وصل استرداد تأمين / تسوية', await logoBuffer(housing));
+      header(doc, housing, 'Deposit Refund / Settlement Receipt', await logoBuffer(housing));
 
       doc.roundedRect(48, doc.y, 250, 26, 5).lineWidth(0.8).strokeColor(C_TEAL);
-      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`رقم الوصل: ${receiptNo || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
-      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`التاريخ: ${new Date(record.date || Date.now()).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
+      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`Receipt Number: ${receiptNo || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
+      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Date: ${new Date(record.date || Date.now()).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
       doc.y += 52;
 
       doc.y = card(doc, [
-        ['الطالب', `${student.name || ''}  (${student.studentId || ''})`],
-        ['الهاتف', student.phone || '—'],
-        ['الغرفة / السرير', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
+        ['Student', `${student.name || ''}  (${student.studentId || ''})`],
+        ['Phone', student.phone || '—'],
+        ['Room / Bed', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
       ], doc.y, 48, W);
 
-      const headers = ['المبلغ', 'السبب', 'البيان'];
+      const headers = ['Amount', 'Reason', 'Description'];
       const widths = [100, 150, W - 250];
       const rows = (deposit.deductions || []).map((x) => [String(x.amount), String(x.reason || '—'), String(x.description || '—')]);
       table(doc, headers, rows, widths, { y: doc.y, rowH: 20 });
       doc.y += 6;
-      doc.y = totalBox(doc, 'إجمالي الخصومات', `${deposit.totalDeductions || 0} ${CURRENCY(housing)}`, doc.y, 48, W);
-      doc.y = totalBox(doc, 'المبلغ المسترد', `${record.amount || 0} ${CURRENCY(housing)}`, doc.y, 48, W);
-      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`طريقة الاسترداد: ${record.method === 'cash' ? 'نقدًا' : record.method === 'transfer' ? 'تحويل بنكي' : 'أخرى'}  |  حالة الاسترداد: ${deposit.refundStatus === 'full' ? 'مسترد بالكامل' : deposit.refundStatus === 'partial' ? 'مسترد جزئيًا' : 'بانتظار الاسترداد'}`), 48, doc.y + 4, { width: W, align: 'right' });
+      doc.y = totalBox(doc, 'Total Deductions', `${deposit.totalDeductions || 0} ${CURRENCY(housing)}`, doc.y, 48, W);
+      doc.y = totalBox(doc, 'Refunded Amount', `${record.amount || 0} ${CURRENCY(housing)}`, doc.y, 48, W);
+      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Refund Method: ${record.method === 'cash' ? 'Cash' : record.method === 'transfer' ? 'Bank Transfer' : 'Other'}  |  Refund Status: ${deposit.refundStatus === 'full' ? 'Fully Refunded' : deposit.refundStatus === 'partial' ? 'Partially Refunded' : 'Pending Refund'}`), 48, doc.y + 4, { width: W, align: 'right' });
       if (record.notes) {
-        doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`ملاحظات: ${record.notes}`), 48, doc.y + 18, { width: W, align: 'right' });
+        doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Notes: ${record.notes}`), 48, doc.y + 18, { width: W, align: 'right' });
       }
-      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar(`مسجل بواسطة: ${adminName || record.adminName || '—'}`), 48, doc.page.height - 70, { width: W, align: 'right' });
+      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar(`Recorded by: ${adminName || record.adminName || '—'}`), 48, doc.page.height - 70, { width: W, align: 'right' });
 
       pageFooter(doc, housing);
       doc.end();
@@ -367,49 +367,49 @@ function paymentReceiptPdf({ payment, student, housing, receiptNo, adminName }) 
       const done = collect(doc);
       const W = doc.page.width - 96;
 
-      header(doc, housing, 'وصل استلام دفعة إيجار', await logoBuffer(housing));
+      header(doc, housing, 'Rent Payment Receipt', await logoBuffer(housing));
 
       const lastTx = (payment.transactions || []).slice(-1)[0] || {};
       const paidAt = lastTx.date || payment.paidAt || Date.now();
 
       doc.roundedRect(48, doc.y, 250, 26, 5).lineWidth(0.8).strokeColor(C_TEAL);
-      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`رقم الوصل: ${receiptNo || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
-      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`التاريخ: ${new Date(paidAt).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
+      doc.font('TB').fontSize(10).fillColor(C_TEAL).text(ar(`Receipt Number: ${receiptNo || ''}`), 60, doc.y + 6, { width: 226, align: 'left' });
+      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Date: ${new Date(paidAt).toLocaleDateString('en-GB')}`), 60, doc.y + 34, { width: 226, align: 'left' });
       doc.y += 52;
 
       doc.y = card(doc, [
-        ['الطالب', `${student.name || ''}  (${student.studentId || ''})`],
-        ['الهاتف', student.phone || '—'],
-        ['الجامعة', student.university || '—'],
-        ['الغرفة / السرير', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
+        ['Student', `${student.name || ''}  (${student.studentId || ''})`],
+        ['Phone', student.phone || '—'],
+        ['University', student.university || '—'],
+        ['Room / Bed', `${student.roomNumber || '—'} / ${student.bedNumber || '—'}`],
       ], doc.y, 48, W);
 
-      doc.font('T').fontSize(10).fillColor(C_SLATE).text(ar(`شهر: ${String(payment.month || '—').replace('-', ' / ')}`), 48, doc.y, { width: W, align: 'right' });
+      doc.font('T').fontSize(10).fillColor(C_SLATE).text(ar(`Month: ${String(payment.month || '—').replace('-', ' / ')}`), 48, doc.y, { width: W, align: 'right' });
       doc.y += 16;
-      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`استحقاق: ${payment.dueDate || '—'}  |  عدد الدفعات: ${(payment.transactions || []).length}`), 48, doc.y, { width: W, align: 'right' });
+      doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Due: ${payment.dueDate || '—'}  |  Transactions: ${(payment.transactions || []).length}`), 48, doc.y, { width: W, align: 'right' });
       doc.y += 26;
 
-      const headers = ['البيان', 'المبلغ'];
+      const headers = ['Description', 'Amount'];
       const widths = [W - 160, 160];
       const rows = [
-        ['قيمة الشهر', String(payment.amount || 0)],
-        ['المدفوع حتى الآن', String(payment.paidAmount || 0)],
-        ['المتبقي', String((Number(payment.amount) || 0) - (Number(payment.paidAmount) || 0))],
+        ['Monthly Amount', String(payment.amount || 0)],
+        ['Paid So Far', String(payment.paidAmount || 0)],
+        ['Remaining', String((Number(payment.amount) || 0) - (Number(payment.paidAmount) || 0))],
       ];
       const y = table(doc, headers, rows, widths, { y: doc.y, rowH: 20 });
 
-      const methodAr = lastTx.method === 'cash' ? 'نقدًا' : lastTx.method === 'transfer' ? 'تحويل بنكي' : 'أخرى';
-      doc.font('T').fontSize(9).fillColor(C_SLATE).text(ar(`طريقة الدفع: ${methodAr}`), 48, y, { width: W, align: 'right' });
+      const methodAr = lastTx.method === 'cash' ? 'Cash' : lastTx.method === 'transfer' ? 'Bank Transfer' : 'Other';
+      doc.font('T').fontSize(9).fillColor(C_SLATE).text(ar(`Payment Method: ${methodAr}`), 48, y, { width: W, align: 'right' });
       doc.y = y + 14;
       if (lastTx.note) {
-        doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`البيان: ${lastTx.note}`), 48, doc.y, { width: W, align: 'right' });
+        doc.font('T').fontSize(8.5).fillColor(C_MUTED).text(ar(`Notes: ${lastTx.note}`), 48, doc.y, { width: W, align: 'right' });
         doc.y += 16;
       }
       doc.y += 6;
-      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('استلمت أنا الموقّع أدناه المبلغ المذكور أعلاه نظير إيجار شهر الموضح، وموافق على الشروط.'), 48, doc.y, { width: W, align: 'right' });
+      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('I, the undersigned, have received the above amount for the rent of the specified month, and agree to the terms.'), 48, doc.y, { width: W, align: 'right' });
       doc.y += 34;
-      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('توقيع المستلم / المسؤول: ____________________'), 48, doc.y, { width: W, align: 'right' });
-      doc.text(ar(`مسجل بواسطة: ${adminName || ''}`), 48, doc.y + 20, { width: W, align: 'right' });
+      doc.font('T').fontSize(9).fillColor(C_MUTED).text(ar('Recipient / Manager Signature: ____________________'), 48, doc.y, { width: W, align: 'right' });
+      doc.text(ar(`Recorded by: ${adminName || ''}`), 48, doc.y + 20, { width: W, align: 'right' });
 
       pageFooter(doc, housing);
       doc.end();

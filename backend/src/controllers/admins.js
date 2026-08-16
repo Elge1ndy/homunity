@@ -33,9 +33,9 @@ exports.list = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { name, username, phone, password, permissions } = req.body;
-    if (!name || !username || !password) return res.status(400).json({ message: 'الاسم واسم المستخدم وكلمة المرور مطلوبة' });
+    if (!name || !username || !password) return res.status(400).json({ message: 'Name, username, and password are required' });
     const exists = await db.col('User').findOne({ $or: [{ username: String(username).trim() }, { phone: String(phone || '').trim() }] });
-    if (exists) return res.status(400).json({ message: 'اسم المستخدم أو رقم الهاتف مستخدم بالفعل' });
+    if (exists) return res.status(400).json({ message: 'Username or phone number already in use' });
     const hash = await bcrypt.hash(String(password), 10);
     const user = await db.col('User').insert({
       name: String(name).trim(),
@@ -46,7 +46,7 @@ exports.create = async (req, res, next) => {
       permissions: permissions || { ...defaultPerms },
       active: true,
     });
-    await log(req, { action: `تمت إضافة مدير: ${user.name}`, category: 'admins', targetType: 'admin', targetId: user._id });
+    await log(req, { action: `Added admin: ${user.name}`, category: 'admins', targetType: 'admin', targetId: user._id });
     emit(req, 'admin:updated', {});
     res.json({ admin: safe(user) });
   } catch (e) {
@@ -66,8 +66,8 @@ exports.update = async (req, res, next) => {
     if (permissions) set.permissions = permissions;
     if (active !== undefined) set.active = active;
     const admin = await db.col('User').findByIdAndUpdate(id, { $set: set });
-    if (!admin) return res.status(404).json({ message: 'غير موجود' });
-    await log(req, { action: `تم تعديل مدير: ${admin.name}`, category: 'admins', targetType: 'admin', targetId: admin._id });
+    if (!admin) return res.status(404).json({ message: 'Not found' });
+    await log(req, { action: `Updated admin: ${admin.name}`, category: 'admins', targetType: 'admin', targetId: admin._id });
     emit(req, 'admin:updated', {});
     res.json({ admin: safe(admin) });
   } catch (e) {
@@ -79,12 +79,12 @@ exports.remove = async (req, res, next) => {
   try {
     const { id } = req.params;
     const count = await db.col('User').count({});
-    if (count <= 1) return res.status(400).json({ message: 'لا يمكن حذف آخر مدير' });
+    if (count <= 1) return res.status(400).json({ message: 'Cannot delete the last admin' });
     const admin = await db.col('User').findById(id);
-    if (!admin) return res.status(404).json({ message: 'غير موجود' });
-    if (String(admin._id) === String(req.user._id)) return res.status(400).json({ message: 'لا يمكنك حذف حسابك' });
+    if (!admin) return res.status(404).json({ message: 'Not found' });
+    if (String(admin._id) === String(req.user._id)) return res.status(400).json({ message: 'Cannot delete your own account' });
     await db.col('User').deleteById(id);
-    await log(req, { action: `تم حذف مدير: ${admin.name}`, category: 'admins', targetType: 'admin', targetId: id });
+    await log(req, { action: `Deleted admin: ${admin.name}`, category: 'admins', targetType: 'admin', targetId: id });
     emit(req, 'admin:updated', {});
     res.json({ ok: true });
   } catch (e) {

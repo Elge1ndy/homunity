@@ -10,7 +10,7 @@ function Stat({ label, value, cls }) {
   return (
     <div className={`p-4 rounded-xl ${cls}`}>
       <p className="text-[10px] font-bold">{label}</p>
-      <p className="text-lg font-extrabold mt-1">{fmtMoney(value)} ج.م</p>
+      <p className="text-lg font-extrabold mt-1">{fmtMoney(value)} EGP</p>
     </div>
   )
 }
@@ -47,24 +47,24 @@ export default function FinanceDashboard() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="page-title">اللوحة المالية</h1>
-          <p className="page-sub">إجمالي الإيرادات والمدفوعات لكل العقارات والشقق والطلاب</p>
+          <h1 className="page-title">Finance Dashboard</h1>
+          <p className="page-sub">Total revenue and payments for all properties, apartments, and students</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <select className="input !w-auto" value={propertyId} onChange={(e) => { setPropertyId(e.target.value); setApartmentId(''); setStudentId('') }}>
-            <option value="">كل العقارات</option>
+            <option value="">All Properties</option>
             {propertiesList.map((p) => (
               <option key={p._id} value={p._id}>{p.name}</option>
             ))}
           </select>
           <select className="input !w-auto" value={apartmentId} onChange={(e) => { setApartmentId(e.target.value); setStudentId('') }} disabled={!propertyId || apts.length === 0}>
-            <option value="">كل الشقق</option>
+            <option value="">All Apartments</option>
             {apts.map((a) => (
               <option key={a._id} value={a._id}>{a.name}</option>
             ))}
           </select>
           <select className="input !w-auto" value={studentId} onChange={(e) => setStudentId(e.target.value)} disabled={!apartmentId || studentOptions.length === 0}>
-            <option value="">كل الطلاب</option>
+            <option value="">All Students</option>
             {studentOptions.map((s) => (
               <option key={s._id} value={s._id}>{s.name} ({s.studentId})</option>
             ))}
@@ -93,30 +93,30 @@ export default function FinanceDashboard() {
 
       {showProps && properties.length > 0 && (
         <div className="card overflow-x-auto">
-          <div className="px-4 py-3"><h3 className="font-extrabold text-slate-800">حسب العقار / البيت</h3></div>
+          <div className="px-4 py-3"><h3 className="font-extrabold text-slate-800">By Property</h3></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">العقار</th><th className="th">متوقع</th><th className="th">محصّل</th><th className="th">متبقي</th>
-                  <th className="th">متأخر</th><th className="th">قادم</th><th className="th">تأمين</th>
-                  <th className="th">صيانة</th><th className="th">مصروفات</th><th className="th">Gross</th><th className="th">Net</th>
+                  <th className="th">Property</th><th className="th">Expected</th><th className="th">Collected</th><th className="th">Remaining</th>
+                  <th className="th">Overdue</th><th className="th">Upcoming</th><th className="th">Deposit</th>
+                  <th className="th">Maintenance</th><th className="th">Expenses</th><th className="th">Gross</th><th className="th">Net</th>
                 </tr>
               </thead>
               <tbody>
                 {properties.map((p) => (
                   <tr key={p._id} className="border-t border-slate-100 hover:bg-slate-50">
                     <td className="td font-bold">{p.name}</td>
-                    <td className="td">{fmtMoney(p.expected)} ج.م</td>
-                    <td className="td text-emerald-700 font-semibold">{fmtMoney(p.collected)} ج.م</td>
-                    <td className="td text-red-600 font-semibold">{fmtMoney(p.remaining)} ج.م</td>
-                    <td className="td text-orange-600 font-semibold">{fmtMoney(p.overdue)} ج.م</td>
-                    <td className="td">{fmtMoney(p.upcoming)} ج.م</td>
-                    <td className="td">{fmtMoney(p.depositsHeld)} ج.م</td>
-                    <td className="td">{fmtMoney(p.maintenance)} ج.م</td>
-                    <td className="td">{fmtMoney(p.expenses)} ج.م</td>
-                    <td className="td">{fmtMoney(p.gross)} ج.م</td>
-                    <td className="td text-blue-700 font-bold">{fmtMoney(p.net)} ج.م</td>
+                    <td className="td">{fmtMoney(p.expected)} EGP</td>
+                    <td className="td text-emerald-700 font-semibold">{fmtMoney(p.collected)} EGP</td>
+                    <td className="td text-red-600 font-semibold">{fmtMoney(p.remaining)} EGP</td>
+                    <td className="td text-orange-600 font-semibold">{fmtMoney(p.overdue)} EGP</td>
+                    <td className="td">{fmtMoney(p.upcoming)} EGP</td>
+                    <td className="td">{fmtMoney(p.depositsHeld)} EGP</td>
+                    <td className="td">{fmtMoney(p.maintenance)} EGP</td>
+                    <td className="td">{fmtMoney(p.expenses)} EGP</td>
+                    <td className="td">{fmtMoney(p.gross)} EGP</td>
+                    <td className="td text-blue-700 font-bold">{fmtMoney(p.net)} EGP</td>
                   </tr>
                 ))}
               </tbody>
@@ -127,29 +127,29 @@ export default function FinanceDashboard() {
 
       {showApts && apartments.length > 0 && (
         <div className="card overflow-x-auto">
-          <div className="px-4 py-3"><h3 className="font-extrabold text-slate-800">حسب الشقة</h3></div>
+          <div className="px-4 py-3"><h3 className="font-extrabold text-slate-800">By Apartment</h3></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">الشقة</th><th className="th">العقار</th><th className="th">متوقع</th><th className="th">محصّل</th>
-                  <th className="th">متبقي</th><th className="th">متأخر</th><th className="th">تأمين</th>
-                  <th className="th">صيانة</th><th className="th">مصروفات</th><th className="th">Net</th>
+                  <th className="th">Apartment</th><th className="th">Property</th><th className="th">Expected</th><th className="th">Collected</th>
+                  <th className="th">Remaining</th><th className="th">Overdue</th><th className="th">Deposit</th>
+                  <th className="th">Maintenance</th><th className="th">Expenses</th><th className="th">Net</th>
                 </tr>
               </thead>
               <tbody>
                 {apartments.map((a) => (
                   <tr key={a._id} className="border-t border-slate-100 hover:bg-slate-50">
-                    <td className="td font-bold">شقة {a.name}</td>
+                    <td className="td font-bold">Apt {a.name}</td>
                     <td className="td text-slate-500">{a.propertyName}</td>
-                    <td className="td">{fmtMoney(a.expected)} ج.م</td>
-                    <td className="td text-emerald-700 font-semibold">{fmtMoney(a.collected)} ج.م</td>
-                    <td className="td text-red-600 font-semibold">{fmtMoney(a.remaining)} ج.م</td>
-                    <td className="td text-orange-600 font-semibold">{fmtMoney(a.overdue)} ج.م</td>
-                    <td className="td">{fmtMoney(a.depositsHeld)} ج.م</td>
-                    <td className="td">{fmtMoney(a.maintenance)} ج.م</td>
-                    <td className="td">{fmtMoney(a.expenses)} ج.م</td>
-                    <td className="td text-blue-700 font-bold">{fmtMoney(a.net)} ج.م</td>
+                    <td className="td">{fmtMoney(a.expected)} EGP</td>
+                    <td className="td text-emerald-700 font-semibold">{fmtMoney(a.collected)} EGP</td>
+                    <td className="td text-red-600 font-semibold">{fmtMoney(a.remaining)} EGP</td>
+                    <td className="td text-orange-600 font-semibold">{fmtMoney(a.overdue)} EGP</td>
+                    <td className="td">{fmtMoney(a.depositsHeld)} EGP</td>
+                    <td className="td">{fmtMoney(a.maintenance)} EGP</td>
+                    <td className="td">{fmtMoney(a.expenses)} EGP</td>
+                    <td className="td text-blue-700 font-bold">{fmtMoney(a.net)} EGP</td>
                   </tr>
                 ))}
               </tbody>
@@ -160,14 +160,14 @@ export default function FinanceDashboard() {
 
       {showStudents && students.length > 0 && (
         <div className="card overflow-x-auto">
-          <div className="px-4 py-3"><h3 className="font-extrabold text-slate-800">حسب الطالب</h3></div>
+          <div className="px-4 py-3"><h3 className="font-extrabold text-slate-800">By Student</h3></div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">الطالب</th><th className="th">العقار</th><th className="th">الشقة</th><th className="th">الحالة</th>
-                  <th className="th">متوقع</th><th className="th">محصّل</th><th className="th">متبقي</th>
-                  <th className="th">متأخر</th><th className="th">قادم</th><th className="th">Due</th><th className="th">تأمين</th>
+                  <th className="th">Student</th><th className="th">Property</th><th className="th">Apartment</th><th className="th">Status</th>
+                  <th className="th">Expected</th><th className="th">Collected</th><th className="th">Remaining</th>
+                  <th className="th">Overdue</th><th className="th">Upcoming</th><th className="th">Due</th><th className="th">Deposit</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,15 +180,15 @@ export default function FinanceDashboard() {
                     <td className="td text-slate-500">{s.propertyName || '—'}</td>
                     <td className="td text-slate-500">{s.apartmentName || '—'}</td>
                     <td className="td">
-                      <Badge label={s.status === 'active' ? 'نشط' : s.status === 'ended' ? 'منتهي' : 'مؤرشف'} cls={s.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'} />
+                      <Badge label={s.status === 'active' ? 'Active' : s.status === 'ended' ? 'Ended' : 'Archived'} cls={s.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'} />
                     </td>
-                    <td className="td">{fmtMoney(s.expected)} ج.م</td>
-                    <td className="td text-emerald-700 font-semibold">{fmtMoney(s.collected)} ج.م</td>
-                    <td className="td text-red-600 font-semibold">{fmtMoney(s.remaining)} ج.م</td>
-                    <td className="td text-orange-600 font-semibold">{fmtMoney(s.overdue)} ج.م</td>
-                    <td className="td">{fmtMoney(s.upcoming)} ج.م</td>
-                    <td className="td">{fmtMoney(s.due)} ج.م</td>
-                    <td className="td">{fmtMoney(s.deposit)} ج.م</td>
+                    <td className="td">{fmtMoney(s.expected)} EGP</td>
+                    <td className="td text-emerald-700 font-semibold">{fmtMoney(s.collected)} EGP</td>
+                    <td className="td text-red-600 font-semibold">{fmtMoney(s.remaining)} EGP</td>
+                    <td className="td text-orange-600 font-semibold">{fmtMoney(s.overdue)} EGP</td>
+                    <td className="td">{fmtMoney(s.upcoming)} EGP</td>
+                    <td className="td">{fmtMoney(s.due)} EGP</td>
+                    <td className="td">{fmtMoney(s.deposit)} EGP</td>
                   </tr>
                 ))}
               </tbody>

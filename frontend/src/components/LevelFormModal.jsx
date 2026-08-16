@@ -25,7 +25,7 @@ export default function LevelFormModal({ open, onClose, onSaved, propertyId, kin
 
   const submit = async () => {
     if (!form.name.trim()) {
-      toast(kind === 'floor' ? 'اسم الدور مطلوب' : 'اسم الشقة مطلوب', 'warn')
+      toast(kind === 'floor' ? 'Floor name is required' : 'Apartment name is required', 'warn')
       return
     }
     setSaving(true)
@@ -33,11 +33,11 @@ export default function LevelFormModal({ open, onClose, onSaved, propertyId, kin
       if (kind === 'floor') {
         if (edit) await api.put(`/properties/${propertyId}/floors/${item._id}`, form)
         else await api.post(`/properties/${propertyId}/floors`, form)
-        toast(edit ? 'تم تعديل الدور' : 'تمت إضافة الدور')
+        toast(edit ? 'Floor updated' : 'Floor added')
       } else {
         if (edit) await api.put(`/properties/${propertyId}/apartments/${item._id}`, form)
         else await api.post(`/properties/${propertyId}/apartments`, form)
-        toast(edit ? 'تم تعديل الشقة' : 'تمت إضافة الشقة')
+        toast(edit ? 'Apartment updated' : 'Apartment added')
       }
       onSaved()
       onClose()
@@ -49,28 +49,28 @@ export default function LevelFormModal({ open, onClose, onSaved, propertyId, kin
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={edit ? `تعديل ${kind === 'floor' ? 'الدور' : 'الشقة'}` : `إضافة ${kind === 'floor' ? 'دور' : 'شقة'}`}>
+    <Modal open={open} onClose={onClose} title={edit ? `Edit ${kind === 'floor' ? 'Floor' : 'Apartment'}` : `Add ${kind === 'floor' ? 'Floor' : 'Apartment'}`}>
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">{kind === 'floor' ? 'اسم الدور' : 'اسم الشقة'} *</label>
+            <label className="label">{kind === 'floor' ? 'Floor Name' : 'Apartment Name'} *</label>
             <input className="input" value={form.name} onChange={set('name')} />
           </div>
           <div>
-            <label className="label">الكود</label>
+            <label className="label">Code</label>
             <input className="input" dir="ltr" value={form.code} onChange={set('code')} />
           </div>
           {kind === 'apartment' && (
             <>
               <div>
-                <label className="label">الإيجار الافتراضي (يُستخدم عند إضافة غرفة)</label>
+                <label className="label">Default Rent (used when adding a room)</label>
                 <input className="input" type="number" dir="ltr" value={form.monthlyRent} onChange={set('monthlyRent')} />
               </div>
               {floors?.length > 0 && (
                 <div>
-                  <label className="label">الدور</label>
+                  <label className="label">Floor</label>
                   <select className="input" value={form.floorId} onChange={set('floorId')}>
-                    <option value="">بدون دور</option>
+                    <option value="">No Floor</option>
                     {floors.map((f) => (
                       <option key={f._id} value={f._id}>
                         {f.name || f.code}
@@ -82,20 +82,20 @@ export default function LevelFormModal({ open, onClose, onSaved, propertyId, kin
             </>
           )}
           <div>
-            <label className="label">الحالة</label>
+            <label className="label">Status</label>
             <select className="input" value={form.status} onChange={set('status')}>
-              <option value="active">نشط</option>
-              <option value="inactive">متوقف</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
             </select>
           </div>
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : edit ? 'حفظ التعديلات' : 'إضافة'}
+          {saving ? <Spinner /> : edit ? 'Save Changes' : 'Add'}
         </button>
       </div>
     </Modal>

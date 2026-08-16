@@ -11,12 +11,12 @@ import PaymentModal from '../components/PaymentModal.jsx'
 import { paymentStatus, fmtMoney, fmtDate, monthLabel, currentMonthKey, downloadBlob } from '../utils/format.js'
 
 const STATUS_FILTERS = [
-  ['all', 'الكل'],
-  ['unpaid', 'غير مدفوع'],
-  ['partial', 'جزئي'],
-  ['paid', 'مدفوع'],
-  ['overdue', 'متأخر'],
-  ['upcoming', 'قادم'],
+  ['all', 'All'],
+  ['unpaid', 'Unpaid'],
+  ['partial', 'Partial'],
+  ['paid', 'Paid'],
+  ['overdue', 'Overdue'],
+  ['upcoming', 'Upcoming'],
 ]
 
 export default function Payments() {
@@ -38,10 +38,10 @@ export default function Payments() {
   const data = revenueData.data
 
   const undoPaid = async (p) => {
-    if (!window.confirm('التراجع عن تسجيل هذا الدفع؟')) return
+    if (!window.confirm('Undo recording this payment?')) return
     try {
       await api.post(`/payments/${p._id}/unpaid`)
-      toast('تم التراجع')
+      toast('Undone')
       revenueData.refetch()
       paymentsData.refetch()
       allPayments.refetch()
@@ -54,7 +54,7 @@ export default function Payments() {
     try {
       const r = await api.get(`/whatsapp/remind/${p._id}`)
       window.open(r.url, '_blank')
-      toast(`فتح واتساب لتذكير ${p.student?.name || 'الطالب'}`)
+      toast(`Open WhatsApp to remind ${p.student?.name || 'student'}`)
     } catch (e) {
       toast(errMsg(e), 'error')
     }
@@ -84,36 +84,36 @@ export default function Payments() {
           ))}
         </div>
         <button className="btn-outline ms-auto" onClick={exportExcel}>
-          تصدير Excel
+          Export Excel
         </button>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="card p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">
-            <Wallet size={14} /> المتوقع
+            <Wallet size={14} /> Expected
           </div>
           <p className="text-xl font-extrabold text-slate-800">{fmtMoney(data?.expected)}</p>
         </div>
         <div className="card p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 mb-1">
-            <TrendingUp size={14} /> المحصل
+            <TrendingUp size={14} /> Collected
           </div>
           <p className="text-xl font-extrabold text-emerald-700">{fmtMoney(data?.collected)}</p>
         </div>
         <div className="card p-5">
           <div className="flex items-center gap-2 text-xs font-bold text-red-600 mb-1">
-            <AlertTriangle size={14} /> المتبقي
+            <AlertTriangle size={14} /> Remaining
           </div>
           <p className="text-xl font-extrabold text-red-700">{fmtMoney(data?.remaining)}</p>
         </div>
         <div className="card p-5">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">الطلاب</div>
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">Students</div>
           <p className="text-xl font-extrabold text-slate-800">
-            {data?.paidStudents} <span className="text-sm text-emerald-600 font-bold">مدفوع</span> / {data?.unpaidStudents}{' '}
-            <span className="text-sm text-red-600 font-bold">غير مدفوع</span>
+            {data?.paidStudents} <span className="text-sm text-emerald-600 font-bold">Paid</span> / {data?.unpaidStudents}{' '}
+            <span className="text-sm text-red-600 font-bold">Unpaid</span>
           </p>
-          <p className="text-xs text-slate-400 mt-0.5">إجمالي {data?.totalStudents}</p>
+          <p className="text-xs text-slate-400 mt-0.5">Total {data?.totalStudents}</p>
         </div>
       </div>
 
@@ -121,20 +121,20 @@ export default function Payments() {
         {paymentsData.loading || revenueData.loading ? (
           <Spinner full />
         ) : !paymentsData.data?.payments?.length ? (
-          <EmptyState message={`لا توجد دفعات لشهر ${monthLabel(month)}`} />
+          <EmptyState message={`No payments for ${monthLabel(month)}`} />
         ) : (
           <div className="overflow-x-auto">
 <table className="w-full">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="th">الطالب</th>
-                    <th className="th">المتوقع</th>
-                    <th className="th">المدفوع</th>
-                    <th className="th">المتبقي</th>
-                    <th className="th">الاستحقاق</th>
-                    <th className="th">الحالة</th>
-                    <th className="th">تاريخ الدفع</th>
-                    <th className="th">الإثبات</th>
+                    <th className="th">Student</th>
+                    <th className="th">Expected</th>
+                    <th className="th">Paid</th>
+                    <th className="th">Remaining</th>
+                    <th className="th">Due Date</th>
+                    <th className="th">Status</th>
+                    <th className="th">Payment Date</th>
+                    <th className="th">Proof</th>
                     <th className="th"></th>
                   </tr>
                 </thead>
@@ -150,9 +150,9 @@ export default function Payments() {
                           </Link>
                           <p className="text-xs text-slate-400 font-mono" dir="ltr">{p.student?.studentId || ''}</p>
                         </td>
-                        <td className="td font-bold">{fmtMoney(p.amount)} ج.م</td>
-                        <td className="td font-bold text-emerald-700">{fmtMoney(paidAmount)} ج.م</td>
-                        <td className="td font-bold text-red-600">{fmtMoney(remaining)} ج.م</td>
+                        <td className="td font-bold">{fmtMoney(p.amount)} EGP</td>
+                        <td className="td font-bold text-emerald-700">{fmtMoney(paidAmount)} EGP</td>
+                        <td className="td font-bold text-red-600">{fmtMoney(remaining)} EGP</td>
                         <td className="td" dir="ltr">{p.dueDate}</td>
                         <td className="td">
                           <Badge {...(paymentStatus[p.status] || paymentStatus.unpaid)} />
@@ -161,7 +161,7 @@ export default function Payments() {
                         <td className="td">
                           {p.proof ? (
                             <a href={p.proof} target="_blank" rel="noreferrer" className="text-primary-700 inline-flex items-center gap-1 text-xs font-bold">
-                              <Image size={14} /> عرض
+                              <Image size={14} /> View
                             </a>
                           ) : (
                             '—'
@@ -172,11 +172,11 @@ export default function Payments() {
                             {p.status !== 'paid' && remaining > 0 ? (
                               <>
                                 <button className="btn-primary !py-1.5 text-xs" onClick={() => setPayTarget(p)}>
-                                  <Check size={14} /> {paidAmount > 0 ? 'دفعة إضافية' : 'تسجيل دفع'}
+                                  <Check size={14} /> {paidAmount > 0 ? 'Additional Payment' : 'Record Payment'}
                                 </button>
                                 <button
                                   className="btn-ghost text-emerald-600"
-                                  title="تذكير عبر واتساب"
+                                  title="WhatsApp Reminder"
                                   onClick={() => sendReminder(p)}
                                 >
                                   <MessageCircle size={14} />
@@ -184,13 +184,13 @@ export default function Payments() {
                               </>
                             ) : null}
                             {paidAmount > 0 && (
-                              <button className="btn-ghost text-primary-700" title="وصل الاستلام" onClick={() => downloadBlob(`/api/payments/${p._id}/receipt`, `receipt-${p.month}.pdf`)}>
+                              <button className="btn-ghost text-primary-700" title="Receipt" onClick={() => downloadBlob(`/api/payments/${p._id}/receipt`, `receipt-${p.month}.pdf`)}>
                                 <FileText size={14} />
                               </button>
                             )}
                             {p.status === 'paid' && (
                               <button className="btn-ghost text-red-600" onClick={() => undoPaid(p)}>
-                                <Undo2 size={14} /> تراجع
+                                <Undo2 size={14} /> Undo
                               </button>
                             )}
                           </div>

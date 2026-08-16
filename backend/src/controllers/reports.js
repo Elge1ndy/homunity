@@ -68,26 +68,26 @@ exports.exportStudents = async (req, res, next) => {
     rooms.forEach((r) => {
       roomMap[String(r._id)] = r;
     });
-    const statusAr = { active: 'نشط', ended: 'منتهي', archived: ' مؤرشف' };
+    const statusAr = { active: 'Active', ended: 'Ended', archived: 'Archived' };
     const depositService = require('./deposit');
     const rows = students.map((s) => {
       const d = depositService.compute(s);
       return {
-        'الاسم': s.name,
-        'رقم التليفون': s.phone,
-        'الجامعة': s.university || '',
-        'الغرفة': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
-        'السرير': s.bedNumber || '',
-        'الإيجار الشهري': s.monthlyRent,
-        'التأمين': d.originalAmount,
-        'حالة دفع التأمين': { unpaid: 'غير مدفوع', paid: 'مدفوع' }[d.paymentStatus] || d.paymentStatus,
-        'تاريخ دفع التأمين': d.paymentDate,
-        'إجمالي الخصومات': d.totalDeductions,
-        'المسترد': d.refundedAmount,
-        'المتبقي': d.remainingAmount,
-        'حالة الاسترداد': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
-        'تاريخ الدخول': s.checkInDate || '',
-        'الحالة': statusAr[s.status] || s.status || '',
+        'Name': s.name,
+        'Phone Number': s.phone,
+        'University': s.university || '',
+        'Room': roomMap[s.roomId] ? roomMap[s.roomId].number : '',
+        'Bed': s.bedNumber || '',
+        'Monthly Rent': s.monthlyRent,
+        'Deposit': d.originalAmount,
+        'Deposit Payment Status': { unpaid: 'Unpaid', paid: 'Paid' }[d.paymentStatus] || d.paymentStatus,
+        'Deposit Payment Date': d.paymentDate,
+        'Total Deductions': d.totalDeductions,
+        'Refunded': d.refundedAmount,
+        'Remaining': d.remainingAmount,
+        'Refund Status': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
+        'Check-in Date': s.checkInDate || '',
+        'Status': statusAr[s.status] || s.status || '',
       };
     });
     const ws = excel.jsonToSheet(rows);
@@ -107,14 +107,14 @@ exports.exportPayments = async (req, res, next) => {
     const month = req.query.month || paymentsService.monthKey(new Date());
     const data = await revenue.monthRevenue(month);
     const rows = data.rows.map((p) => ({
-      'اسم الطالب': p.student.name,
-      'رقم الطالب': p.student.studentId,
-      'الهاتف': p.student.phone,
-      'الشهر': p.month,
-      'المبلغ': p.amount,
-      'تاريخ الاستحقاق': p.dueDate,
-      'الحالة': { paid: 'مدفوع', partial: 'جزئي', unpaid: 'غير مدفوع', overdue: 'متأخر' }[p.status] || p.status,
-      'تاريخ الدفع': p.paidAt ? new Date(p.paidAt).toISOString().slice(0, 10) : '',
+      'Student Name': p.student.name,
+      'Student Number': p.student.studentId,
+      'Phone': p.student.phone,
+      'Month': p.month,
+      'Amount': p.amount,
+      'Due Date': p.dueDate,
+      'Status': { paid: 'Paid', partial: 'Partial', unpaid: 'Unpaid', overdue: 'Overdue' }[p.status] || p.status,
+      'Payment Date': p.paidAt ? new Date(p.paidAt).toISOString().slice(0, 10) : '',
     }));
     const ws = excel.jsonToSheet(rows);
     const wb = xlsx.utils.book_new();
@@ -134,13 +134,13 @@ exports.exportRooms = async (req, res, next) => {
     const rows = rooms.map((r) => {
       const occupied = (r.beds || []).filter((b) => b.studentId).length;
       return {
-        'رقم الغرفة': r.number,
-        'النوع': r.type,
-        'السعة': r.capacity,
-        'الإيجار الشهري': r.monthlyRent,
-        'الطلاب الحاليون': occupied,
-        'الأسرة المتاحة': r.capacity - occupied,
-        'الحالة': { active: 'نشط', maintenance: 'صيانة' }[r.status] || r.status,
+        'Room Number': r.number,
+        'Type': r.type,
+        'Capacity': r.capacity,
+        'Monthly Rent': r.monthlyRent,
+        'Current Students': occupied,
+        'Available Beds': r.capacity - occupied,
+        'Status': { active: 'Active', maintenance: 'Maintenance' }[r.status] || r.status,
       };
     });
     const ws = excel.jsonToSheet(rows);

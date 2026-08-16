@@ -15,7 +15,7 @@ export function EmptyState({ message }) {
   return (
     <div className="flex flex-col items-center justify-center py-14 text-slate-400">
       <Inbox size={40} className="mb-3" />
-      <p className="text-sm">{message || 'لا توجد بيانات'}</p>
+      <p className="text-sm">{message || 'No data'}</p>
     </div>
   )
 }

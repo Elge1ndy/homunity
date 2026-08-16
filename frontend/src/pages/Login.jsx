@@ -78,14 +78,14 @@ export default function Login() {
             <div className="h-brand-ring h-glow">
               <div className="h-brand-inner">
                 {logo ? (
-                  <img src={logo} alt="الشعار" className="w-20 h-20 object-contain drop-shadow-lg" />
+                  <img src={logo} alt="Logo" className="w-20 h-20 object-contain drop-shadow-lg" />
                 ) : (
                   <Logo size={44} tagline={false} />
                 )}
               </div>
             </div>
             <h1 className="h-brand-name">Homeunity</h1>
-            <p className="h-brand-tag">إدارة السكن الطلابي</p>
+            <p className="h-brand-tag">Student Housing Management</p>
             {watermark && (
               <p className="mt-3 text-[11px] text-slate-500 tracking-wider select-none" style={{ opacity: 0.7 }}>
                 {watermark}
@@ -94,23 +94,23 @@ export default function Login() {
           </div>
 
           <div className="h-card card p-8 shadow-2xl">
-            <h2 className="text-xl font-extrabold text-slate-800 mb-1">مرحبًا بك 👋</h2>
-            <p className="text-sm text-slate-500 mb-6">سجّل دخولك لإدارة السكن</p>
+            <h2 className="text-xl font-extrabold text-slate-800 mb-1">Welcome 👋</h2>
+            <p className="text-sm text-slate-500 mb-6">Sign in to manage housing</p>
             <form onSubmit={submit} className="space-y-4">
               <div>
-                <label className="label">اسم المستخدم أو رقم الهاتف</label>
+                <label className="label">Username or phone number</label>
                 <div className="relative">
                   <User size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input className="input ps-9 h-input" dir="ltr" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="admin" autoFocus />
                 </div>
               </div>
               <div>
-                <label className="label">كلمة المرور</label>
+                <label className="label">Password</label>
                 <div className="relative">
                   <KeyRound size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input className="input ps-9 pe-10 h-input" dir="ltr" type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
                   <button type="button" onClick={() => setShowPass((s) => !s)} className="absolute end-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary-700 text-[11px] font-bold px-1">
-                    {showPass ? 'إخفاء' : 'إظهار'}
+                    {showPass ? 'Hide' : 'Show'}
                   </button>
                 </div>
               </div>
@@ -125,10 +125,10 @@ export default function Login() {
               <button className="h-submit btn-primary w-full py-2.5" disabled={loading || !identifier || !password}>
                 {loading ? (
                   <>
-                    <Spinner /> جارٍ الدخول...
+                    <Spinner /> Logging in...
                   </>
                 ) : (
-                  'دخول'
+                  'Login'
                 )}
               </button>
             </form>
@@ -137,7 +137,7 @@ export default function Login() {
           <div className="h-card flex items-center justify-center gap-2 text-xs text-slate-500 mt-5" style={{ animationDelay: '.15s' }}>
             <ShieldCheck size={14} className="text-emerald-500" />
             <span>
-              احفظ بيانات الدخول في مكان آمن
+              Keep your login credentials safe
             </span>
           </div>
         </div>

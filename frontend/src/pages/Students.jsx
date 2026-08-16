@@ -12,12 +12,12 @@ import ImportModal from '../components/ImportModal.jsx'
 import { studentStatus, fmtDate, fmtMoney, downloadBlob } from '../utils/format.js'
 
 const FILTERS = [
-  ['all', 'الكل'],
-  ['active', 'نشط'],
-  ['ended', 'منتهي'],
-  ['archived', 'مؤرشف'],
-  ['unpaid', 'غير مدفوع'],
-  ['paid', 'مدفوع'],
+  ['all', 'All'],
+  ['active', 'Active'],
+  ['ended', 'Ended'],
+  ['archived', 'Archived'],
+  ['unpaid', 'Unpaid'],
+  ['paid', 'Paid'],
 ]
 
 export default function Students() {
@@ -46,10 +46,10 @@ export default function Students() {
   }
 
   const remove = async (s) => {
-    if (!window.confirm(`هل أنت متأكد من حذف "${s.name}" نهائيًا؟ سيتم حذف كل بياناته ومدفوعاته ولا يمكن التراجع.`)) return
+    if (!window.confirm(`Are you sure you want to permanently delete "${s.name}"? All data and payments will be deleted and cannot be undone.`)) return
     try {
       await api.delete(`/students/${s._id}`)
-      toast('تم حذف الطالب نهائيًا')
+      toast('Student deleted permanently')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -63,7 +63,7 @@ export default function Students() {
           <Search size={16} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             className="input ps-9"
-            placeholder="ابحث بالاسم أو الهاتف أو رقم الطالب..."
+            placeholder="Search by name, phone, or student ID..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && setQuery(q)}
@@ -71,13 +71,13 @@ export default function Students() {
         </div>
         <div className="relative">
           <button className="btn-outline" onClick={() => setExportOpen((o) => !o)}>
-            <Download size={16} /> تصدير <ChevronDown size={14} />
+            <Download size={16} /> Export <ChevronDown size={14} />
           </button>
           {exportOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
               <div className="absolute end-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 z-20 py-1">
-                {[['all', 'جميع الطلاب'], ['active', 'النشطون'], ['archived', 'المؤرشفون'], ['ended', 'المنتهون'], ['paid', 'الدافعون'], ['unpaid', 'غير الدافعين']].map(([v, l]) => (
+                {[['all', 'All Students'], ['active', 'Active'], ['archived', 'Archived'], ['ended', 'Ended'], ['paid', 'Paid'], ['unpaid', 'Unpaid']].map(([v, l]) => (
                   <button key={v} onClick={() => doExport(v)} className="w-full text-right px-4 py-2 text-sm hover:bg-slate-50 text-slate-700">
                     {l}
                   </button>
@@ -87,7 +87,7 @@ export default function Students() {
           )}
         </div>
         <button className="btn-outline" onClick={() => setImportOpen(true)}>
-          <Upload size={16} /> استيراد Excel
+          <Upload size={16} /> Import Excel
         </button>
         <button
           className="btn-primary"
@@ -96,7 +96,7 @@ export default function Students() {
             setFormOpen(true)
           }}
         >
-          <Plus size={16} /> إضافة طالب
+          <Plus size={16} /> Add Student
         </button>
       </div>
 
@@ -116,21 +116,21 @@ export default function Students() {
         {loading ? (
           <Spinner full />
         ) : !data?.students?.length ? (
-          <EmptyState message="لا يوجد طلاب" />
+          <EmptyState message="No students found" />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="th">رقم الطالب</th>
-                  <th className="th">الاسم</th>
-                  <th className="th">الهاتف</th>
-                  <th className="th">الجامعة</th>
-                  <th className="th">الغرفة</th>
-                  <th className="th">السرير</th>
-                  <th className="th">الإيجار</th>
-                  <th className="th">الخروج</th>
-                  <th className="th">الحالة</th>
+                  <th className="th">Student ID</th>
+                  <th className="th">Name</th>
+                  <th className="th">Phone</th>
+                  <th className="th">University</th>
+                  <th className="th">Room</th>
+                  <th className="th">Bed</th>
+                  <th className="th">Rent</th>
+                  <th className="th">Check-out</th>
+                  <th className="th">Status</th>
                   <th className="th"></th>
                 </tr>
               </thead>
@@ -142,7 +142,7 @@ export default function Students() {
                     <td className="td" dir="ltr">{s.phone}</td>
                     <td className="td">{s.university || '—'}</td>
                     <td className="td">{s.room ? s.room.number : '—'}</td>
-                    <td className="td">{s.bedNumber ? `سرير ${s.bedNumber}` : '—'}</td>
+                    <td className="td">{s.bedNumber ? `Bed ${s.bedNumber}` : '—'}</td>
                     <td className="td">{fmtMoney(s.monthlyRent)}</td>
                     <td className="td">{s.checkOutDate ? fmtDate(s.checkOutDate) : '—'}</td>
                     <td className="td">

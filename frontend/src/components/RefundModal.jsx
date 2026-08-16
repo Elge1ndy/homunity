@@ -34,7 +34,7 @@ export default function RefundModal({ open, studentId, remaining, onClose, onSav
       fd.append('proof', file)
       const { data } = await api.post('/upload/proof', fd)
       setProof(data.path)
-      toast('تم رفع إثبات الاسترداد')
+      toast('Refund proof uploaded')
     } catch (err) {
       toast(errMsg(err), 'error')
     } finally {
@@ -44,12 +44,12 @@ export default function RefundModal({ open, studentId, remaining, onClose, onSav
 
   const submit = async () => {
     const v = Number(amount)
-    if (!v || v <= 0) return toast('أدخل مبلغ استرداد صحيح', 'error')
-    if (remaining !== null && v > remaining) return toast(`المبلغ أكبر من الرصيد المتبقي (${remaining} ج.م)`, 'error')
+    if (!v || v <= 0) return toast('Enter a valid refund amount', 'error')
+    if (remaining !== null && v > remaining) return toast(`Amount exceeds remaining balance (${remaining} EGP)`, 'error')
     setSaving(true)
     try {
       await api.post(`/students/${studentId}/deposit/refund`, { amount: v, date, method, proof, notes })
-      toast('تم تسجيل الاسترداد')
+      toast('Refund recorded')
       onSaved()
       onClose()
     } catch (e) {
@@ -60,57 +60,57 @@ export default function RefundModal({ open, studentId, remaining, onClose, onSav
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="استرداد تأمين">
+    <Modal open={open} onClose={onClose} title="Deposit Refund">
       <div className="space-y-4">
         {remaining !== null && remaining !== undefined && (
           <div className="p-3 rounded-xl bg-slate-50 text-sm">
-            <span className="text-slate-500 font-bold">الرصيد المتبقي القابل للاسترداد: </span>
-            <span className="text-emerald-600 font-extrabold">{remaining} ج.م</span>
+            <span className="text-slate-500 font-bold">Refundable Balance: </span>
+            <span className="text-emerald-600 font-extrabold">{remaining} EGP</span>
           </div>
         )}
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className="label">المبلغ المسترد (ج.م)</label>
+            <label className="label">Refund Amount (EGP)</label>
             <input className="input" type="number" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} autoFocus />
           </div>
           <div className="flex-1">
-            <label className="label">تاريخ الاسترداد</label>
+            <label className="label">Refund Date</label>
             <input className="input" type="date" dir="ltr" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
         </div>
         <div>
-          <label className="label">طريقة الاسترداد</label>
+          <label className="label">Refund Method</label>
           <select className="input" value={method} onChange={(e) => setMethod(e.target.value)}>
-            <option value="cash">نقدًا</option>
-            <option value="transfer">تحويل بنكي</option>
-            <option value="other">أخرى</option>
+            <option value="cash">Cash</option>
+            <option value="transfer">Bank Transfer</option>
+            <option value="other">Other</option>
           </select>
         </div>
         <div>
-          <label className="label">إثبات الاسترداد (اختياري)</label>
+          <label className="label">Refund Proof (Optional)</label>
           <input className="input" type="file" accept="image/*" onChange={uploadFile} disabled={uploading} />
           {uploading && (
             <p className="text-xs text-primary-600 mt-1 flex items-center gap-1">
-              <Spinner /> جاري الرفع...
+              <Spinner /> Uploading...
             </p>
           )}
           {proof && (
             <a href={proof} target="_blank" rel="noreferrer" className="text-xs text-primary-700 font-semibold mt-1 inline-block">
-              ✓ تم رفع الصورة — عرض
+              ✓ Image uploaded — View
             </a>
           )}
         </div>
         <div>
-          <label className="label">ملاحظات</label>
+          <label className="label">Notes</label>
           <input className="input" value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'تسجيل الاسترداد'}
+          {saving ? <Spinner /> : 'Record Refund'}
         </button>
       </div>
     </Modal>

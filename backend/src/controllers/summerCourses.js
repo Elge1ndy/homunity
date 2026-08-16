@@ -47,16 +47,16 @@ exports.list = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const { studentId, roomId, bedNumber, fromDate, toDate, rent, deposit, paidAmount, paidDate, paidMethod } = req.body;
-    if (!studentId || !roomId || !bedNumber) return res.status(400).json({ message: 'اختر الطالب ومكان السكن' });
-    if (!fromDate || !toDate) return res.status(400).json({ message: 'حدد تاريخ البداية والنهاية' });
-    if (fmt(toDate) < fmt(fromDate)) return res.status(400).json({ message: 'تاريخ النهاية قبل تاريخ البداية' });
+    if (!studentId || !roomId || !bedNumber) return res.status(400).json({ message: 'Select student and accommodation' });
+    if (!fromDate || !toDate) return res.status(400).json({ message: 'Set start and end dates' });
+    if (fmt(toDate) < fmt(fromDate)) return res.status(400).json({ message: 'End date is before start date' });
 
     const student = await db.col('Student').findById(studentId);
-    if (!student) return res.status(400).json({ message: 'الطالب غير موجود' });
+    if (!student) return res.status(400).json({ message: 'Student not found' });
     const room = await db.col('Room').findById(roomId);
-    if (!room) return res.status(400).json({ message: 'الغرفة غير موجودة' });
+    if (!room) return res.status(400).json({ message: 'Room not found' });
     const bed = (room.beds || []).find((b) => b.bedNumber === Number(bedNumber));
-    if (!bed) return res.status(400).json({ message: `السرير ${bedNumber} غير موجود في الغرفة` });
+    if (!bed) return res.status(400).json({ message: `Bed ${bedNumber} not found in room` });
 
     const check = await structure.checkBedAvailability(roomId, Number(bedNumber), fmt(fromDate), fmt(toDate));
     if (!check.ok) return res.status(400).json({ message: check.reason });
@@ -68,7 +68,7 @@ exports.create = async (req, res, next) => {
     const payments = [];
     const paid = Number(paidAmount) || 0;
     if (paid > 0) {
-      payments.push({ _id: genId(), amount: money(paid), date: fmt(paidDate || fromDate), method: paidMethod || 'cash', note: 'دفعة عند التسجيل', by: req.user.name || '', createdAt: new Date().toISOString() });
+      payments.push({ _id: genId(), amount: money(paid), date: fmt(paidDate || fromDate), method: paidMethod || 'cash', note: 'Payment at registration', by: req.user.name || '', createdAt: new Date().toISOString() });
     }
 
     const course = await db.col('SummerCourse').insert({
@@ -91,11 +91,11 @@ exports.create = async (req, res, next) => {
       status: 'active',
     });
 
-    await log(req, { action: `إضافة كورس صيفي لـ ${student.name}: ${course.fromDate} → ${course.toDate} (غرفة ${room.number} سرير ${bedNumber}) بسعر ${course.rent}`, category: 'students', targetType: 'student', targetId: String(student._id) });
+    await log(req, { action: `Added summer course for ${student.name}: ${course.fromDate} → ${course.toDate} (room ${room.number} bed ${bedNumber}) at ${course.rent}`, category: 'students', targetType: 'student', targetId: String(student._id) });
     await notifications.create({
       type: 'summer_course',
-      title: 'كورس صيفي',
-      message: `كورس صيفي لـ ${student.name} (${course.fromDate} → ${course.toDate})`,
+      title: 'Summer Course',
+      message: `Summer course for ${student.name} (${course.fromDate} → ${course.toDate})`,
       data: { studentId: String(student._id), courseId: String(course._id) },
     });
     emit(req, 'property:updated', {});
@@ -110,12 +110,12 @@ exports.create = async (req, res, next) => {
 exports.pay = async (req, res, next) => {
   try {
     const course = await getCourse(req.params.id);
-    if (!course) return res.status(404).json({ message: 'الكورس غير موجود' });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
     const { amount, date, method, note } = req.body;
-    if (!amount || Number(amount) <= 0) return res.status(400).json({ message: 'المبلغ مطلوب' });
+    if (!amount || Number(amount) <= 0) return res.status(400).json({ message: 'Amount is required' });
     const payments = (course.payments || []).concat([{ _id: genId(), amount: money(amount), date: fmt(date || new Date().toISOString()), method: method || 'cash', note: note || '', by: req.user.name || '', createdAt: new Date().toISOString() }]);
     const updated = await db.col('SummerCourse').findByIdAndUpdate(req.params.id, { $set: { payments } });
-    await log(req, { action: `دفع ${money(amount)} لكورس صيفي لـ ${course.studentName}`, category: 'students', targetType: 'student', targetId: course.studentId });
+    await log(req, { action: `Paid ${money(amount)} for summer course of ${course.studentName}`, category: 'students', targetType: 'student', targetId: course.studentId });
     emit(req, 'summer:updated', {});
     res.json({ course: { ...updated, _id: String(updated._id), ...compute(updated) } });
   } catch (e) {
@@ -126,9 +126,9 @@ exports.pay = async (req, res, next) => {
 exports.end = async (req, res, next) => {
   try {
     const course = await getCourse(req.params.id);
-    if (!course) return res.status(404).json({ message: 'الكورس غير موجود' });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
     const updated = await db.col('SummerCourse').findByIdAndUpdate(req.params.id, { $set: { status: 'ended', endedAt: new Date().toISOString() } });
-    await log(req, { action: `إنهاء كورس صيفي لـ ${course.studentName}`, category: 'students', targetType: 'student', targetId: course.studentId });
+    await log(req, { action: `Ended summer course for ${course.studentName}`, category: 'students', targetType: 'student', targetId: course.studentId });
     emit(req, 'summer:updated', {});
     emit(req, 'property:updated', {});
     emit(req, 'room:updated', {});
@@ -141,9 +141,9 @@ exports.end = async (req, res, next) => {
 exports.remove = async (req, res, next) => {
   try {
     const course = await getCourse(req.params.id);
-    if (!course) return res.status(404).json({ message: 'الكورس غير موجود' });
+    if (!course) return res.status(404).json({ message: 'Course not found' });
     await db.col('SummerCourse').deleteById(req.params.id);
-    await log(req, { action: `حذف كورس صيفي لـ ${course.studentName}`, category: 'students', targetType: 'student', targetId: course.studentId });
+    await log(req, { action: `Deleted summer course for ${course.studentName}`, category: 'students', targetType: 'student', targetId: course.studentId });
     emit(req, 'summer:updated', {});
     emit(req, 'property:updated', {});
     emit(req, 'room:updated', {});

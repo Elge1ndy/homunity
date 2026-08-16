@@ -29,7 +29,7 @@ async function ensureBucket() {
     headers: h(),
     body: JSON.stringify({ name: BUCKET, public: true }),
   });
-  if (!c.ok) throw new Error('فشل إنشاء حاوية التخزين (' + c.status + ')');
+  if (!c.ok) throw new Error('Failed to create storage bucket (' + c.status + ')');
   return true;
 }
 
@@ -39,7 +39,7 @@ async function uploadToStorage(folder, filename, buffer, mime) {
     headers: { Authorization: 'Bearer ' + key(), apikey: key(), 'Content-Type': mime || 'application/octet-stream', 'x-upsert': 'true' },
     body: buffer,
   });
-  if (!r.ok) throw new Error('فشل رفع الملف للسحابة (' + r.status + ')');
+  if (!r.ok) throw new Error('Failed to upload file to cloud (' + r.status + ')');
   return `${base()}/storage/v1/object/public/${BUCKET}/${folder}/${filename}`;
 }
 

@@ -41,13 +41,13 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
 
   const submit = async () => {
     if (!studentId || selected.length === 0) {
-      toast('اختر الطالب وشهرًا واحدًا على الأقل', 'warn')
+      toast('Select a student and at least one month', 'warn')
       return
     }
     setSaving(true)
     try {
       await api.post('/invoices', { studentId, months: selected })
-      toast('تم إنشاء الفاتورة')
+      toast('Invoice created')
       onCreated()
       onClose()
     } catch (e) {
@@ -58,12 +58,12 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="إنشاء فاتورة" wide>
+    <Modal open={open} onClose={onClose} title="Create Invoice" wide>
       <div className="space-y-4">
         <div>
-          <label className="label">الطالب</label>
+          <label className="label">Student</label>
           <select className="input" value={studentId} onChange={(e) => setStudentId(e.target.value)}>
-            <option value="">اختر الطالب</option>
+            <option value="">Select student</option>
             {students?.map((s) => (
               <option key={s._id} value={s._id}>
                 {s.name} ({s.studentId})
@@ -74,8 +74,8 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
 
         {studentId && (
           <div>
-            <p className="label">اختر الشهور</p>
-            {payments.length === 0 && <p className="text-sm text-slate-400">لا توجد دفعات لهذا الطالب</p>}
+            <p className="label">Select Months</p>
+            {payments.length === 0 && <p className="text-sm text-slate-400">No payments for this student</p>}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
               {payments.map((p) => {
                 const on = selected.includes(p.month)
@@ -88,7 +88,7 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
                     }`}
                   >
                     <span>{monthLabel(p.month)}</span>
-                    <span className="text-xs text-slate-400">{p.amount} ج.م</span>
+                    <span className="text-xs text-slate-400">{p.amount} EGP</span>
                   </button>
                 )
               })}
@@ -98,17 +98,17 @@ export default function InvoiceModal({ open, onClose, onCreated, students }) {
 
         {total > 0 && (
           <div className="flex items-center justify-between p-4 rounded-xl bg-primary-50 border border-primary-100">
-            <span className="font-bold text-primary-800">الإجمالي</span>
-            <span className="font-extrabold text-lg text-primary-900">{total} ج.م</span>
+            <span className="font-bold text-primary-800">Total</span>
+            <span className="font-extrabold text-lg text-primary-900">{total} EGP</span>
           </div>
         )}
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : 'إنشاء الفاتورة'}
+          {saving ? <Spinner /> : 'Create Invoice'}
         </button>
       </div>
     </Modal>

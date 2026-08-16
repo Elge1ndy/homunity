@@ -38,7 +38,7 @@ export default function PaymentModal({ open, onClose, onSaved, payment }) {
       fd.append('proof', file)
       const { data } = await api.post('/upload/proof', fd)
       setProof(data.path)
-      toast('تم رفع إثبات الدفع')
+      toast('Payment proof uploaded')
     } catch (err) {
       toast(errMsg(err), 'error')
     } finally {
@@ -47,12 +47,12 @@ export default function PaymentModal({ open, onClose, onSaved, payment }) {
   }
 
   const submit = async () => {
-    if (!amount || Number(amount) <= 0) return toast('أدخل مبلغ الدفع', 'error')
-    if (Number(amount) > remaining) return toast(`المبلغ أكبر من المتبقي (${fmtMoney(remaining)} ج.م)`, 'error')
+    if (!amount || Number(amount) <= 0) return toast('Enter payment amount', 'error')
+    if (Number(amount) > remaining) return toast(`Amount exceeds remaining (${fmtMoney(remaining)} EGP)`, 'error')
     setSaving(true)
     try {
       await api.post(`/payments/${payment._id}/pay`, { amount: Number(amount), date: paidAt, method, note, proof })
-      toast(Number(amount) >= remaining ? 'تم تسجيل الدفعة كاملة' : 'تم تسجيل دفعة جزئية')
+      toast(Number(amount) >= remaining ? 'Full payment recorded' : 'Partial payment recorded')
       onSaved()
       onClose()
     } catch (e) {
@@ -63,60 +63,60 @@ export default function PaymentModal({ open, onClose, onSaved, payment }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="تسجيل الدفع">
+    <Modal open={open} onClose={onClose} title="Record Payment">
       {payment && (
         <div className="mb-4 p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm">
           <p className="font-bold text-slate-700">{payment.student?.name}</p>
           <p className="text-slate-500 mt-1">
-            شهر {payment.month} — المتوقع: {fmtMoney(payment.amount)} ج.م
+            Month {payment.month} — Due: {fmtMoney(payment.amount)} EGP
           </p>
           <p className="text-slate-500 mt-0.5">
-            المدفوع: {fmtMoney(payment.paidAmount || 0)} ج.م — المتبقي: <span className="font-bold text-red-600">{fmtMoney(remaining)} ج.م</span>
+            Paid: {fmtMoney(payment.paidAmount || 0)} EGP — Remaining: <span className="font-bold text-red-600">{fmtMoney(remaining)} EGP</span>
           </p>
         </div>
       )}
       <div className="space-y-4">
         <div>
-          <label className="label">المبلغ المدفوع</label>
+          <label className="label">Amount Paid</label>
           <input className="input" type="number" min="1" dir="ltr" value={amount} onChange={(e) => setAmount(e.target.value)} />
         </div>
         <div>
-          <label className="label">تاريخ الدفع</label>
+          <label className="label">Payment Date</label>
           <input className="input" type="date" dir="ltr" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} />
         </div>
         <div>
-          <label className="label">طريقة الدفع</label>
+          <label className="label">Payment Method</label>
           <select className="input" value={method} onChange={(e) => setMethod(e.target.value)}>
-            <option value="cash">نقدًا</option>
-            <option value="transfer">تحويل بنكي</option>
-            <option value="other">أخرى</option>
+            <option value="cash">Cash</option>
+            <option value="transfer">Bank Transfer</option>
+            <option value="other">Other</option>
           </select>
         </div>
         <div>
-          <label className="label">ملاحظة (اختياري)</label>
-          <input className="input" placeholder="مثال: دفعة جزئية — باقي المبلغ قادم" value={note} onChange={(e) => setNote(e.target.value)} />
+          <label className="label">Note (Optional)</label>
+          <input className="input" placeholder="e.g. Partial payment — remaining amount coming soon" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
         <div>
-          <label className="label">إثبات الدفع (سكرين شوت — اختياري)</label>
+          <label className="label">Payment Proof (Screenshot — Optional)</label>
           <input className="input" type="file" accept="image/*" onChange={uploadFile} disabled={uploading} />
           {uploading && (
             <p className="text-xs text-primary-600 mt-1 flex items-center gap-1">
-              <Spinner /> جاري الرفع...
+              <Spinner /> Uploading...
             </p>
           )}
           {proof && (
             <a href={proof} target="_blank" rel="noreferrer" className="text-xs text-primary-700 font-semibold mt-1 inline-block">
-              ✓ تم رفع الصورة — عرض
+              ✓ Image uploaded — View
             </a>
           )}
         </div>
       </div>
       <div className="flex justify-end gap-2 mt-6">
         <button className="btn-outline" onClick={onClose}>
-          إلغاء
+          Cancel
         </button>
         <button className="btn-primary" onClick={submit} disabled={saving}>
-          {saving ? <Spinner /> : remaining > 0 && Number(amount) < remaining ? 'تسجيل دفعة جزئية' : 'تأكيد الدفع'}
+          {saving ? <Spinner /> : remaining > 0 && Number(amount) < remaining ? 'Record Partial Payment' : 'Confirm Payment'}
         </button>
       </div>
     </Modal>

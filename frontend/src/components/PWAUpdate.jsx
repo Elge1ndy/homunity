@@ -51,12 +51,12 @@ export default function PWAUpdate() {
       `}</style>
       <div className="flex items-center gap-3 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl max-w-sm">
         <Download size={20} className="text-primary-400 flex-shrink-0" />
-        <p className="text-sm font-semibold flex-1">تحديث جديد متاح</p>
+        <p className="text-sm font-semibold flex-1">New update available</p>
         <button
           onClick={handleUpdate}
           className="flex items-center gap-1.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
         >
-          <RefreshCw size={13} /> تحديث
+          <RefreshCw size={13} /> Update
         </button>
       </div>
     </div>

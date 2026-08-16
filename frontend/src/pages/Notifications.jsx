@@ -9,11 +9,11 @@ import Badge from '../components/Badge.jsx'
 import { fmtDateTime } from '../utils/format.js'
 
 const TYPE_LABEL = {
-  payment: 'دفعة',
-  invoice: 'فاتورة',
-  contract: 'عقد',
-  student: 'طالب',
-  system: 'النظام',
+  payment: 'Payment',
+  invoice: 'Invoice',
+  contract: 'Contract',
+  student: 'Student',
+  system: 'System',
 }
 
 export default function Notifications() {
@@ -35,7 +35,7 @@ export default function Notifications() {
   const markAll = async () => {
     try {
       await api.post('/notifications/read-all')
-      toast('تم تحديد الكل كمقروء')
+      toast('All notifications marked as read')
       refetch()
     } catch (e) {
       toast(errMsg(e), 'error')
@@ -49,11 +49,11 @@ export default function Notifications() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">
-          {notifications.length} إشعار{unread > 0 && <span className="text-red-600 font-bold"> — {unread} غير مقروء</span>}
+          {notifications.length} notifications{unread > 0 && <span className="text-red-600 font-bold"> — {unread} unread</span>}
         </p>
         {unread > 0 && (
           <button className="btn-outline" onClick={markAll}>
-            <CheckCheck size={16} /> تحديد الكل كمقروء
+            <CheckCheck size={16} /> Mark All as Read
           </button>
         )}
       </div>
@@ -62,7 +62,7 @@ export default function Notifications() {
         {loading ? (
           <Spinner full />
         ) : !notifications.length ? (
-          <EmptyState message="لا توجد إشعارات" />
+          <EmptyState message="No notifications" />
         ) : (
           <ul className="divide-y divide-slate-100">
             {notifications.map((n) => (
@@ -77,7 +77,7 @@ export default function Notifications() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className={`text-sm ${n.read ? 'font-semibold text-slate-600' : 'font-extrabold text-slate-800'}`}>{n.title}</p>
-                      {!n.read && <Badge label="جديد" cls="bg-primary-100 text-primary-700" />}
+                      {!n.read && <Badge label="New" cls="bg-primary-100 text-primary-700" />}
                       {n.type && TYPE_LABEL[n.type] && <Badge label={TYPE_LABEL[n.type]} cls="bg-slate-100 text-slate-600" />}
                     </div>
                     <p className="text-sm text-slate-500 mt-0.5">{n.message}</p>

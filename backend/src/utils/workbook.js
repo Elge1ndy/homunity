@@ -5,23 +5,23 @@ const depositService = require('../controllers/deposit');
 const COLLECTIONS = ['User', 'Housing', 'Student', 'Room', 'Payment', 'Invoice', 'ActivityLog'];
 
 const SHEET_TITLES = {
-  User: 'الحسابات',
-  Housing: 'بيانات السكن',
-  Student: 'الطلاب',
-  Room: 'الغرف',
-  Payment: 'المدفوعات',
-  Invoice: 'الفواتير',
-  ActivityLog: 'سجل النشاط',
+  User: 'Users',
+  Housing: 'Housing',
+  Student: 'Students',
+  Room: 'Rooms',
+  Payment: 'Payments',
+  Invoice: 'Invoices',
+  ActivityLog: 'Activity Log',
 };
 
 const RAW_TITLES = {
-  User: 'الحسابات-خام',
-  Housing: 'بيانات السكن-خام',
-  Student: 'الطلاب-خام',
-  Room: 'الغرف-خام',
-  Payment: 'المدفوعات-خام',
-  Invoice: 'الفواتير-خام',
-  ActivityLog: 'سجل النشاط-خام',
+  User: 'Users-Raw',
+  Housing: 'Housing-Raw',
+  Student: 'Students-Raw',
+  Room: 'Rooms-Raw',
+  Payment: 'Payments-Raw',
+  Invoice: 'Invoices-Raw',
+  ActivityLog: 'Activity Log-Raw',
 };
 
 function colNames(docs) {
@@ -40,11 +40,11 @@ function fmtDate(v) {
   if (!v) return '';
   const d = new Date(v);
   if (isNaN(d)) return String(v);
-  return d.toLocaleString('ar-EG');
+  return d.toLocaleString('en-US');
 }
 
 function payStatusAr(s) {
-  return { paid: 'مدفوع', partial: 'جزئي', unpaid: 'غير مدفوع', overdue: 'متأخر' }[s] || 'غير مدفوع';
+  return { paid: 'Paid', partial: 'Partial', unpaid: 'Unpaid', overdue: 'Overdue' }[s] || 'Unpaid';
 }
 
 function toSheet(rows, names) {
@@ -69,41 +69,41 @@ async function buildWorkbook() {
     wb,
     toSheet(
       [
-        { 'البيان': 'نوع الملف', 'القيمة': 'بيانات النظام — سكني (إدارة السكن الطلابي)' },
-        { 'البيان': 'تاريخ التحديث', 'القيمة': new Date().toLocaleString('ar-EG') },
-        { 'البيان': 'عدد الطلاب', 'القيمة': students.length },
-        { 'البيان': 'عدد الغرف', 'القيمة': rooms.length },
-        { 'البيان': 'عدد المدفوعات', 'القيمة': payments.length },
-        { 'البيان': 'عدد الفواتير', 'القيمة': invoices.length },
+        { 'Label': 'File Type', 'Value': 'System Data — Homeunity (Student Housing Management)' },
+        { 'Label': 'Last Updated', 'Value': new Date().toLocaleString('en-US') },
+        { 'Label': 'Student Count', 'Value': students.length },
+        { 'Label': 'Room Count', 'Value': rooms.length },
+        { 'Label': 'Payment Count', 'Value': payments.length },
+        { 'Label': 'Invoice Count', 'Value': invoices.length },
       ],
-      ['البيان', 'القيمة']
+      ['Label', 'Value']
     ),
-    'بيان'
+    'Summary'
   );
 
   const studentRows = students.map((s) => {
     const d = depositService.compute(s);
     return {
-      'الاسم': s.name,
-      'رقم التليفون': s.phone,
-      'الجامعة': s.university || '',
-      'الغرفة': rMap.get(String(s.roomId))?.number || '',
-      'السرير': s.bedNumber || '',
-      'الإيجار الشهري': s.monthlyRent,
-      'التأمين': d.originalAmount,
-      'حالة دفع التأمين': depositService.PAYMENT_STATUS[d.paymentStatus] || d.paymentStatus,
-      'تاريخ دفع التأمين': d.paymentDate || '',
-      'إجمالي الخصومات': d.totalDeductions,
-      'المسترد': d.refundedAmount,
-      'المتبقي': d.remainingAmount,
-      'حالة الاسترداد': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
-      'تاريخ الدخول': s.checkInDate || '',
-      'تاريخ الخروج': s.checkOutDate || '',
-      'الحالة': { active: 'نشط', ended: 'منتهي', archived: ' مؤرشف' }[s.status] || s.status || '',
+      'Name': s.name,
+      'Phone': s.phone,
+      'University': s.university || '',
+      'Room': rMap.get(String(s.roomId))?.number || '',
+      'Bed': s.bedNumber || '',
+      'Monthly Rent': s.monthlyRent,
+      'Deposit': d.originalAmount,
+      'Deposit Payment Status': depositService.PAYMENT_STATUS[d.paymentStatus] || d.paymentStatus,
+      'Deposit Payment Date': d.paymentDate || '',
+      'Total Deductions': d.totalDeductions,
+      'Refunded': d.refundedAmount,
+      'Remaining': d.remainingAmount,
+      'Refund Status': depositService.REFUND_STATUS[d.refundStatus] || d.refundStatus,
+      'Check-in Date': s.checkInDate || '',
+      'Check-out Date': s.checkOutDate || '',
+      'Status': { active: 'Active', ended: 'Ended', archived: 'Archived' }[s.status] || s.status || '',
     };
   });
-  const studentKeys = ['الاسم', 'رقم التليفون', 'الجامعة', 'الغرفة', 'السرير', 'الإيجار الشهري', 'التأمين', 'حالة دفع التأمين', 'تاريخ دفع التأمين', 'إجمالي الخصومات', 'المسترد', 'المتبقي', 'حالة الاسترداد', 'تاريخ الدخول', 'تاريخ الخروج', 'الحالة'];
-  xlsx.utils.book_append_sheet(wb, toSheet(studentRows, studentKeys), 'الطلاب');
+  const studentKeys = ['Name', 'Phone', 'University', 'Room', 'Bed', 'Monthly Rent', 'Deposit', 'Deposit Payment Status', 'Deposit Payment Date', 'Total Deductions', 'Refunded', 'Remaining', 'Refund Status', 'Check-in Date', 'Check-out Date', 'Status'];
+  xlsx.utils.book_append_sheet(wb, toSheet(studentRows, studentKeys), 'Students');
 
   const depositRows = [];
   const housingMap = {};
@@ -116,123 +116,123 @@ async function buildWorkbook() {
     const room = rMap.get(String(s.roomId));
     (d.deductions || []).forEach((x) => {
       depositRows.push({
-        'النوع': 'خصم',
-        'اسم الطالب': s.name,
-        'رقم الطالب': s.studentId,
-        'السكن': housingNameOf(s),
-        'الغرفة': room ? room.number : '',
-        'المبلغ': x.amount,
-        'السبب': x.reason || '',
-        'البيان': x.description || '',
-        'التاريخ': x.date || '',
-        'المسؤول': x.adminName || '',
+        'Type': 'Deduction',
+        'Student Name': s.name,
+        'Student ID': s.studentId,
+        'Housing': housingNameOf(s),
+        'Room': room ? room.number : '',
+        'Amount': x.amount,
+        'Reason': x.reason || '',
+        'Description': x.description || '',
+        'Date': x.date || '',
+        'Admin': x.adminName || '',
       });
     });
     (d.refunds || []).forEach((x) => {
       depositRows.push({
-        'النوع': 'استرداد',
-        'اسم الطالب': s.name,
-        'رقم الطالب': s.studentId,
-        'السكن': housingNameOf(s),
-        'الغرفة': room ? room.number : '',
-        'المبلغ': x.amount,
-        'السبب': x.method === 'cash' ? 'نقدًا' : x.method === 'transfer' ? 'تحويل بنكي' : 'أخرى',
-        'البيان': x.notes || '',
-        'التاريخ': x.date || '',
-        'المسؤول': x.adminName || '',
+        'Type': 'Refund',
+        'Student Name': s.name,
+        'Student ID': s.studentId,
+        'Housing': housingNameOf(s),
+        'Room': room ? room.number : '',
+        'Amount': x.amount,
+        'Reason': x.method === 'cash' ? 'Cash' : x.method === 'transfer' ? 'Bank Transfer' : 'Other',
+        'Description': x.notes || '',
+        'Date': x.date || '',
+        'Admin': x.adminName || '',
       });
     });
     (d.receipts || []).forEach((r) => {
       depositRows.push({
-        'النوع': 'وصل ' + (r.type === 'pay' ? 'استلام' : 'استرداد'),
-        'اسم الطالب': s.name,
-        'رقم الطالب': s.studentId,
-        'السكن': housingNameOf(s),
-        'الغرفة': room ? room.number : '',
-        'المبلغ': r.type === 'pay' ? d.originalAmount : d.refundedAmount,
-        'السبب': r.receiptNo,
-        'البيان': '',
-        'التاريخ': r.createdAt ? new Date(r.createdAt).toISOString().slice(0, 10) : '',
-        'المسؤول': '',
+        'Type': 'Receipt ' + (r.type === 'pay' ? 'Payment' : 'Refund'),
+        'Student Name': s.name,
+        'Student ID': s.studentId,
+        'Housing': housingNameOf(s),
+        'Room': room ? room.number : '',
+        'Amount': r.type === 'pay' ? d.originalAmount : d.refundedAmount,
+        'Reason': r.receiptNo,
+        'Description': '',
+        'Date': r.createdAt ? new Date(r.createdAt).toISOString().slice(0, 10) : '',
+        'Admin': '',
       });
     });
   });
   if (depositRows.length) {
-    xlsx.utils.book_append_sheet(wb, toSheet(depositRows, ['النوع', 'اسم الطالب', 'رقم الطالب', 'السكن', 'الغرفة', 'المبلغ', 'السبب', 'البيان', 'التاريخ', 'المسؤول']), 'التأمين');
+    xlsx.utils.book_append_sheet(wb, toSheet(depositRows, ['Type', 'Student Name', 'Student ID', 'Housing', 'Room', 'Amount', 'Reason', 'Description', 'Date', 'Admin']), 'Deposits');
   }
 
   const roomRows = rooms.map((r) => {
     const occupied = (r.beds || []).filter((b) => b.studentId).length;
     return {
-      'رقم الغرفة': r.number,
-      'النوع': r.type,
-      'السعة': r.capacity,
-      'الإيجار الشهري': r.monthlyRent,
-      'الطلاب الحاليون': occupied,
-      'الأسرة المتاحة': r.capacity - occupied,
-      'الحالة': { active: 'نشط', maintenance: 'صيانة' }[r.status] || r.status || '',
+      'Room Number': r.number,
+      'Type': r.type,
+      'Capacity': r.capacity,
+      'Monthly Rent': r.monthlyRent,
+      'Current Students': occupied,
+      'Available Beds': r.capacity - occupied,
+      'Status': { active: 'Active', maintenance: 'Maintenance' }[r.status] || r.status || '',
     };
   });
-  xlsx.utils.book_append_sheet(wb, toSheet(roomRows, Object.keys(roomRows[0] || { 'رقم الغرفة': 1, 'النوع': 1, 'السعة': 1, 'الإيجار الشهري': 1, 'الطلاب الحاليون': 1, 'الأسرة المتاحة': 1, 'الحالة': 1 })), 'الغرف');
+  xlsx.utils.book_append_sheet(wb, toSheet(roomRows, Object.keys(roomRows[0] || { 'Room Number': 1, 'Type': 1, 'Capacity': 1, 'Monthly Rent': 1, 'Current Students': 1, 'Available Beds': 1, 'Status': 1 })), 'Rooms');
 
   const paymentRows = payments.map((p) => {
     const s = sMap.get(String(p.studentId));
     return {
-      'اسم الطالب': s?.name || '—',
-      'رقم الطالب': s?.studentId || '',
-      'الهاتف': s?.phone || '',
-      'الشهر': p.month,
-      'المبلغ': p.amount,
-      'تاريخ الاستحقاق': p.dueDate,
-      'الحالة': payStatusAr(p.status),
-      'تاريخ الدفع': p.paidAt ? new Date(p.paidAt).toISOString().slice(0, 10) : '',
+      'Student Name': s?.name || '—',
+      'Student ID': s?.studentId || '',
+      'Phone': s?.phone || '',
+      'Month': p.month,
+      'Amount': p.amount,
+      'Due Date': p.dueDate,
+      'Status': payStatusAr(p.status),
+      'Payment Date': p.paidAt ? new Date(p.paidAt).toISOString().slice(0, 10) : '',
     };
   });
-  xlsx.utils.book_append_sheet(wb, toSheet(paymentRows, Object.keys(paymentRows[0] || { 'اسم الطالب': 1, 'رقم الطالب': 1, 'الهاتف': 1, 'الشهر': 1, 'المبلغ': 1, 'تاريخ الاستحقاق': 1, 'الحالة': 1, 'تاريخ الدفع': 1 })), 'المدفوعات');
+  xlsx.utils.book_append_sheet(wb, toSheet(paymentRows, Object.keys(paymentRows[0] || { 'Student Name': 1, 'Student ID': 1, 'Phone': 1, 'Month': 1, 'Amount': 1, 'Due Date': 1, 'Status': 1, 'Payment Date': 1 })), 'Payments');
 
   const invoiceRows = invoices.map((inv) => {
     const s = sMap.get(String(inv.studentId));
     return {
-      'رقم الفاتورة': inv.invoiceNumber,
-      'الطالب': s?.name || '—',
-      'كود الطالب': s?.studentId || '—',
-      'الشهور': (inv.months || []).join('، '),
-      'الإجمالي (ج.م)': inv.total,
-      'الحالة': payStatusAr(inv.status),
-      'التاريخ': fmtDate(inv.createdAt),
-      'تفاصيل الدفع': (inv.items || [])
-        .map((it) => `${it.month} — ${Number(it.amount).toLocaleString('ar-EG')} ج.م (${payStatusAr(it.status)})`)
-        .join('؛ '),
+      'Invoice Number': inv.invoiceNumber,
+      'Student': s?.name || '—',
+      'Student ID': s?.studentId || '—',
+      'Months': (inv.months || []).join(', '),
+      'Total (EGP)': inv.total,
+      'Status': payStatusAr(inv.status),
+      'Date': fmtDate(inv.createdAt),
+      'Payment Details': (inv.items || [])
+        .map((it) => `${it.month} — ${Number(it.amount).toLocaleString('en-US')} EGP (${payStatusAr(it.status)})`)
+        .join('; '),
     };
   });
-  xlsx.utils.book_append_sheet(wb, toSheet(invoiceRows, Object.keys(invoiceRows[0] || { 'رقم الفاتورة': 1, 'الطالب': 1, 'كود الطالب': 1, 'الشهور': 1, 'الإجمالي (ج.م)': 1, 'الحالة': 1, 'التاريخ': 1, 'تفاصيل الدفع': 1 })), 'الفواتير');
+  xlsx.utils.book_append_sheet(wb, toSheet(invoiceRows, Object.keys(invoiceRows[0] || { 'Invoice Number': 1, 'Student': 1, 'Student ID': 1, 'Months': 1, 'Total (EGP)': 1, 'Status': 1, 'Date': 1, 'Payment Details': 1 })), 'Invoices');
 
   const userRows = users.map((u) => ({
-    'الاسم': u.name,
-    'اسم المستخدم': u.username,
-    'رقم التليفون': u.phone || '',
-    'الدور': u.role === 'admin' ? 'مدير' : u.role || '',
-    'الحالة': u.active === false ? 'موقوف' : 'نشط',
+    'Name': u.name,
+    'Username': u.username,
+    'Phone': u.phone || '',
+    'Role': u.role === 'admin' ? 'Admin' : u.role || '',
+    'Status': u.active === false ? 'Suspended' : 'Active',
   }));
-  xlsx.utils.book_append_sheet(wb, toSheet(userRows, Object.keys(userRows[0] || { 'الاسم': 1, 'اسم المستخدم': 1, 'رقم التليفون': 1, 'الدور': 1, 'الحالة': 1 })), 'الحسابات');
+  xlsx.utils.book_append_sheet(wb, toSheet(userRows, Object.keys(userRows[0] || { 'Name': 1, 'Username': 1, 'Phone': 1, 'Role': 1, 'Status': 1 })), 'Users');
 
   const housingRows = housing.map((h) => ({
-    'اسم السكن': h.name,
-    'العنوان': h.address || '',
-    'الهاتف': h.phone || '',
-    'الوصف': h.description || '',
-    'العملة': h.currency || 'EGP',
-    'يوم الاستحقاق': h.dueDay || 1,
+    'Housing Name': h.name,
+    'Address': h.address || '',
+    'Phone': h.phone || '',
+    'Description': h.description || '',
+    'Currency': h.currency || 'EGP',
+    'Due Day': h.dueDay || 1,
   }));
-  xlsx.utils.book_append_sheet(wb, toSheet(housingRows, Object.keys(housingRows[0] || { 'اسم السكن': 1, 'العنوان': 1, 'الهاتف': 1, 'الوصف': 1, 'العملة': 1, 'يوم الاستحقاق': 1 })), 'بيانات السكن');
+  xlsx.utils.book_append_sheet(wb, toSheet(housingRows, Object.keys(housingRows[0] || { 'Housing Name': 1, 'Address': 1, 'Phone': 1, 'Description': 1, 'Currency': 1, 'Due Day': 1 })), 'Housing');
 
   const logRows = logs.map((l) => ({
-    'الإجراء': l.action,
-    'التصنيف': l.category || '',
-    'المسؤول': l.adminName || '',
-    'التاريخ': fmtDate(l.createdAt),
+    'Action': l.action,
+    'Category': l.category || '',
+    'Admin': l.adminName || '',
+    'Date': fmtDate(l.createdAt),
   }));
-  xlsx.utils.book_append_sheet(wb, toSheet(logRows, Object.keys(logRows[0] || { 'الإجراء': 1, 'التصنيف': 1, 'المسؤول': 1, 'التاريخ': 1 })), 'سجل النشاط');
+  xlsx.utils.book_append_sheet(wb, toSheet(logRows, Object.keys(logRows[0] || { 'Action': 1, 'Category': 1, 'Admin': 1, 'Date': 1 })), 'Activity Log');
 
   for (const name of COLLECTIONS) {
     const docs = name === 'Invoice' ? invoices : await db.col(name).find({});

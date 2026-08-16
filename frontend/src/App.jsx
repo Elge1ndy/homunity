@@ -1,9 +1,11 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.jsx'
 import Layout from './components/Layout.jsx'
 import Spinner from './components/Spinner.jsx'
 import PWAUpdate from './components/PWAUpdate.jsx'
+import LicenseModal from './components/LicenseModal.jsx'
+import api from './api'
 
 const Login = lazy(() => import('./pages/Login.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
@@ -49,6 +51,28 @@ function PageSpinner() {
 }
 
 export default function App() {
+  const [licensed, setLicensed] = useState(false)
+  const [checkingLicense, setCheckingLicense] = useState(true)
+
+  useEffect(() => {
+    api.get('/license/status').then((r) => {
+      setLicensed(r.data.licensed)
+      setCheckingLicense(false)
+    }).catch(() => setCheckingLicense(false))
+  }, [])
+
+  if (checkingLicense) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    )
+  }
+
+  if (!licensed) {
+    return <LicenseModal onActivated={() => setLicensed(true)} />
+  }
+
   return (
     <>
     <PWAUpdate />

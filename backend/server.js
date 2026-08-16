@@ -9,6 +9,7 @@ const paths = require('./src/utils/paths');
 const db = require('./src/db');
 const { seed } = require('./src/services/seed');
 const errorHandler = require('./src/middleware/error');
+const { licenseMiddleware } = require('./src/middleware/license');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = require('./src/utils/jwt');
 const { Server } = require('socket.io');
@@ -17,6 +18,12 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 app.use('/uploads', express.static(paths.dir('uploads')));
+
+// License routes (before middleware)
+app.use('/api/license', require('./src/routes/license'));
+
+// License middleware (after license routes, before other API routes)
+app.use('/api', licenseMiddleware);
 
 app.use('/api', require('./src/routes'));
 

@@ -40,23 +40,23 @@ export function timeAgo(str) {
 }
 
 export const paymentStatus = {
-  paid: { label: 'مدفوع', cls: 'bg-emerald-100 text-emerald-700' },
-  partial: { label: 'جزئي', cls: 'bg-amber-100 text-amber-700' },
-  unpaid: { label: 'غير مدفوع', cls: 'bg-slate-100 text-slate-600' },
-  overdue: { label: 'متأخر', cls: 'bg-red-100 text-red-700' },
-  upcoming: { label: 'قادم', cls: 'bg-indigo-100 text-indigo-700' },
+  paid: { label: 'Paid', cls: 'bg-emerald-100 text-emerald-700' },
+  partial: { label: 'Partial', cls: 'bg-amber-100 text-amber-700' },
+  unpaid: { label: 'Unpaid', cls: 'bg-slate-100 text-slate-600' },
+  overdue: { label: 'Overdue', cls: 'bg-red-100 text-red-700' },
+  upcoming: { label: 'Upcoming', cls: 'bg-indigo-100 text-indigo-700' },
 }
 
 export const studentStatus = {
-  active: { label: 'نشط', cls: 'bg-emerald-100 text-emerald-700' },
-  archived: { label: 'مؤرشف', cls: 'bg-amber-100 text-amber-700' },
-  ended: { label: 'منتهي', cls: 'bg-slate-200 text-slate-600' },
+  active: { label: 'Active', cls: 'bg-emerald-100 text-emerald-700' },
+  archived: { label: 'Archived', cls: 'bg-amber-100 text-amber-700' },
+  ended: { label: 'Ended', cls: 'bg-slate-200 text-slate-600' },
 }
 
 export const invoiceStatus = {
-  paid: { label: 'مدفوعة بالكامل', cls: 'bg-emerald-100 text-emerald-700' },
-  partial: { label: 'مدفوعة جزئيًا', cls: 'bg-amber-100 text-amber-700' },
-  unpaid: { label: 'غير مدفوعة', cls: 'bg-red-100 text-red-700' },
+  paid: { label: 'Paid', cls: 'bg-emerald-100 text-emerald-700' },
+  partial: { label: 'Partial', cls: 'bg-amber-100 text-amber-700' },
+  unpaid: { label: 'Unpaid', cls: 'bg-red-100 text-red-700' },
 }
 
 export function downloadFile(data, filename) {
@@ -72,7 +72,7 @@ export function downloadFile(data, filename) {
 
 export async function downloadBlob(url, filename) {
   const res = await fetch(url, { headers: { Authorization: 'Bearer ' + (localStorage.getItem('homunity_token') || '') } })
-  if (!res.ok) throw new Error('فشل التحميل')
+  if (!res.ok) throw new Error('Download failed')
   const blob = await res.blob()
   downloadFile(blob, filename)
 }

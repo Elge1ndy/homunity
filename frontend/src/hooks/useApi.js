@@ -28,5 +28,5 @@ export function useApi(path, deps = []) {
 }
 
 export function errMsg(e) {
-  return (e.response && e.response.data && e.response.data.message) || 'حدث خطأ غير متوقع'
+  return (e.response && e.response.data && e.response.data.message) || 'An unexpected error occurred'
 }

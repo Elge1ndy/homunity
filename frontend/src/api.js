@@ -33,7 +33,7 @@ async function request(method, url, body) {
       localStorage.removeItem('homunity_token')
       window.location.href = '/login'
     }
-    const err = new Error(data?.message || 'حدث خطأ')
+    const err = new Error(data?.message || 'An error occurred')
     err.response = { status: res.status, data }
     throw err
   }
